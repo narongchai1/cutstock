@@ -15,7 +15,7 @@ class StockMovement extends Model
         'type',
         'qty',
         'device_id',
-        'synced_at ',
+        'synced_at',
     ];
 
     public $incrementing = false;
