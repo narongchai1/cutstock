@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขสินค้า - ระบบจัดการสต็อก</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .product-id-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-edit"></i> แก้ไขสินค้า</h1>
+            <div class="user-info">
+                <span id="currentUser" style="font-weight: 600;"></span>
+                <span id="onlineStatus" class="status-badge offline">
+                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                </span>
+                <button class="btn btn-sm btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- Form Container -->
+        <div class="form-container">
+            <div id="alertContainer"></div>
+            
+            <div id="loadingMessage" class="text-center">
+                <div class="spinner"></div>
+                <p>กำลังโหลดข้อมูลสินค้า...</p>
+            </div>
+            
+            <div id="productFormContainer" style="display: none;">
+                <div class="product-info-header">
+                    <h2><i class="fas fa-box"></i> แก้ไขสินค้า</h2>
+                    <div class="product-id-display" id="productIdDisplay">รหัสสินค้า</div>
+                </div>
+                
+                <form id="productForm">
+                    <!-- ข้อมูลพื้นฐาน -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน</h3>
+                        
+                        <div class="form-group">
+                            <label for="productId"><i class="fas fa-barcode"></i> รหัสสินค้า</label>
+                            <input type="text" id="productId" class="form-control" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="barcode"><i class="fas fa-qrcode"></i> บาร์โค้ด</label>
+                            <input type="text" id="barcode" class="form-control" placeholder="8901234567890">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="productName"><i class="fas fa-tag"></i> ชื่อสินค้า *</label>
+                            <input type="text" id="productName" class="form-control" placeholder="ชื่อสินค้า" required>
+                        </div>
+                    </div>
+                    
+                    <!-- ข้อมูลราคาและสต็อก -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-money-bill-wave"></i> ข้อมูลราคาและสต็อก</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="price"><i class="fas fa-tags"></i> ราคาขาย (บาท) *</label>
+                                <input type="number" id="price" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cost"><i class="fas fa-money-bill"></i> ต้นทุน (บาท) *</label>
+                                <input type="number" id="cost" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="stock"><i class="fas fa-boxes"></i> จำนวนสต็อก *</label>
+                            <input type="number" id="stock" class="form-control" placeholder="0" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <!-- หมวดหมู่ -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-tags"></i> หมวดหมู่</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category"><i class="fas fa-folder"></i> หมวดหมู่หลัก</label>
+                                <select id="category" class="form-control">
+                                    <option value="">เลือกหมวดหมู่</option>
+                                    <option value="อิเล็กทรอนิกส์">อิเล็กทรอนิกส์</option>
+                                    <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
+                                    <option value="เครื่องเขียน">เครื่องเขียน</option>
+                                    <option value="ของใช้ในครัว">ของใช้ในครัว</option>
+                                    <option value="เสื้อผ้า">เสื้อผ้า</option>
+                                    <option value="เครื่องดื่ม">เครื่องดื่ม</option>
+                                    <option value="อาหาร">อาหาร</option>
+                                    <option value="อื่นๆ">อื่นๆ</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="subcategory"><i class="fas fa-folder-open"></i> หมวดหมู่ย่อย</label>
+                                <input type="text" id="subcategory" class="form-control" placeholder="หมวดหมู่ย่อย">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- สถานะสินค้า -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-check-circle"></i> สถานะสินค้า</h3>
+                        
+                        <div class="status-options" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <label class="status-option" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="status" value="มีสินค้า">
+                                <span class="badge badge-success">มีสินค้า</span>
+                            </label>
+                            
+                            <label class="status-option" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="status" value="สินค้าจำกัด">
+                                <span class="badge badge-warning">สินค้าจำกัด</span>
+                            </label>
+                            
+                            <label class="status-option" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="status" value="สินค้าหมด">
+                                <span class="badge badge-danger">สินค้าหมด</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- ปุ่มดำเนินการ -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save"></i> บันทึกการแก้ไข
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger btn-lg" onclick="deleteProduct()">
+                            <i class="fas fa-trash"></i> ลบสินค้า
+                        </button>
+                        
+                        <button type="button" class="btn btn-warning btn-lg" onclick="cancelEdit()">
+                            <i class="fas fa-times"></i> ยกเลิก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ตัวแปรเก็บข้อมูลสินค้าปัจจุบัน
+        let currentProduct = null;
+        
+        // ตรวจสอบสถานะการเข้าสู่ระบบ
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return JSON.parse(user);
+        }
+        
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // แสดงข้อความแจ้งเตือน
+        function showAlert(message, type = 'info') {
+            let alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) {
+                alertContainer = document.createElement('div');
+                alertContainer.id = 'alertContainer';
+                alertContainer.style.position = 'fixed';
+                alertContainer.style.top = '20px';
+                alertContainer.style.right = '20px';
+                alertContainer.style.zIndex = '9999';
+                alertContainer.style.maxWidth = '400px';
+                document.body.appendChild(alertContainer);
+            }
+            
+            const alertId = 'alert-' + Date.now();
+            const alertElement = document.createElement('div');
+            alertElement.id = alertId;
+            alertElement.className = `alert alert-${type}`;
+            alertElement.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+                <button class="btn-close" onclick="document.getElementById('${alertId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            alertContainer.appendChild(alertElement);
+            
+            // ลบ alert อัตโนมัติหลังจาก 5 วินาที
+            setTimeout(() => {
+                if (document.getElementById(alertId)) {
+                    document.getElementById(alertId).remove();
+                }
+            }, 5000);
+        }
+        
+        // ตรวจสอบสถานะออนไลน์
+        async function checkOnlineStatus() {
+            try {
+                const isOnline = await window.electronAPI.checkOnlineStatus();
+                updateOnlineStatus(isOnline);
+                return isOnline;
+            } catch (error) {
+                console.error('Error checking online status:', error);
+                return false;
+            }
+        }
+        
+        // อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
+        function updateOnlineStatus(isOnline) {
+            const statusElement = document.getElementById('onlineStatus');
+            if (statusElement) {
+                if (isOnline) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    
+                    // แสดงเมนูออนไลน์
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+                    statusElement.classList.remove('online');
+                    statusElement.classList.add('offline');
+                    
+                    // ซ่อนเมนูออนไลน์
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+            }
+        }
+        
+        // โหลดข้อมูลสินค้าที่ต้องการแก้ไข
+        async function loadProductData() {
+            try {
+                // ดึงข้อมูลสินค้าจาก sessionStorage
+                const productData = sessionStorage.getItem('editProduct');
+                
+                if (!productData) {
+                    showAlert('ไม่พบข้อมูลสินค้าที่ต้องการแก้ไข', 'danger');
+                    setTimeout(() => {
+                        window.location.href = 'stock.html';
+                    }, 2000);
+                    return;
+                }
+                
+                currentProduct = JSON.parse(productData);
+                
+                // แสดงข้อมูลในฟอร์ม
+                document.getElementById('productId').value = currentProduct.id;
+                document.getElementById('productIdDisplay').textContent = currentProduct.id;
+                document.getElementById('barcode').value = currentProduct.barcode || '';
+                document.getElementById('productName').value = currentProduct.name || '';
+                document.getElementById('price').value = currentProduct.price || 0;
+                document.getElementById('cost').value = currentProduct.cost || 0;
+                document.getElementById('stock').value = currentProduct.stock || 0;
+                document.getElementById('category').value = currentProduct.category || '';
+                document.getElementById('subcategory').value = currentProduct.subcategory || '';
+                
+                // ตั้งค่าสถานะสินค้า
+                const status = currentProduct.status || 'มีสินค้า';
+                document.querySelector(`input[name="status"][value="${status}"]`).checked = true;
+                
+                // ซ่อน loading และแสดงฟอร์ม
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('productFormContainer').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading product data:', error);
+                showAlert('เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า', 'danger');
+                setTimeout(() => {
+                    window.location.href = 'stock.html';
+                }, 2000);
+            }
+        }
+        
+        // บันทึกการแก้ไขสินค้า
+        async function saveProduct(productData) {
+            try {
+                const result = await window.electronAPI.saveProduct(productData);
+                return result;
+            } catch (error) {
+                console.error('Error saving product:', error);
+                throw error;
+            }
+        }
+        
+        // ลบสินค้า
+        async function deleteProduct() {
+            if (confirm('คุณแน่ใจว่าต้องการลบสินค้านี้? การลบจะไม่สามารถกู้คืนได้')) {
+                try {
+                    const result = await window.electronAPI.deleteProduct(currentProduct.id);
+                    
+                    if (result.success) {
+                        showAlert('ลบสินค้าเรียบร้อยแล้ว', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'stock.html';
+                        }, 1500);
+                    } else {
+                        showAlert('เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                    showAlert('เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
+                }
+            }
+        }
+        
+        // ยกเลิกการแก้ไข
+        function cancelEdit() {
+            if (confirm('คุณแน่ใจว่าต้องการยกเลิกการแก้ไข?')) {
+                window.location.href = 'stock.html';
+            }
+        }
+        
+        // Initialize เมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            // แสดงชื่อผู้ใช้
+            const userElement = document.getElementById('currentUser');
+            if (userElement) {
+                userElement.textContent = user.name;
+            }
+            
+            // ตรวจสอบสถานะออนไลน์
+            await checkOnlineStatus();
+            
+            // ฟังการเปลี่ยนสถานะเครือข่าย
+            if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
+                window.electronAPI.onOnlineStatusChange((isOnline) => {
+                    updateOnlineStatus(isOnline);
+                });
+            }
+            
+            // โหลดข้อมูลสินค้า
+            await loadProductData();
+            
+            // จัดการฟอร์ม
+            const productForm = document.getElementById('productForm');
+            if (productForm) {
+                productForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // รวบรวมข้อมูลจากฟอร์ม
+                    const productData = {
+                        id: currentProduct.id, // รักษา ID เดิม
+                        barcode: document.getElementById('barcode').value.trim(),
+                        name: document.getElementById('productName').value.trim(),
+                        price: parseFloat(document.getElementById('price').value) || 0,
+                        cost: parseFloat(document.getElementById('cost').value) || 0,
+                        stock: parseInt(document.getElementById('stock').value) || 0,
+                        category: document.getElementById('category').value,
+                        subcategory: document.getElementById('subcategory').value.trim(),
+                        status: document.querySelector('input[name="status"]:checked').value
+                    };
+                    
+                    // ตรวจสอบข้อมูลที่จำเป็น
+                    if (!productData.name) {
+                        showAlert('กรุณากรอกชื่อสินค้า', 'danger');
+                        return;
+                    }
+                    
+                    if (productData.price <= 0 || productData.cost <= 0) {
+                        showAlert('กรุณากรอกราคาขายและต้นทุนที่มากกว่า 0', 'danger');
+                        return;
+                    }
+                    
+                    // ปุ่มบันทึกเปลี่ยนเป็นกำลังโหลด
+                    const submitBtn = productForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        // บันทึกสินค้า
+                        const result = await saveProduct(productData);
+                        
+                        if (result.success) {
+                            showAlert('บันทึกการแก้ไขสินค้าเรียบร้อยแล้ว!', 'success');
+                            
+                            // กลับไปหน้าสต็อกหลังจากบันทึกสำเร็จ
+                            setTimeout(() => {
+                                window.location.href = 'stock.html';
+                            }, 1500);
+                        } else {
+                            showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
+                        }
+                    } catch (error) {
+                        console.error('Error saving product:', error);
+                        showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า: ' + error.message, 'danger');
+                    } finally {
+                        // คืนสถานะปุ่ม
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+            
+            // อัพเดทสถานะตามจำนวนสต็อก
+            const stockInput = document.getElementById('stock');
+            if (stockInput) {
+                stockInput.addEventListener('input', function() {
+                    const stockValue = parseInt(this.value) || 0;
+                    const statusRadios = document.getElementsByName('status');
+                    
+                    if (stockValue === 0) {
+                        statusRadios[2].checked = true; // สินค้าหมด
+                    } else if (stockValue <= 10) {
+                        statusRadios[1].checked = true; // สินค้าจำกัด
+                    } else {
+                        statusRadios[0].checked = true; // มีสินค้า
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "admin123",
+    "name": "ผู้ดูแลระบบ",
+    "role": "admin",
+    "created": "2023-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "username": "staff",
+    "password": "staff123",
+    "name": "พนักงาน",
+    "role": "staff",
+    "created": "2023-01-01T00:00:00.000Z"
+  }
+]
