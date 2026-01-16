@@ -3,224 +3,1092 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>จัดการสต็อก - ระบบจัดการสต็อก</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* เพิ่มสไตล์เพิ่มเติม */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 16px;
-            display: flex;
+        /* สไตล์สถานะออนไลน์/ออฟไลน์ */
+        .online-status {
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .card p {
-            font-size: 28px;
-            font-weight: bold;
-            color: #3498db;
-            margin: 0;
-        }
-        
-        .badge {
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+            gap: 8px;
         }
         
-        .badge-success {
-            background-color: #d4edda;
-            color: #155724;
+        .online-status.online {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
         
-        .badge-danger {
-            background-color: #f8d7da;
-            color: #721c24;
+        .online-status.offline {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
         
-        .badge-warning {
-            background-color: #fff3cd;
-            color: #856404;
+        .online-status i {
+            font-size: 16px;
         }
         
-        .text-right {
-            text-align: right;
+        /* สไตล์ navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #007bff;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .btn-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: inherit;
-            margin-left: 10px;
-        }
-        
-        .user-info {
+        .nav-left {
             display: flex;
             align-items: center;
             gap: 15px;
         }
         
-        .form-hint {
-            color: #7f8c8d;
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: #c82333;
+        }
+        
+        /* เมนูด้านบน */
+        .top-menu {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0 20px;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .menu-item:hover {
+            background: #e9ecef;
+            color: #007bff;
+        }
+        
+        .menu-item.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background: #e7f1ff;
+        }
+        
+        /* สไตล์ตารางสินค้า */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .products-table th {
+            background: #007bff;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .products-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .products-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .products-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .quantity-low {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .quantity-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .quantity-high {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
             font-size: 12px;
-            margin-top: 5px;
-            display: block;
+            font-weight: 500;
         }
         
-        .search-box {
-            margin-bottom: 20px;
+        .status-available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-out {
+            background: #f0f0f0;
+            color: #6c757d;
+        }
+        
+        /* สไตล์การ์ดข้อมูล */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .stat-card i {
+            font-size: 32px;
+            color: #007bff;
+        }
+        
+        .stat-card .stat-info h3 {
+            margin: 0;
+            color: #007bff;
+            font-size: 24px;
+        }
+        
+        .stat-card .stat-info p {
+            margin: 5px 0 0 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* สถานะระบบ */
+        .system-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .status-item i {
+            font-size: 24px;
+            color: #007bff;
+        }
+        
+        .status-item h4 {
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .status-item p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* ปุ่มดำเนินการ */
+        .action-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
         
-        .search-box input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        .actions {
+        .btn-action {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        
+        .btn-action:hover {
+            background: #218838;
+        }
+        
+        .btn-action:nth-child(2) {
+            background: #17a2b8;
+        }
+        
+        .btn-action:nth-child(2):hover {
+            background: #138496;
+        }
+        
+        .btn-action:nth-child(3) {
+            background: #6c757d;
+        }
+        
+        .btn-action:nth-child(3):hover {
+            background: #5a6268;
+        }
+        
+        /* User info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .user-info i {
+            font-size: 20px;
+        }
+        
+        /* เนื้อหาหลัก */
+        .content {
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .nav-left, .nav-right {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .online-status {
+                margin-left: 10px;
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            
+            .top-menu {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 0 10px;
+            }
+            
+            .menu-item {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .products-table {
+                font-size: 14px;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 8px 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-boxes"></i> จัดการสต็อกสินค้า</h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <h1><i class="fas fa-boxes"></i> ระบบจัดการสต็อก</h1>
+            <!-- สถานะออนไลน์/ออฟไลน์ -->
+            <div id="onlineStatus" class="online-status offline">
+                <i class="fas fa-wifi-slash"></i> <span id="statusText">กำลังตรวจสอบ...</span>
+            </div>
+        </div>
+        
+        <div class="nav-right">
             <div class="user-info">
-                <span id="currentUser" style="font-weight: 600;"></span>
-                <span id="onlineStatus" class="status-badge offline">
-                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
-                </span>
-                <button class="btn btn-sm btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">ผู้ใช้งาน</span>
+            </div>
+            <button id="logoutBtn" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </button>
+        </div>
+    </nav>
+    
+    <!-- เมนูด้านบน -->
+    <div class="top-menu">
+        <div class="menu-item active" onclick="showStock()">
+            <i class="fas fa-boxes"></i> สต็อกสินค้า
+        </div>
+        <div class="menu-item" onclick="showReports()">
+            <i class="fas fa-chart-bar"></i> รายงาน
+        </div>
+        <div class="menu-item" onclick="addProduct()">
+            <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+        </div>
+    </div>
+    
+    <!-- เนื้อหาหลัก -->
+    <div class="content">
+        <!-- หน้า Stock (หน้าเริ่มต้น) -->
+        <div id="stockPage">
+            <h2><i class="fas fa-boxes"></i> สต็อกสินค้า</h2>
+            
+            <!-- การ์ดแสดงสถิติ -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-box"></i>
+                    <div class="stat-info">
+                        <h3 id="totalProducts">0</h3>
+                        <p>รายการสินค้าทั้งหมด</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="stat-info">
+                        <h3 id="lowStockItems">0</h3>
+                        <p>สินค้าหมด/ต่ำกว่าเกณฑ์</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <div class="stat-info">
+                        <h3 id="totalValue">฿0</h3>
+                        <p>มูลค่าสินค้าคงคลัง</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-sync-alt"></i>
+                    <div class="stat-info">
+                        <h3 id="lastSync">-</h3>
+                        <p>อัพเดทล่าสุด</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- สถานะระบบ -->
+            <div class="system-status">
+                <div class="status-item">
+                    <i class="fas fa-database"></i>
+                    <div>
+                        <h4>สถานะระบบ</h4>
+                        <p id="systemStatusText">กำลังตรวจสอบ...</p>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>เวลาเซิร์ฟเวอร์</h4>
+                        <p id="serverTime">-</p>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-user-tag"></i>
+                    <div>
+                        <h4>สิทธิ์ผู้ใช้</h4>
+                        <p id="userRole">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ตารางสินค้า -->
+            <div class="card">
+                <h3><i class="fas fa-list"></i> รายการสินค้าในสต็อก</h3>
+                <div class="table-container">
+                    <table class="products-table" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>รหัสสินค้า</th>
+                                <th>ชื่อสินค้า</th>
+                                <th>หมวดหมู่</th>
+                                <th>จำนวนคงเหลือ</th>
+                                <th>สถานะ</th>
+                                <th>ราคา/หน่วย</th>
+                                <th>มูลค่ารวม</th>
+                                <th>ดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- ข้อมูลจะถูกเพิ่มจาก JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <p style="text-align: center; margin-top: 10px; color: #6c757d;">
+                    แสดง <span id="showingCount">0</span> จาก <span id="totalCount">0</span> รายการ
+                </p>
+            </div>
+            
+            <!-- ปุ่มดำเนินการ -->
+            <div class="action-buttons">
+                <button class="btn-action" onclick="refreshStock()">
+                    <i class="fas fa-sync"></i> รีเฟรชข้อมูล
+                </button>
+                <button class="btn-action" onclick="exportStockReport()">
+                    <i class="fas fa-file-export"></i> ส่งออกสต็อก
+                </button>
+                <button class="btn-action" onclick="printStock()">
+                    <i class="fas fa-print"></i> พิมพ์รายงาน
                 </button>
             </div>
         </div>
         
-        <!-- Navigation -->
-        <div class="nav">
-            <button class="nav-btn active" onclick="window.location.href='stock.html'">
-                <i class="fas fa-box"></i> สต็อกสินค้า
-            </button>
-            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
-                <i class="fas fa-chart-bar"></i> รายงาน
-            </button>
-            <button class="nav-btn" onclick="window.location.href='add-product.html'">
-                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
-            </button>
+        <!-- หน้า Reports (ซ่อนไว้ก่อน) -->
+        <div id="reportsPage" style="display: none;">
+            <h2><i class="fas fa-chart-bar"></i> รายงาน</h2>
+            
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> รายงานประจำวัน</h3>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <i class="fas fa-shopping-cart"></i>
+                        <div class="stat-info">
+                            <h3 id="todaySales">฿25,000</h3>
+                            <p>ยอดขายวันนี้</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <i class="fas fa-box-open"></i>
+                        <div class="stat-info">
+                            <h3 id="todayOrders">12</h3>
+                            <p>คำสั่งซื้อวันนี้</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div class="stat-info">
+                            <h3 id="todayCustomers">8</h3>
+                            <p>ลูกค้าวันนี้</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <i class="fas fa-percentage"></i>
+                        <div class="stat-info">
+                            <h3 id="conversionRate">42%</h3>
+                            <p>อัตราการแปลง</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- กราฟตัวอย่าง -->
+                <div style="margin-top: 20px;">
+                    <h4>ยอดขาย 7 วันล่าสุด</h4>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                        <p><i class="fas fa-chart-bar" style="font-size: 48px; color: #007bff;"></i></p>
+                        <p style="color: #6c757d;">กราฟแสดงยอดขาย 7 วันล่าสุด</p>
+                        <p><strong>ยอดขายรวมสัปดาห์: ฿185,000</strong></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3><i class="fas fa-file-invoice-dollar"></i> รายงานประจำเดือน</h3>
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>เดือน</th>
+                            <th>ยอดขาย</th>
+                            <th>ต้นทุน</th>
+                            <th>กำไร</th>
+                            <th>กำไรสุทธิ</th>
+                            <th>% กำไร</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>มกราคม</td>
+                            <td>฿450,000</td>
+                            <td>฿320,000</td>
+                            <td>฿130,000</td>
+                            <td><strong>฿110,000</strong></td>
+                            <td><span class="quantity-high">24.4%</span></td>
+                        </tr>
+                        <tr>
+                            <td>กุมภาพันธ์</td>
+                            <td>฿520,000</td>
+                            <td>฿380,000</td>
+                            <td>฿140,000</td>
+                            <td><strong>฿118,000</strong></td>
+                            <td><span class="quantity-high">22.7%</span></td>
+                        </tr>
+                        <tr>
+                            <td>มีนาคม</td>
+                            <td>฿480,000</td>
+                            <td>฿350,000</td>
+                            <td>฿130,000</td>
+                            <td><strong>฿105,000</strong></td>
+                            <td><span class="quantity-high">21.9%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-action" onclick="exportDailyReport()">
+                    <i class="fas fa-file-excel"></i> ส่งออกรายงานประจำวัน
+                </button>
+                <button class="btn-action" onclick="exportMonthlyReport()">
+                    <i class="fas fa-file-pdf"></i> ส่งออกรายงานประจำเดือน
+                </button>
+                <button class="btn-action" onclick="showStock()">
+                    <i class="fas fa-arrow-left"></i> กลับไปสต็อก
+                </button>
+            </div>
         </div>
         
-        <!-- Search and Actions -->
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ค้นหาสินค้า (รหัส, ชื่อ, บาร์โค้ด)" onkeyup="searchProducts()">
-            <button class="btn btn-primary" onclick="clearSearch()">
-                <i class="fas fa-times"></i> ล้าง
-            </button>
-        </div>
-        
-        <!-- Summary Cards -->
-        <div class="summary-cards">
+        <!-- หน้า Add Product (ซ่อนไว้ก่อน) -->
+        <div id="addProductPage" style="display: none;">
+            <h2><i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่</h2>
+            
             <div class="card">
-                <h3><i class="fas fa-box"></i> จำนวนสินค้า</h3>
-                <p id="productCount">0</p>
+                <h3>กรอกข้อมูลสินค้า</h3>
+                <form id="addProductForm" style="display: grid; gap: 15px; max-width: 600px;">
+                    <div>
+                        <label for="productCode"><strong>รหัสสินค้า *</strong></label>
+                        <input type="text" id="productCode" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div>
+                        <label for="productName"><strong>ชื่อสินค้า *</strong></label>
+                        <input type="text" id="productName" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div>
+                        <label for="productCategory"><strong>หมวดหมู่ *</strong></label>
+                        <select id="productCategory" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">เลือกหมวดหมู่</option>
+                            <option value="คอมพิวเตอร์">คอมพิวเตอร์</option>
+                            <option value="อุปกรณ์คอมพิวเตอร์">อุปกรณ์คอมพิวเตอร์</option>
+                            <option value="สมาร์ทโฟน">สมาร์ทโฟน</option>
+                            <option value="แท็บเล็ต">แท็บเล็ต</option>
+                            <option value="อุปกรณ์เครือข่าย">อุปกรณ์เครือข่าย</option>
+                            <option value="เครื่องพิมพ์">เครื่องพิมพ์</option>
+                            <option value="อุปกรณ์เสริม">อุปกรณ์เสริม</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label for="productQuantity"><strong>จำนวน *</strong></label>
+                            <input type="number" id="productQuantity" required min="0"
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                        
+                        <div>
+                            <label for="productPrice"><strong>ราคา/หน่วย *</strong></label>
+                            <input type="number" id="productPrice" required min="0" step="0.01"
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="productDescription"><strong>รายละเอียด</strong></label>
+                        <textarea id="productDescription" rows="3"
+                                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="minStock"><strong>จำนวนขั้นต่ำในสต็อก</strong></label>
+                        <input type="number" id="minStock" value="5" min="1"
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-action" style="background: #28a745;">
+                            <i class="fas fa-save"></i> บันทึกสินค้า
+                        </button>
+                        <button type="button" class="btn-action" onclick="showStock()" style="background: #6c757d;">
+                            <i class="fas fa-times"></i> ยกเลิก
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="card">
-                <h3><i class="fas fa-money-bill-wave"></i> มูลค่าสต็อก</h3>
-                <p id="stockValue">฿0.00</p>
-            </div>
-            <div class="card">
-                <h3><i class="fas fa-exclamation-triangle"></i> สินค้าใกล้หมด</h3>
-                <p id="lowStock">0</p>
-            </div>
-            <div class="card">
-                <h3><i class="fas fa-times-circle"></i> สินค้าหมด</h3>
-                <p id="outOfStock">0</p>
-            </div>
-        </div>
-        
-        <!-- Product Table -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>รหัสสินค้า</th>
-                        <th>บาร์โค้ด</th>
-                        <th>ชื่อสินค้า</th>
-                        <th>ราคาขาย</th>
-                        <th>ต้นทุน</th>
-                        <th>จำนวน</th>
-                        <th>หมวดหมู่</th>
-                        <th>สถานะสินค้า</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="productTableBody">
-                    <!-- ข้อมูลสินค้าจะถูกโหลดโดย JavaScript -->
-                    <tr>
-                        <td colspan="9" class="text-center">กำลังโหลดข้อมูล...</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
     
-    <script src="js/stock.js"></script>
+    <script src="js/auth.js"></script>
     <script>
-        // ฟังก์ชันออกจากระบบ
-        function logout() {
-            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-            }
-        }
-        
-        // ฟังก์ชันค้นหาสินค้า
-        function searchProducts() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#productTableBody tr');
+        // ตรวจสอบการล็อกอินเมื่อโหลดหน้า stock
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📦 Stock page loaded');
             
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            // ตรวจสอบว่ามีการล็อกอินหรือไม่
+            if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
+                console.log('❌ Not logged in, redirecting to login');
+                window.location.href = 'index.html?redirect=' + Date.now();
+                return;
+            }
+            
+            // แสดงชื่อผู้ใช้
+            if (typeof getCurrentUser === 'function') {
+                const user = getCurrentUser();
+                if (user) {
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userRole').textContent = 
+                        user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงาน';
+                }
+            }
+            
+            // ตั้งค่าปุ่ม logout
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('คุณแน่ใจต้องการออกจากระบบ?')) {
+                        if (typeof logout === 'function') {
+                            logout();
+                        } else {
+                            localStorage.clear();
+                            window.location.href = 'index.html';
+                        }
+                    }
+                });
+            }
+            
+            // เริ่มตรวจสอบสถานะเครือข่าย
+            initNetworkStatus();
+            
+            // โหลดข้อมูลสต็อก
+            loadStockData();
+            
+            // ตั้งค่าเมนู
+            setupMenu();
+            
+            // ตั้งค่าฟอร์มเพิ่มสินค้า
+            setupAddProductForm();
+            
+            console.log('✅ Stock page initialized successfully');
+        });
+        
+        // ฟังก์ชันตั้งค่าเมนู
+        function setupMenu() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // ลบ active class จากทั้งหมด
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // เพิ่ม active class ให้กับ item ที่คลิก
+                    this.classList.add('active');
+                });
             });
         }
         
-        // ล้างการค้นหา
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            searchProducts();
+        // ฟังก์ชันแสดงหน้า Stock
+        function showStock() {
+            document.getElementById('stockPage').style.display = 'block';
+            document.getElementById('reportsPage').style.display = 'none';
+            document.getElementById('addProductPage').style.display = 'none';
+            loadStockData();
+        }
+        
+        // ฟังก์ชันแสดงหน้า Reports
+        function showReports() {
+            document.getElementById('stockPage').style.display = 'none';
+            document.getElementById('reportsPage').style.display = 'block';
+            document.getElementById('addProductPage').style.display = 'none';
+        }
+        
+        // ฟังก์ชันแสดงหน้า Add Product
+        function addProduct() {
+            document.getElementById('stockPage').style.display = 'none';
+            document.getElementById('reportsPage').style.display = 'none';
+            document.getElementById('addProductPage').style.display = 'block';
+        }
+        
+        // ฟังก์ชันตั้งค่าฟอร์มเพิ่มสินค้า
+        function setupAddProductForm() {
+            const form = document.getElementById('addProductForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const productCode = document.getElementById('productCode').value;
+                    const productName = document.getElementById('productName').value;
+                    const productCategory = document.getElementById('productCategory').value;
+                    const productQuantity = parseInt(document.getElementById('productQuantity').value);
+                    const productPrice = parseFloat(document.getElementById('productPrice').value);
+                    const productDescription = document.getElementById('productDescription').value;
+                    const minStock = parseInt(document.getElementById('minStock').value);
+                    
+                    // ตรวจสอบข้อมูล
+                    if (!productCode || !productName || !productCategory) {
+                        alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                        return;
+                    }
+                    
+                    // สร้างข้อมูลสินค้าใหม่
+                    const newProduct = {
+                        id: productCode,
+                        name: productName,
+                        category: productCategory,
+                        quantity: productQuantity,
+                        price: productPrice,
+                        minStock: minStock,
+                        description: productDescription
+                    };
+                    
+                    // บันทึกสินค้า (ตัวอย่าง)
+                    alert(`เพิ่มสินค้า "${productName}" สำเร็จ!\n\nรหัส: ${productCode}\nหมวดหมู่: ${productCategory}\nจำนวน: ${productQuantity} ชิ้น\nราคา: ฿${productPrice.toLocaleString()}`);
+                    
+                    // เคลียร์ฟอร์ม
+                    form.reset();
+                    
+                    // กลับไปหน้า Stock
+                    showStock();
+                    
+                    // โหลดข้อมูลใหม่
+                    loadStockData();
+                });
+            }
+        }
+        
+        // ฟังก์ชันตรวจสอบสถานะเครือข่าย
+        function initNetworkStatus() {
+            // ฟังก์ชันอัพเดทสถานะ
+            function updateNetworkStatus(isOnline) {
+                const statusElement = document.getElementById('onlineStatus');
+                const statusText = document.getElementById('statusText');
+                const systemStatusText = document.getElementById('systemStatusText');
+                
+                if (isOnline) {
+                    statusElement.className = 'online-status online';
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> <span id="statusText">ออนไลน์</span>';
+                    if (systemStatusText) {
+                        systemStatusText.textContent = 'ระบบพร้อมใช้งาน (ออนไลน์)';
+                        systemStatusText.style.color = '#065f46';
+                    }
+                } else {
+                    statusElement.className = 'online-status offline';
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> <span id="statusText">ออฟไลน์</span>';
+                    if (systemStatusText) {
+                        systemStatusText.textContent = 'โหมดออฟไลน์';
+                        systemStatusText.style.color = '#991b1b';
+                    }
+                }
+                
+                // อัพเดทเวลา
+                updateTimes();
+            }
+            
+            // ฟังก์ชันตรวจสอบสถานะเครือข่าย
+            function checkNetworkStatus() {
+                const isOnline = navigator.onLine;
+                console.log('Network status:', isOnline ? 'Online' : 'Offline');
+                updateNetworkStatus(isOnline);
+                return isOnline;
+            }
+            
+            // ฟังก์ชันอัพเดทเวลา
+            function updateTimes() {
+                const now = new Date();
+                
+                // เวลาเซิร์ฟเวอร์
+                const serverTimeElement = document.getElementById('serverTime');
+                if (serverTimeElement) {
+                    const timeString = now.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    const dateString = now.toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    serverTimeElement.textContent = `${dateString} ${timeString}`;
+                }
+                
+                // เวลาซิงค์ล่าสุด
+                const lastSyncElement = document.getElementById('lastSync');
+                if (lastSyncElement) {
+                    const syncTimeString = now.toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    lastSyncElement.textContent = syncTimeString;
+                }
+            }
+            
+            // ตรวจสอบทันทีเมื่อโหลดหน้า
+            checkNetworkStatus();
+            
+            // ฟังการเปลี่ยนแปลงสถานะเครือข่าย
+            window.addEventListener('online', () => {
+                console.log('Network: Online');
+                updateNetworkStatus(true);
+                showNetworkNotification('เชื่อมต่อออนไลน์แล้ว', 'success');
+            });
+            
+            window.addEventListener('offline', () => {
+                console.log('Network: Offline');
+                updateNetworkStatus(false);
+                showNetworkNotification('สูญเสียการเชื่อมต่อ (โหมดออฟไลน์)', 'warning');
+            });
+            
+            // ตรวจสอบทุก 30 วินาที
+            setInterval(checkNetworkStatus, 30000);
+            
+            // อัพเดทเวลาทุก 1 วินาที
+            setInterval(updateTimes, 1000);
+            updateTimes();
+            
+            // สำหรับ Electron app (ถ้ามี)
+            if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
+                window.electronAPI.onOnlineStatusChange((isOnline) => {
+                    console.log('Electron network status changed:', isOnline);
+                    updateNetworkStatus(isOnline);
+                });
+            }
+        }
+        
+        // ฟังก์ชันแสดงการแจ้งเตือนเครือข่าย
+        function showNetworkNotification(message, type) {
+            // สร้าง notification element
+            const notification = document.createElement('div');
+            notification.className = `network-notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            // สไตล์ notification
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'success' ? '#d1fae5' : '#ffedcc'};
+                color: ${type === 'success' ? '#065f46' : '#856404'};
+                border: 1px solid ${type === 'success' ? '#a7f3d0' : '#ffeaa7'};
+                padding: 12px 16px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                animation: slideIn 0.3s ease;
+            `;
+            
+            // เพิ่ม animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // เพิ่ม notification ลงในหน้า
+            document.body.appendChild(notification);
+            
+            // ลบ notification อัตโนมัติหลังจาก 5 วินาที
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+        
+        // ฟังก์ชันโหลดข้อมูลสต็อก
+        function loadStockData() {
+            // ข้อมูลสินค้าตัวอย่าง
+            const sampleProducts = [
+                { id: 'P001', name: 'โน๊ตบุ๊ค Dell XPS 13', category: 'คอมพิวเตอร์', quantity: 12, price: 35900, minStock: 5 },
+                { id: 'P002', name: 'เมาส์ไร้สาย Logitech MX Master 3', category: 'อุปกรณ์คอมพิวเตอร์', quantity: 3, price: 2490, minStock: 10 },
+                { id: 'P003', name: 'คีย์บอร์ด Mechanical Keyboard', category: 'อุปกรณ์คอมพิวเตอร์', quantity: 25, price: 1890, minStock: 15 },
+                { id: 'P004', name: 'จอภาพ Samsung 27" 4K', category: 'จอภาพ', quantity: 8, price: 12500, minStock: 5 },
+                { id: 'P005', name: 'แท็บเล็ต iPad Pro 12.9"', category: 'แท็บเล็ต', quantity: 0, price: 42900, minStock: 3 },
+                { id: 'P006', name: 'หูฟัง Sony WH-1000XM4', category: 'หูฟัง', quantity: 15, price: 8990, minStock: 8 },
+                { id: 'P007', name: 'สมาร์ทโฟน iPhone 14 Pro', category: 'สมาร์ทโฟน', quantity: 7, price: 41900, minStock: 5 },
+                { id: 'P008', name: 'เครื่องพิมพ์ HP LaserJet', category: 'เครื่องพิมพ์', quantity: 18, price: 5590, minStock: 10 }
+            ];
+            
+            const tableBody = document.getElementById('productsTableBody');
+            tableBody.innerHTML = '';
+            
+            let totalValue = 0;
+            let lowStockCount = 0;
+            
+            sampleProducts.forEach(product => {
+                const totalValueItem = product.quantity * product.price;
+                totalValue += totalValueItem;
+                
+                // ตรวจสอบสถานะสินค้า
+                let status = '';
+                let statusClass = '';
+                let quantityClass = '';
+                
+                if (product.quantity === 0) {
+                    status = 'หมด';
+                    statusClass = 'status-out';
+                    quantityClass = 'quantity-low';
+                    lowStockCount++;
+                } else if (product.quantity <= product.minStock) {
+                    status = 'ต่ำกว่าเกณฑ์';
+                    statusClass = 'status-low';
+                    quantityClass = 'quantity-low';
+                    lowStockCount++;
+                } else if (product.quantity <= product.minStock * 2) {
+                    status = 'พอใช้';
+                    statusClass = 'status-available';
+                    quantityClass = 'quantity-medium';
+                } else {
+                    status = 'เพียงพอ';
+                    statusClass = 'status-available';
+                    quantityClass = 'quantity-high';
+                }
+                
+                const row = `
+                    <tr>
+                        <td><strong>${product.id}</strong></td>
+                        <td>${product.name}</td>
+                        <td>${product.category}</td>
+                        <td class="${quantityClass}">${product.quantity} ชิ้น</td>
+                        <td><span class="status-badge ${statusClass}">${status}</span></td>
+                        <td>฿${product.price.toLocaleString()}</td>
+                        <td><strong>฿${totalValueItem.toLocaleString()}</strong></td>
+                        <td>
+                            <button onclick="editProduct('${product.id}')" style="padding: 5px 10px; background: #ffc107; color: black; border: none; border-radius: 3px; margin-right: 5px; cursor: pointer;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteProduct('${product.id}')" style="padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                
+                tableBody.innerHTML += row;
+            });
+            
+            // อัพเดทสถิติ
+            document.getElementById('totalProducts').textContent = sampleProducts.length;
+            document.getElementById('lowStockItems').textContent = lowStockCount;
+            document.getElementById('totalValue').textContent = '฿' + totalValue.toLocaleString();
+            document.getElementById('showingCount').textContent = Math.min(sampleProducts.length, 8);
+            document.getElementById('totalCount').textContent = sampleProducts.length;
+        }
+        
+        // ฟังก์ชันรีเฟรชข้อมูลสต็อก
+        function refreshStock() {
+            loadStockData();
+            showNetworkNotification('รีเฟรชข้อมูลสต็อกสำเร็จ', 'success');
+        }
+        
+        // ฟังก์ชันส่งออกสต็อก
+        function exportStockReport() {
+            alert('ส่งออกรายงานสต็อกในรูปแบบ Excel');
+        }
+        
+        // ฟังก์ชันพิมพ์รายงาน
+        function printStock() {
+            window.print();
+        }
+        
+        // ฟังก์ชันส่งออกรายงานประจำวัน
+        function exportDailyReport() {
+            alert('ส่งออกรายงานประจำวันในรูปแบบ PDF');
+        }
+        
+        // ฟังก์ชันส่งออกรายงานประจำเดือน
+        function exportMonthlyReport() {
+            alert('ส่งออกรายงานประจำเดือนในรูปแบบ Excel');
+        }
+        
+        // ฟังก์ชันแก้ไขสินค้า
+        function editProduct(productId) {
+            alert(`แก้ไขสินค้า: ${productId}`);
+            // ไปที่หน้าแก้ไขสินค้า
+        }
+        
+        // ฟังก์ชันลบสินค้า
+        function deleteProduct(productId) {
+            if (confirm(`คุณแน่ใจว่าต้องการลบสินค้า ${productId}?`)) {
+                alert(`ลบสินค้า ${productId} สำเร็จ`);
+                loadStockData(); // รีเฟรชข้อมูล
+            }
         }
     </script>
 </body>
