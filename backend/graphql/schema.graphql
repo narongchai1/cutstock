@@ -40,6 +40,15 @@ type StockMovement {
   created_at: DateTime!
 }
 
+input SyncStockInput {
+  id: ID!
+  product_id: ID!
+  type: String!
+  qty: Int!
+  device_id: String
+  created_at: DateTime!
+}
+
 
 """
 =====================
@@ -68,6 +77,7 @@ type Mutation {
     @create
 
   syncStockMovements(items: [SyncStockInput!]!): Boolean!  
+    @field(resolver: "App\\GraphQL\\Mutations\\SyncStockMovements")
 
   stockIn(
     product_id: ID!
@@ -82,14 +92,4 @@ type Mutation {
     device_id: String
   ): Boolean!
     @field(resolver: "App\\GraphQL\\Mutations\\StockOut")
-  # Syneccccc
-  input SyncStockInput {
-  id: ID!
-  product_id: ID!
-  type: String!
-  qty: Int!
-  device_id: String
-  created_at: DateTime!
-}
-  
 }

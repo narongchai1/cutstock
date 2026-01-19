@@ -15,7 +15,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->validatedData($request, true);
+        $data = $this->normalizeProductData($this->validatedData($request, true));
         $productId = $data['id'] ?? (string) Str::uuid();
         $data['id'] = $productId;
 
@@ -32,7 +32,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        $data = $this->validatedData($request, false);
+        $data = $this->normalizeProductData($this->validatedData($request, false));
         $product->fill($data);
         $product->save();
 
@@ -87,9 +87,13 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
             'cost' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
+            'unit' => ['nullable', 'string', 'max:50'],
             'category' => ['nullable', 'string', 'max:255'],
             'subcategory' => ['nullable', 'string', 'max:255'],
+            'main_category' => ['nullable', 'string', 'max:255'],
+            'sub_category' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:255'],
         ];
 
@@ -98,5 +102,30 @@ class ProductController extends Controller
         }
 
         return $request->validate($rules);
+    }
+
+    private function normalizeProductData(array $data): array
+    {
+        $data = $this->syncProductFields($data, 'category', 'main_category');
+        $data = $this->syncProductFields($data, 'subcategory', 'sub_category');
+        $data = $this->syncProductFields($data, 'cost', 'cost_price');
+
+        return $data;
+    }
+
+    private function syncProductFields(array $data, string $primary, string $secondary): array
+    {
+        $primaryValue = $data[$primary] ?? null;
+        $secondaryValue = $data[$secondary] ?? null;
+
+        if ($secondaryValue === null && $primaryValue !== null) {
+            $data[$secondary] = $primaryValue;
+        }
+
+        if ($primaryValue === null && $secondaryValue !== null) {
+            $data[$primary] = $secondaryValue;
+        }
+
+        return $data;
     }
 }

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงาน - ระบบจัดการสต็อก</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- เพิ่ม Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .reports-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .report-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .report-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .report-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .report-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .report-value {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 16px;
+        }
+        
+        .report-value.danger {
+            color: #e74c3c;
+        }
+        
+        .report-value.success {
+            color: #2ecc71;
+        }
+        
+        .report-value.warning {
+            color: #f39c12;
+        }
+        
+        .offline-message {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        
+        .offline-message i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #95a5a6;
+        }
+        
+        .offline-message h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .date-filter input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .summary-item h4 {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .summary-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .summary-item .value.success {
+            color: #2ecc71;
+        }
+        
+        .summary-item .value.danger {
+            color: #e74c3c;
+        }
+        
+        @media (max-width: 768px) {
+            .reports-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .date-filter {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-chart-bar"></i> รายงานระบบสต็อก</h1>
+            <div class="user-info">
+                <span id="currentUser" style="font-weight: 600;"></span>
+                <span id="onlineStatus" class="status-badge offline">
+                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                </span>
+                <button class="btn btn-sm btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='reports.html'">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- เนื้อหารายงาน (แสดงเฉพาะเมื่อออนไลน์) -->
+        <div id="onlineReports" style="display: none;">
+            <!-- สรุปยอดรวม -->
+            <div class="report-header">
+                <h2><i class="fas fa-chart-pie"></i> สรุปภาพรวม</h2>
+                <div class="date-filter">
+                    <input type="date" id="startDate">
+                    <span>ถึง</span>
+                    <input type="date" id="endDate">
+                    <button class="btn btn-sm btn-primary" onclick="filterByDate()">
+                        <i class="fas fa-filter"></i> กรอง
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="resetFilter()">
+                        <i class="fas fa-redo"></i> รีเซ็ต
+                    </button>
+                </div>
+            </div>
+            
+            <!-- สรุปยอด -->
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h4>สินค้าทั้งหมด</h4>
+                    <div class="value" id="totalProducts">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>มูลค่าสต็อก</h4>
+                    <div class="value" id="totalValue">฿0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>กำไรที่คาดการณ์</h4>
+                    <div class="value success" id="potentialProfit">฿0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>สินค้าหมด</h4>
+                    <div class="value danger" id="outOfStockCount">0</div>
+                </div>
+            </div>
+            
+            <!-- กราฟและรายงาน -->
+            <div class="reports-container">
+                <!-- กราฟสถานะสินค้า -->
+                <div class="report-card">
+                    <h3><i class="fas fa-boxes"></i> สถานะสินค้า</h3>
+                    <div class="chart-container">
+                        <canvas id="stockStatusChart"></canvas>
+                    </div>
+                    <ul class="report-list" id="stockStatusList">
+                        <!-- แสดงสถานะสินค้า -->
+                    </ul>
+                </div>
+                
+                <!-- กราฟหมวดหมู่ -->
+                <div class="report-card">
+                    <h3><i class="fas fa-tags"></i> สินค้าตามหมวดหมู่</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <ul class="report-list" id="categoryList">
+                        <!-- แสดงหมวดหมู่ -->
+                    </ul>
+                </div>
+                
+                <!-- รายการสินค้าขายดี -->
+                <div class="report-card">
+                    <h3><i class="fas fa-fire"></i> สินค้าใกล้หมด</h3>
+                    <ul class="report-list" id="lowStockList">
+                        <!-- แสดงสินค้าใกล้หมด -->
+                    </ul>
+                </div>
+                
+                <!-- สินค้ามูลค่าสูงสุด -->
+                <div class="report-card">
+                    <h3><i class="fas fa-gem"></i> สินค้ามูลค่าสูง</h3>
+                    <ul class="report-list" id="highValueList">
+                        <!-- แสดงสินค้ามูลค่าสูง -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- รายงานละเอียด -->
+            <div class="report-card mt-20">
+                <h3><i class="fas fa-list"></i> รายงานสรุป</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>หมวดหมู่</th>
+                                <th>จำนวนสินค้า</th>
+                                <th>มูลค่ารวม</th>
+                                <th>ต้นทุนรวม</th>
+                                <th>กำไรที่คาดการณ์</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedReport">
+                            <!-- แสดงรายงานละเอียด -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ปุ่มดำเนินการ -->
+            <div class="report-actions">
+                <button class="btn btn-success" onclick="printReport()">
+                    <i class="fas fa-print"></i> พิมพ์รายงาน
+                </button>
+                <button class="btn btn-primary" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> ส่งออก Excel
+                </button>
+                <button class="btn btn-info" onclick="refreshReports()">
+                    <i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล
+                </button>
+            </div>
+        </div>
+        
+        <!-- ข้อความเมื่อออฟไลน์ -->
+        <div id="offlineMessage" class="offline-message">
+            <i class="fas fa-wifi-slash"></i>
+            <h2>ไม่สามารถแสดงรายงานได้</h2>
+            <p>โหมดรายงานสามารถใช้งานได้เฉพาะเมื่อเชื่อมต่ออินเทอร์เน็ตเท่านั้น</p>
+            <p>กรุณาเชื่อมต่ออินเทอร์เน็ตเพื่อดูรายงาน</p>
+            <button class="btn btn-primary mt-20" onclick="window.location.href='stock.html'">
+                <i class="fas fa-arrow-left"></i> กลับไปหน้าสต็อก
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // ตัวแปรเก็บข้อมูลและกราฟ
+        let stockStatusChart = null;
+        let categoryChart = null;
+        let reportData = null;
+        
+        // ตรวจสอบสถานะการเข้าสู่ระบบ
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return JSON.parse(user);
+        }
+        
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // ตรวจสอบสถานะออนไลน์
+        async function checkOnlineStatus() {
+            try {
+                const isOnline = await window.electronAPI.checkOnlineStatus();
+                updateOnlineStatus(isOnline);
+                return isOnline;
+            } catch (error) {
+                console.error('Error checking online status:', error);
+                return false;
+            }
+        }
+        
+        // อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
+        function updateOnlineStatus(isOnline) {
+            const statusElement = document.getElementById('onlineStatus');
+            const onlineReports = document.getElementById('onlineReports');
+            const offlineMessage = document.getElementById('offlineMessage');
+            
+            if (statusElement) {
+                if (isOnline) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    
+                    // แสดงรายงาน
+                    if (onlineReports) onlineReports.style.display = 'block';
+                    if (offlineMessage) offlineMessage.style.display = 'none';
+                    
+                    // โหลดข้อมูลรายงาน
+                    loadReports();
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+                    statusElement.classList.remove('online');
+                    statusElement.classList.add('offline');
+                    
+                    // ซ่อนรายงาน
+                    if (onlineReports) onlineReports.style.display = 'none';
+                    if (offlineMessage) offlineMessage.style.display = 'block';
+                }
+            }
+        }
+        
+        // โหลดข้อมูลรายงาน
+        async function loadReports() {
+            try {
+                // แสดง loading
+                document.getElementById('totalProducts').textContent = '...';
+                document.getElementById('totalValue').textContent = '...';
+                
+                // โหลดข้อมูลสินค้า
+                const products = await window.electronAPI.getProducts();
+                
+                // คำนวณสถิติ
+                reportData = calculateReportData(products);
+                
+                // แสดงข้อมูล
+                displayReportSummary(reportData);
+                createCharts(reportData);
+                displayReportLists(reportData);
+                displayDetailedReport(reportData);
+                
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                showAlert('เกิดข้อผิดพลาดในการโหลดรายงาน', 'danger');
+            }
+        }
+        
+        // คำนวณข้อมูลรายงาน
+        function calculateReportData(products) {
+            const stats = {
+                totalProducts: products.length,
+                inStock: 0,
+                limitedStock: 0,
+                outOfStock: 0,
+                totalValue: 0,
+                totalCost: 0,
+                potentialProfit: 0,
+                categories: {},
+                lowStockItems: [],
+                highValueItems: []
+            };
+            
+            // คำนวณข้อมูลจากสินค้าทั้งหมด
+            products.forEach(product => {
+                const stock = product.stock || 0;
+                const price = product.price || 0;
+                const cost = product.cost || 0;
+                
+                // สถานะสินค้า
+                if (stock === 0) {
+                    stats.outOfStock++;
+                } else if (stock <= 10) {
+                    stats.limitedStock++;
+                } else {
+                    stats.inStock++;
+                }
+                
+                // มูลค่า
+                const itemValue = stock * price;
+                const itemCost = stock * cost;
+                stats.totalValue += itemValue;
+                stats.totalCost += itemCost;
+                stats.potentialProfit += (itemValue - itemCost);
+                
+                // หมวดหมู่
+                const category = product.category || 'ไม่มีหมวดหมู่';
+                if (!stats.categories[category]) {
+                    stats.categories[category] = {
+                        count: 0,
+                        value: 0,
+                        cost: 0,
+                        profit: 0
+                    };
+                }
+                stats.categories[category].count++;
+                stats.categories[category].value += itemValue;
+                stats.categories[category].cost += itemCost;
+                stats.categories[category].profit += (itemValue - itemCost);
+                
+                // สินค้าใกล้หมด
+                if (stock > 0 && stock <= 5) {
+                    stats.lowStockItems.push({
+                        name: product.name,
+                        stock: stock,
+                        id: product.id,
+                        status: 'ใกล้หมด'
+                    });
+                }
+                
+                // สินค้ามูลค่าสูง (มูลค่ามากกว่า 10,000 บาท)
+                if (itemValue > 10000) {
+                    stats.highValueItems.push({
+                        name: product.name,
+                        value: itemValue,
+                        id: product.id,
+                        stock: stock
+                    });
+                }
+            });
+            
+            // เรียงลำดับข้อมูล
+            stats.lowStockItems.sort((a, b) => a.stock - b.stock);
+            stats.highValueItems.sort((a, b) => b.value - a.value);
+            
+            return stats;
+        }
+        
+        // แสดงสรุปยอด
+        function displayReportSummary(stats) {
+            document.getElementById('totalProducts').textContent = stats.totalProducts;
+            document.getElementById('totalValue').textContent = formatCurrency(stats.totalValue);
+            document.getElementById('potentialProfit').textContent = formatCurrency(stats.potentialProfit);
+            document.getElementById('outOfStockCount').textContent = stats.outOfStock;
+        }
+        
+        // สร้างกราฟ
+        function createCharts(stats) {
+            // กราฟสถานะสินค้า
+            const stockStatusCtx = document.getElementById('stockStatusChart').getContext('2d');
+            
+            // ทำลายกราฟเดิมถ้ามี
+            if (stockStatusChart) {
+                stockStatusChart.destroy();
+            }
+            
+            stockStatusChart = new Chart(stockStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['มีสินค้า', 'สินค้าจำกัด', 'สินค้าหมด'],
+                    datasets: [{
+                        data: [stats.inStock, stats.limitedStock, stats.outOfStock],
+                        backgroundColor: [
+                            '#2ecc71', // เขียว - มีสินค้า
+                            '#f39c12', // ส้ม - สินค้าจำกัด
+                            '#e74c3c'  // แดง - สินค้าหมด
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+            
+            // แสดงรายการสถานะสินค้า
+            const stockStatusList = document.getElementById('stockStatusList');
+            stockStatusList.innerHTML = `
+                <li>
+                    <span>มีสินค้า</span>
+                    <span class="report-value success">${stats.inStock} รายการ</span>
+                </li>
+                <li>
+                    <span>สินค้าจำกัด</span>
+                    <span class="report-value warning">${stats.limitedStock} รายการ</span>
+                </li>
+                <li>
+                    <span>สินค้าหมด</span>
+                    <span class="report-value danger">${stats.outOfStock} รายการ</span>
+                </li>
+            `;
+            
+            // กราฟหมวดหมู่
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categories = Object.keys(stats.categories);
+            const categoryCounts = categories.map(cat => stats.categories[cat].count);
+            
+            // ทำลายกราฟเดิมถ้ามี
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+            
+            categoryChart = new Chart(categoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'จำนวนสินค้า',
+                        data: categoryCounts,
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // แสดงรายการหมวดหมู่
+            const categoryList = document.getElementById('categoryList');
+            categoryList.innerHTML = '';
+            
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${category}</span>
+                    <span class="report-value">${stats.categories[category].count} รายการ</span>
+                `;
+                categoryList.appendChild(li);
+            });
+        }
+        
+        // แสดงรายการสินค้า
+        function displayReportLists(stats) {
+            // สินค้าใกล้หมด
+            const lowStockList = document.getElementById('lowStockList');
+            lowStockList.innerHTML = '';
+            
+            if (stats.lowStockItems.length > 0) {
+                stats.lowStockItems.slice(0, 5).forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <div style="font-weight: 500;">${item.name}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">${item.id}</div>
+                        </div>
+                        <span class="report-value warning">${item.stock} ชิ้น</span>
+                    `;
+                    lowStockList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color: #7f8c8d;">ไม่มีสินค้าใกล้หมด</span>';
+                lowStockList.appendChild(li);
+            }
+            
+            // สินค้ามูลค่าสูง
+            const highValueList = document.getElementById('highValueList');
+            highValueList.innerHTML = '';
+            
+            if (stats.highValueItems.length > 0) {
+                stats.highValueItems.slice(0, 5).forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <div style="font-weight: 500;">${item.name}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">${item.id}</div>
+                        </div>
+                        <span class="report-value">${formatCurrency(item.value)}</span>
+                    `;
+                    highValueList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color: #7f8c8d;">ไม่มีสินค้ามูลค่าสูง</span>';
+                highValueList.appendChild(li);
+            }
+        }
+        
+        // แสดงรายงานละเอียด
+        function displayDetailedReport(stats) {
+            const detailedReport = document.getElementById('detailedReport');
+            detailedReport.innerHTML = '';
+            
+            Object.entries(stats.categories).forEach(([category, data]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${category}</td>
+                    <td>${data.count}</td>
+                    <td>${formatCurrency(data.value)}</td>
+                    <td>${formatCurrency(data.cost)}</td>
+                    <td>${formatCurrency(data.profit)}</td>
+                `;
+                detailedReport.appendChild(row);
+            });
+            
+            // เพิ่มแถวรวม
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.style.background = '#f8f9fa';
+            totalRow.innerHTML = `
+                <td>รวมทั้งหมด</td>
+                <td>${stats.totalProducts}</td>
+                <td>${formatCurrency(stats.totalValue)}</td>
+                <td>${formatCurrency(stats.totalCost)}</td>
+                <td>${formatCurrency(stats.potentialProfit)}</td>
+            `;
+            detailedReport.appendChild(totalRow);
+        }
+        
+        // จัดรูปแบบเงิน
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('th-TH', {
+                style: 'currency',
+                currency: 'THB',
+                minimumFractionDigits: 0
+            }).format(amount || 0);
+        }
+        
+        // แสดงข้อความแจ้งเตือน
+        function showAlert(message, type = 'info') {
+            // สร้าง element alert ถ้ายังไม่มี
+            let alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) {
+                alertContainer = document.createElement('div');
+                alertContainer.id = 'alertContainer';
+                alertContainer.style.position = 'fixed';
+                alertContainer.style.top = '20px';
+                alertContainer.style.right = '20px';
+                alertContainer.style.zIndex = '9999';
+                alertContainer.style.maxWidth = '400px';
+                document.body.appendChild(alertContainer);
+            }
+            
+            const alertId = 'alert-' + Date.now();
+            const alertElement = document.createElement('div');
+            alertElement.id = alertId;
+            alertElement.className = `alert alert-${type}`;
+            alertElement.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+                <button class="btn-close" onclick="document.getElementById('${alertId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            alertContainer.appendChild(alertElement);
+            
+            // ลบ alert อัตโนมัติหลังจาก 5 วินาที
+            setTimeout(() => {
+                if (document.getElementById(alertId)) {
+                    document.getElementById(alertId).remove();
+                }
+            }, 5000);
+        }
+        
+        // กรองตามวันที่
+        function filterByDate() {
+            showAlert('การกรองตามวันที่ยังไม่พร้อมใช้งานในเวอร์ชันนี้', 'info');
+        }
+        
+        // รีเซ็ตการกรอง
+        function resetFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            loadReports();
+        }
+        
+        // พิมพ์รายงาน
+        function printReport() {
+            window.print();
+        }
+        
+        // ส่งออก Excel
+        function exportToExcel() {
+            showAlert('การส่งออก Excel ยังไม่พร้อมใช้งานในเวอร์ชันนี้', 'info');
+        }
+        
+        // รีเฟรชรายงาน
+        function refreshReports() {
+            loadReports();
+            showAlert('รีเฟรชข้อมูลรายงานเรียบร้อยแล้ว', 'success');
+        }
+        
+        // Initialize เมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            // แสดงชื่อผู้ใช้
+            const userElement = document.getElementById('currentUser');
+            if (userElement) {
+                userElement.textContent = user.name;
+            }
+            
+            // ตั้งค่าวันที่เริ่มต้นและสิ้นสุด
+            const today = new Date();
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(today.getMonth() - 1);
+            
+            document.getElementById('startDate').valueAsDate = oneMonthAgo;
+            document.getElementById('endDate').valueAsDate = today;
+            
+            // ตรวจสอบสถานะออนไลน์
+            const isOnline = await checkOnlineStatus();
+            
+            // ฟังการเปลี่ยนสถานะเครือข่าย
+            if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
+                window.electronAPI.onOnlineStatusChange((isOnline) => {
+                    updateOnlineStatus(isOnline);
+                });
+            }
+            
+            // ถ้าออนไลน์ให้โหลดข้อมูล
+            if (isOnline) {
+                loadReports();
+            }
+        });
+    </script>
+</body>
+</html>

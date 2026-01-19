@@ -20,15 +20,20 @@ class Product extends Model
         'name',
         'price',
         'cost',
+        'cost_price',
         'stock',
+        'unit',
         'category',
         'subcategory',
+        'main_category',
+        'sub_category',
         'status',
     ];
 
     protected $casts = [
         'price' => 'float',
         'cost' => 'float',
+        'cost_price' => 'float',
         'stock' => 'integer',
     ];
 }
