@@ -9,7 +9,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     login: (credentials) => ipcRenderer.invoke('login', credentials),
     getCategories: () => ipcRenderer.invoke('get-categories'),
     onOnlineStatusChange: (callback) => {
-        window.addEventListener('online', () => callback(true));
-        window.addEventListener('offline', () => callback(false));
+        const handleStatusChange = async () => {
+            const status = await ipcRenderer.invoke('check-online-status');
+            callback(status);
+        };
+        window.addEventListener('online', handleStatusChange);
+        window.addEventListener('offline', handleStatusChange);
     }
 });
