@@ -23,11 +23,18 @@ class Product extends Model
         'cost_price',
         'stock',
         'unit',
+        'size',
         'category',
         'subcategory',
         'main_category',
         'sub_category',
         'status',
+        'last_stock_added',
+        'last_stock_added_at',
+        'expiry_date',
+        'warranty_expiry_date',
+        'storage_location',
+        'sale_location',
     ];
 
     protected $casts = [
@@ -35,5 +42,9 @@ class Product extends Model
         'cost' => 'float',
         'cost_price' => 'float',
         'stock' => 'integer',
+        'last_stock_added' => 'integer',
+        'last_stock_added_at' => 'date',
+        'expiry_date' => 'date',
+        'warranty_expiry_date' => 'date',
     ];
 }

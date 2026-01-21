@@ -90,11 +90,18 @@ class ProductController extends Controller
             'cost_price' => ['nullable', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'unit' => ['nullable', 'string', 'max:50'],
+            'size' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:255'],
             'subcategory' => ['nullable', 'string', 'max:255'],
             'main_category' => ['nullable', 'string', 'max:255'],
             'sub_category' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:255'],
+            'last_stock_added' => ['nullable', 'integer', 'min:0'],
+            'last_stock_added_at' => ['nullable', 'date'],
+            'expiry_date' => ['nullable', 'date'],
+            'warranty_expiry_date' => ['nullable', 'date'],
+            'storage_location' => ['nullable', 'string', 'max:255'],
+            'sale_location' => ['nullable', 'string', 'max:255'],
         ];
 
         if ($allowId) {

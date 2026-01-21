@@ -25,8 +25,24 @@ type User {
 type Product {
   id: ID!
   name: String!
+  barcode: String
   price: Float!
+  cost: Float
+  cost_price: Float
   stock: Int!
+  unit: String
+  size: String
+  category: String
+  subcategory: String
+  main_category: String
+  sub_category: String
+  status: String
+  last_stock_added: Int
+  last_stock_added_at: String
+  expiry_date: String
+  warranty_expiry_date: String
+  storage_location: String
+  sale_location: String
   created_at: DateTime!
   updated_at: DateTime!
 }
