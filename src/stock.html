@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการสต็อกสินค้า - ระบบจัดการสต็อก </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- เพิ่มฟอนต์ไทยจาก Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* สีหลักสำหรับระบบ */
+        :root {
+            --primary: #4A6FA5;
+            --primary-light: #6B8CC6;
+            --primary-dark: #2C497B;
+            --secondary: #757575;
+            --success: #66BB6A;
+            --success-light: #81C784;
+            --success-dark: #4CAF50;
+            --warning: #FFB74D;
+            --warning-light: #FFCC80;
+            --warning-dark: #FF9800;
+            --danger: #EF5350;
+            --danger-light: #E57373;
+            --danger-dark: #D32F2F;
+            --info: #29B6F6;
+            --info-light: #4FC3F7;
+            --info-dark: #0288D1;
+            --dark: #263238;
+            --light: #F5F7FA;
+            --gray: #90A4AE;
+            --border: #E0E0E0;
+            --card-bg: #FFFFFF;
+            
+            /* สีสำหรับภาษา */
+            --lang-thai: #4CAF50;
+            --lang-thai-light: #A5D6A7;
+            --lang-english: #2196F3;
+            --lang-english-light: #90CAF9;
+            
+            /* ตัวแปรสำหรับฟอนต์ */
+            --font-heading: 'Kanit', 'Prompt', 'Sarabun', sans-serif;
+            --font-body: 'Sarabun', 'Prompt', sans-serif;
+            --font-mono: 'SF Mono', 'Consolas', 'Courier New', monospace;
+            --font-size-xs: 0.75rem;     /* 12px */
+            --font-size-sm: 0.875rem;    /* 14px */
+            --font-size-base: 1rem;      /* 16px */
+            --font-size-lg: 1.125rem;    /* 18px */
+            --font-size-xl: 1.25rem;     /* 20px */
+            --font-size-2xl: 1.5rem;     /* 24px */
+            --font-size-3xl: 2rem;       /* 32px */
+            --font-size-4xl: 2.5rem;     /* 40px */
+            
+            /* ตัวแปรสำหรับระยะห่าง */
+            --spacing-xs: 0.25rem;   /* 4px */
+            --spacing-sm: 0.5rem;    /* 8px */
+            --spacing-md: 1rem;      /* 16px */
+            --spacing-lg: 1.5rem;    /* 24px */
+            --spacing-xl: 2rem;      /* 32px */
+            --spacing-2xl: 3rem;     /* 48px */
+            
+            /* ตัวแปรสำหรับความหนาของฟอนต์ */
+            --font-weight-light: 300;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+            
+            /* ตัวแปรสำหรับความสูงของบรรทัด */
+            --line-height-tight: 1.25;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.75;
+        }
+
+        /* Reset และ Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-normal);
+            line-height: var(--line-height-normal);
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: var(--dark);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            min-height: 100vh;
+            padding: var(--spacing-xl);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header - กรอบสี่เหลี่ยมมน */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-radius: 16px;
+            margin-bottom: var(--spacing-xl);
+            box-shadow: 0 6px 18px rgba(74, 111, 165, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin: 0;
+            letter-spacing: -0.5px;
+            line-height: var(--line-height-tight);
+        }
+        
+        .header h1 i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-md);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .user-name {
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: white;
+        }
+        
+        .user-status {
+            font-size: var(--font-size-xs);
+            opacity: 0.9;
+        }
+        
+        /* Summary Cards - กรอบสี่เหลี่ยมมน */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: var(--spacing-lg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-light);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .card.success::before {
+            background: linear-gradient(90deg, var(--success), var(--success-light));
+        }
+        
+        .card.warning::before {
+            background: linear-gradient(90deg, var(--warning), var(--warning-light));
+        }
+        
+        .card.danger::before {
+            background: linear-gradient(90deg, var(--danger), var(--danger-light));
+        }
+        
+        .card h3 {
+            font-family: var(--font-heading);
+            color: var(--dark);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: var(--font-weight-semibold);
+            letter-spacing: 0.3px;
+        }
+        
+        .card h3 i {
+            font-size: var(--font-size-lg);
+        }
+        
+        .card p {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            margin: 0 0 var(--spacing-xs) 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: var(--line-height-tight);
+        }
+        
+        .card.success p {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .card.warning p {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .card.danger p {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .form-hint {
+            color: var(--gray);
+            font-size: var(--font-size-xs);
+            margin-top: var(--spacing-xs);
+            display: block;
+            font-weight: var(--font-weight-medium);
+            letter-spacing: 0.2px;
+        }
+        
+        /* Search Box - กรอบสี่เหลี่ยมมน */
+        .search-box {
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            gap: var(--spacing-md);
+            background: var(--card-bg);
+            padding: var(--spacing-lg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-size: var(--font-size-base);
+            transition: all 0.3s;
+            background: var(--light);
+            color: var(--dark);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+            background: white;
+        }
+        
+        .search-box input::placeholder {
+            color: var(--gray);
+            font-weight: var(--font-weight-normal);
+        }
+        
+        /* Table Container - กรอบสี่เหลี่ยมมน */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-top: var(--spacing-lg);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1300px;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        
+        th {
+            padding: var(--spacing-md) var(--spacing-sm);
+            text-align: left;
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-xs);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--primary-dark);
+            white-space: nowrap;
+            height: 60px;
+            vertical-align: middle;
+        }
+        
+        tbody tr {
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        tbody tr:hover {
+            background: linear-gradient(to right, rgba(74, 111, 165, 0.05), rgba(74, 111, 165, 0.02));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        td {
+            padding: var(--spacing-md) var(--spacing-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+            border-bottom: 1px solid var(--border);
+            font-size: var(--font-size-sm);
+            vertical-align: middle;
+            height: 68px;
+        }
+        
+        /* Buttons - กรอบสี่เหลี่ยมมน */
+        .btn {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            box-shadow: 0 6px 12px rgba(74, 111, 165, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #757575, #616161);
+            color: white;
+            box-shadow: 0 4px 8px rgba(117, 117, 117, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #616161, #424242);
+            box-shadow: 0 6px 12px rgba(117, 117, 117, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-logout {
+            background: linear-gradient(135deg, #EF5350, #F44336);
+            color: white;
+            box-shadow: 0 4px 8px rgba(239, 83, 80, 0.2);
+        }
+        
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #F44336, #D32F2F);
+            box-shadow: 0 6px 12px rgba(239, 83, 80, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Navigation - กรอบสี่เหลี่ยมมน */
+        .nav {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark);
+            font-size: var(--font-size-sm);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            letter-spacing: 0.3px;
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.3);
+        }
+        
+        /* Badges - กรอบสี่เหลี่ยมมน */
+        .badge {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 20px;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.2px;
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, var(--success-light), var(--success));
+            color: white;
+        }
+        
+        .badge-warning {
+            background: linear-gradient(135deg, var(--warning-light), var(--warning));
+            color: white;
+        }
+        
+        .badge-danger {
+            background: linear-gradient(135deg, var(--danger-light), var(--danger));
+            color: white;
+        }
+        
+        .badge-info {
+            background: linear-gradient(135deg, var(--info-light), var(--info));
+            color: white;
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: var(--spacing-xs);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        .status-in-stock {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            animation: pulse-green 2s infinite;
+        }
+        
+        .status-low-stock {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            animation: pulse-orange 2s infinite;
+        }
+        
+        .status-danger {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            animation: pulse-red 2s infinite;
+        }
+        
+        .status-out-of-stock {
+            background: linear-gradient(135deg, #9E9E9E, #757575);
+            animation: pulse-gray 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(102, 187, 106, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 187, 106, 0); }
+        }
+        
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(255, 183, 77, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 183, 77, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 183, 77, 0); }
+        }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 83, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0); }
+        }
+        
+        @keyframes pulse-gray {
+            0% { box-shadow: 0 0 0 0 rgba(158, 158, 158, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(158, 158, 158, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(158, 158, 158, 0); }
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .action-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.2px;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .action-btn.view {
+            background: linear-gradient(135deg, var(--info-light), var(--info));
+        }
+        
+        .action-btn.edit {
+            background: linear-gradient(135deg, var(--warning-light), var(--warning));
+        }
+        
+        .action-btn.delete {
+            background: linear-gradient(135deg, var(--danger-light), var(--danger));
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 20px;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.2px;
+        }
+        
+        .status-badge.offline {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            color: white;
+        }
+        
+        /* Settings Menu - กรอบสี่เหลี่ยมมน */
+        .settings-menu {
+            position: relative;
+        }
+        
+        .settings-dropdown {
+            position: fixed;
+            background: var(--card-bg);
+            min-width: 240px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            animation: fadeInDown 0.2s ease;
+            display: none;
+            top: 100px;
+            right: 30px;
+        }
+        
+        .settings-dropdown.show {
+            display: block;
+        }
+        
+        .settings-dropdown a {
+            display: block;
+            padding: var(--spacing-md) var(--spacing-lg);
+            text-decoration: none;
+            color: var(--dark);
+            font-family: var(--font-body);
+            font-weight: var(--font-weight-medium);
+            font-size: var(--font-size-sm);
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+        }
+        
+        .settings-dropdown a:hover {
+            background: linear-gradient(to right, rgba(74, 111, 165, 0.1), transparent);
+            color: var(--primary);
+        }
+        
+        .settings-dropdown a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0;
+        }
+        
+        /* Language Switcher */
+        .language-switcher {
+            display: flex;
+            gap: 4px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            padding: 4px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .language-option {
+            padding: 8px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            transition: all 0.3s;
+            text-align: center;
+            min-width: 90px;
+            border: 2px solid transparent;
+        }
+        
+        .language-option.thai {
+            background: linear-gradient(135deg, var(--lang-thai-light), var(--lang-thai));
+            color: white;
+        }
+        
+        .language-option.english {
+            background: linear-gradient(135deg, var(--lang-english-light), var(--lang-english));
+            color: white;
+        }
+        
+        .language-option.active {
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+            transform: scale(1.05);
+        }
+        
+        .language-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Spinner */
+        .spinner {
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: var(--spacing-lg) auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        
+        /* Auto Clear Badge */
+        .auto-clear-badge {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            background: linear-gradient(135deg, #FF8A65, #FF7043);
+            color: white;
+            margin-left: var(--spacing-xs);
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(255, 138, 101, 0.2);
+            letter-spacing: 0.2px;
+        }
+        
+        /* Text Styles */
+        .barcode-text {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xs);
+            color: var(--dark);
+            letter-spacing: 1px;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .product-name {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-semibold);
+            line-height: var(--line-height-tight);
+        }
+        
+        .price-text {
+            font-family: var(--font-heading);
+            color: var(--success);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            letter-spacing: 0.3px;
+        }
+        
+        .cost-text {
+            font-family: var(--font-heading);
+            color: var(--gray);
+            font-weight: var(--font-weight-medium);
+            font-size: var(--font-size-sm);
+        }
+        
+        .quantity-text {
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-lg);
+            letter-spacing: 0.5px;
+        }
+        
+        /* Simple Text Styles (แทนที่แถบสี) */
+        .category-text {
+            font-family: var(--font-body);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .unit-text {
+            font-family: var(--font-body);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .min-order-text {
+            font-family: var(--font-body);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        /* แถบสีจุดวางสินค้า */
+        .location-tag {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            background: linear-gradient(135deg, #9575CD, #7E57C2);
+            color: white;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(149, 117, 205, 0.2);
+            letter-spacing: 0.5px;
+        }
+        
+        .expiry-text {
+            font-family: var(--font-body);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .warranty-text {
+            font-family: var(--font-body);
+            font-size: var(--font-size-sm);
+            color: var(--dark);
+            font-weight: var(--font-weight-medium);
+        }
+        
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-20 {
+            margin-top: var(--spacing-lg);
+        }
+        
+        .offline-notice {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 8px;
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            margin-left: var(--spacing-sm);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            body {
+                font-size: var(--font-size-sm);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-md);
+                font-size: var(--font-size-sm);
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
+                padding: var(--spacing-lg);
+            }
+            
+            .header h1 {
+                font-size: var(--font-size-xl);
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+            
+            .nav-btn {
+                justify-content: center;
+                padding: var(--spacing-md);
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .settings-dropdown {
+                position: fixed;
+                right: var(--spacing-md);
+                left: var(--spacing-md);
+                top: 100px;
+                max-width: none;
+                width: auto;
+            }
+            
+            .table-container {
+                border-radius: 12px;
+            }
+            
+            .card p {
+                font-size: var(--font-size-2xl);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: var(--font-size-lg);
+            }
+            
+            .header-right {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .user-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .card {
+                padding: var(--spacing-md);
+            }
+            
+            .card p {
+                font-size: var(--font-size-xl);
+            }
+            
+            .settings-dropdown {
+                right: var(--spacing-sm);
+                left: var(--spacing-sm);
+                top: 90px;
+            }
+            
+            th, td {
+                padding: var(--spacing-sm);
+            }
+        }
+        
+        /* Focus Styles */
+        *:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+            border-radius: 4px;
+        }
+        
+        /* Selection */
+        ::selection {
+            background: rgba(74, 111, 165, 0.3);
+            color: white;
+        }
+        
+        /* Letter Spacing สำหรับภาษาไทย */
+        th, td, .btn, .nav-btn, .action-btn, .badge, .status-badge {
+            letter-spacing: 0.02em;
+        }
+        
+        /* เพิ่มความคมชัดให้กับตัวหนังสือ */
+        body, .header, .card, table, .btn, .nav-btn {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* จัดรูปแบบสำหรับข้อความยาว */
+        td {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 200px;
+        }
+        
+        /* เพิ่มเงาให้กับตัวหนังสือในบางจุด */
+        .header h1, .card h3, th, .btn, .nav-btn {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ปรับความสูงของบรรทัดในตาราง */
+        tbody tr {
+            line-height: var(--line-height-normal);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-boxes"></i> จัดการสต็อกสินค้า 
+                    </span>
+                </h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-section">
+                    <div class="user-info-text">
+                        <div class="user-name" id="currentUser">ผู้ดูแลระบบ</div>
+                        <div class="user-status">
+                            <!-- แสดงสถานะออฟไลน์เท่านั้น -->
+                            <span id="onlineStatus" class="status-badge offline">
+                                <i class="fas fa-wifi-slash"></i> ออฟไลน์
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings Menu -->
+                <div class="settings-menu">
+                    <button class="btn btn-secondary" onclick="toggleSettings()" id="settingsButton">
+                        <i class="fas fa-cog"></i> ตั้งค่า
+                    </button>
+                    <div id="settingsDropdown" class="settings-dropdown">
+                        <!-- เปลี่ยนภาษาไทย-อังกฤษ -->
+                        <div style="padding: var(--spacing-md) var(--spacing-lg);">
+                            <div style="font-family: var(--font-heading); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--dark); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <i class="fas fa-language" style="color: var(--primary);"></i> เปลี่ยนภาษา
+                            </div>
+                            <div class="language-switcher">
+                                <div class="language-option thai active" onclick="changeLanguage('th')">
+                                    <i class="fas fa-flag"></i> ไทย
+                                </div>
+                                <div class="language-option english" onclick="changeLanguage('en')">
+                                    <i class="fas fa-flag-usa"></i> อังกฤษ
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="logout()" style="color: var(--danger-dark); font-weight: var(--font-weight-semibold);">
+                            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn active">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 ค้นหาสินค้า (รหัส, ชื่อ, บาร์โค้ด)" 
+                   onkeypress="if(event.key === 'Enter') searchProducts()">
+            <button class="btn btn-primary" onclick="searchProducts()">
+                <i class="fas fa-search"></i> ค้นหา
+            </button>
+            <button class="btn btn-secondary" onclick="clearSearch()">
+                <i class="fas fa-times"></i> ล้าง
+                <span class="auto-clear-badge">อัตโนมัติ</span>
+            </button>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card">
+                <h3><i class="fas fa-box" style="color: var(--primary);"></i> จำนวนสินค้า</h3>
+                <p id="productCount">0</p>
+                <span class="form-hint">รายการทั้งหมดในระบบ</span>
+            </div>
+            <div class="card success">
+                <h3><i class="fas fa-money-bill-wave" style="color: var(--success);"></i> มูลค่าสต็อก</h3>
+                <p id="stockValue">฿0.00</p>
+                <span class="form-hint">มูลค่ารวมทั้งสิ้น</span>
+            </div>
+            <div class="card warning">
+                <h3><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> สินค้าใกล้หมด</h3>
+                <p id="lowStock">0</p>
+                <span class="form-hint">ต้องการเติมสต็อก</span>
+            </div>
+            <div class="card danger">
+                <h3><i class="fas fa-times-circle" style="color: var(--danger);"></i> สินค้าหมด</h3>
+                <p id="outOfStock">0</p>
+                <span class="form-hint">หมดสต็อกแล้ว</span>
+            </div>
+        </div>
+        
+        <!-- Product Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="120">บาร์โค้ด</th>
+                        <th width="500">ชื่อสินค้า</th>
+                        <th width="100">หมวดหมู่</th>
+                        <th width="100">หน่วยฐาน</th>
+                        <th width="100">ราคาขาย</th>
+                        <th width="100">ต้นทุน</th>
+                        <th width="120">จุดสั่งขั้นต่ำ</th>
+                        <th width="80">จำนวน</th>
+                        <th width="120">จุดวางสินค้า</th>
+                        <th width="100">สถานะสินค้า</th>
+                        <th width="120">วันหมดอายุ</th>
+                        <th width="140">วันรับประกันสินค้า</th>
+                        <th width="150">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    <tr>
+                        <td colspan="13" class="text-center" style="padding: 40px;">
+                            <div class="spinner"></div>
+                            <p style="margin-top: var(--spacing-md); color: var(--gray); font-weight: var(--font-weight-medium);">
+                                กำลังโหลดข้อมูลสินค้า...
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        // ข้อมูลสินค้าตัวอย่าง 4 รายการ
+        const sampleProducts = [
+            {
+                barcode: "8901234567890",
+                name: "นมกล่อง UHT รสจืด",
+                category: "เครื่องดื่ม",
+                unit: "แพ็ค",
+                price: 150.00,
+                cost: 120.00,
+                minOrder: 20,
+                quantity: 45,
+                location: "A-01-02",
+                status: "in-stock",
+                expiryDate: "2024-12-31",
+                warrantyDate: "2024-06-30"
+            },
+            {
+                barcode: "8901234567891",
+                name: "น้ำปลาแท้ ซีฟู้ด",
+                category: "เครื่องปรุง",
+                unit: "ขวด",
+                price: 85.00,
+                cost: 65.00,
+                minOrder: 30,
+                quantity: 12,
+                location: "B-03-01",
+                status: "low-stock",
+                expiryDate: "2025-03-15",
+                warrantyDate: "2024-09-30"
+            },
+            {
+                barcode: "8901234567892",
+                name: "ยาสีฟันคอลเกต 125g",
+                category: "ของใช้ในบ้าน",
+                unit: "หลอด",
+                price: 75.00,
+                cost: 55.00,
+                minOrder: 50,
+                quantity: 0,
+                location: "C-02-04",
+                status: "out-of-stock",
+                expiryDate: "2026-08-20",
+                warrantyDate: "2025-12-31"
+            },
+            {
+                barcode: "8901234567893",
+                name: "แบตเตอรี่ AA อัลคาไลน์",
+                category: "เครื่องใช้ไฟฟ้า",
+                unit: "ชุด",
+                price: 120.00,
+                cost: 90.00,
+                minOrder: 40,
+                quantity: 8,
+                location: "D-01-03",
+                status: "danger",
+                expiryDate: "2027-05-10",
+                warrantyDate: "2026-05-10"
+            }
+        ];
+
+        // ฟังก์ชันจัดรูปแบบตัวเลขเป็นสกุลเงินไทย
+        function formatCurrency(amount) {
+            return '฿' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // ฟังก์ชันคำนวณวันที่เหลือจนถึงวันหมดอายุ
+        function getDaysUntilExpiry(expiryDate) {
+            const today = new Date();
+            const expiry = new Date(expiryDate);
+            const diffTime = expiry - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) return '<span style="color: var(--danger); font-weight: var(--font-weight-semibold);">หมดอายุแล้ว</span>';
+            if (diffDays < 30) return `<span style="color: var(--danger); font-weight: var(--font-weight-semibold);">${diffDays} วัน</span>`;
+            if (diffDays < 90) return `<span style="color: var(--warning); font-weight: var(--font-weight-semibold);">${diffDays} วัน</span>`;
+            return `<span style="color: var(--success); font-weight: var(--font-weight-semibold);">${diffDays} วัน</span>`;
+        }
+
+        // ฟังก์ชันสร้างแถวข้อมูลสินค้าในตาราง
+        function createProductRow(product) {
+            const expiryDisplay = getDaysUntilExpiry(product.expiryDate);
+            let statusClass = '';
+            let statusText = '';
+            let icon = '';
+            
+            // กำหนดสถานะตามจำนวนคงเหลือ
+            if (product.quantity === 0) {
+                statusClass = 'status-out-of-stock';
+                statusText = 'หมดสต็อค';
+                icon = '<i class="fas fa-times-circle"></i>';
+            } else if (product.quantity <= product.minOrder * 0.3) {
+                statusClass = 'status-danger';
+                statusText = 'ใกล้หมด';
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+            } else if (product.quantity <= product.minOrder * 0.3) {
+                statusClass = 'status-low-stock';
+                statusText = 'ใกล้หมด';
+                icon = '<i class="fas fa-exclamation-triangle"></i>';
+            } else {
+                statusClass = 'status-in-stock';
+                statusText = 'พร้อมจำหน่าย';
+                icon = '<i class="fas fa-check-circle"></i>';
+            }
+            
+            return `
+                <tr>
+                    <td>
+                        <span class="barcode-text">${product.barcode}</span>
+                    </td>
+                    <td>
+                        <span class="product-name">${product.name}</span>
+                    </td>
+                    <td>
+                        <span class="category-text">${product.category}</span>
+                    </td>
+                    <td>
+                        <span class="unit-text">${product.unit}</span>
+                    </td>
+                    <td>
+                        <span class="price-text">${formatCurrency(product.price)}</span>
+                    </td>
+                    <td>
+                        <span class="cost-text">${formatCurrency(product.cost)}</span>
+                    </td>
+                    <td>
+                        <span class="min-order-text">${product.minOrder} ${product.unit}</span>
+                    </td>
+                    <td>
+                        <span class="quantity-text ${product.quantity === 0 ? 'text-danger' : (product.quantity < product.minOrder ? 'text-warning' : 'text-success')}">
+                            ${product.quantity}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="location-tag">${product.location}</span>
+                    </td>
+                    <td>
+                        <span class="status-badge ${statusText === 'พร้อมจำหน่าย' ? 'online' : 'offline'}">
+                            <span class="status-indicator ${statusClass}"></span>
+                            ${icon} ${statusText}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="expiry-text">${new Date(product.expiryDate).toLocaleDateString('th-TH')}</span>
+                        <div style="font-size: var(--font-size-xs); margin-top: 4px; font-weight: var(--font-weight-medium);">${expiryDisplay}</div>
+                    </td>
+                    <td>
+                        <span class="warranty-text">${new Date(product.warrantyDate).toLocaleDateString('th-TH')}</span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view" onclick="viewProduct('${product.barcode}')">
+                                <i class="fas fa-eye"></i> ดู
+                            </button>
+                            <button class="action-btn edit" onclick="editProduct('${product.barcode}')">
+                                <i class="fas fa-edit"></i> แก้ไข
+                            </button>
+                            <button class="action-btn delete" onclick="deleteProduct('${product.barcode}')">
+                                <i class="fas fa-trash"></i> ลบ
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ฟังก์ชันอัพเดตข้อมูลสรุป
+        function updateSummary(products) {
+            const productCount = products.length;
+            const stockValue = products.reduce((sum, product) => sum + (product.cost * product.quantity), 0);
+            const lowStock = products.filter(p => p.status === 'low-stock' || p.status === 'danger').length;
+            const outOfStock = products.filter(p => p.status === 'out-of-stock').length;
+            
+            document.getElementById('productCount').textContent = productCount;
+            document.getElementById('stockValue').textContent = formatCurrency(stockValue);
+            document.getElementById('lowStock').textContent = lowStock;
+            document.getElementById('outOfStock').textContent = outOfStock;
+        }
+
+        // ฟังก์ชันแสดงข้อมูลสินค้าในตาราง
+        function renderProductTable(products) {
+            const tableBody = document.getElementById('productTableBody');
+            
+            if (products.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="13" class="text-center" style="padding: 40px;">
+                            <i class="fas fa-box-open" style="font-size: 48px; color: var(--gray); margin-bottom: 15px;"></i>
+                            <p style="color: var(--gray); font-weight: var(--font-weight-medium);">
+                                ไม่พบข้อมูลสินค้า
+                            </p>
+                            <button class="btn btn-primary mt-20" onclick="window.location.href='add-product.html'">
+                                <i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                let tableHTML = '';
+                products.forEach(product => {
+                    tableHTML += createProductRow(product);
+                });
+                tableBody.innerHTML = tableHTML;
+            }
+            
+            updateSummary(products);
+        }
+
+        // ฟังก์ชันค้นหาสินค้า
+        function searchProducts() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchInput) {
+                renderProductTable(sampleProducts);
+                return;
+            }
+            
+            const filteredProducts = sampleProducts.filter(product => 
+                product.name.toLowerCase().includes(searchInput) ||
+                product.barcode.includes(searchInput) ||
+                product.category.toLowerCase().includes(searchInput)
+            );
+            
+            renderProductTable(filteredProducts);
+        }
+
+        // ฟังก์ชันล้างการค้นหา
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            renderProductTable(sampleProducts);
+        }
+
+        // ฟังก์ชันสลับการแสดงเมนูตั้งค่า
+        function toggleSettings() {
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
+            
+            // ปิดเมนูเมื่อคลิกที่อื่น
+            if (dropdown.classList.contains('show')) {
+                document.addEventListener('click', closeSettingsOnClickOutside);
+            } else {
+                document.removeEventListener('click', closeSettingsOnClickOutside);
+            }
+        }
+
+        function closeSettingsOnClickOutside(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            const button = document.getElementById('settingsButton');
+            
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.remove('show');
+                document.removeEventListener('click', closeSettingsOnClickOutside);
+            }
+        }
+
+        // ฟังก์ชันเปลี่ยนภาษา
+        function changeLanguage(lang) {
+            // อัพเดตปุ่มที่ active ใน switcher
+            const thOption = document.querySelector('.language-option.thai');
+            const enOption = document.querySelector('.language-option.english');
+            
+            if (lang === 'th') {
+                thOption.classList.add('active');
+                enOption.classList.remove('active');
+                
+                // อัพเดตข้อความบางส่วนเป็นภาษาไทย
+                document.querySelector('.header h1').innerHTML = '<i class="fas fa-boxes"></i> จัดการสต็อกสินค้า </span>';
+                document.getElementById('settingsButton').innerHTML = '<i class="fas fa-cog"></i> ตั้งค่า';
+                document.querySelector('.settings-dropdown a:last-child').innerHTML = '<i class="fas fa-sign-out-alt"></i> ออกจากระบบ';
+                
+                alert('เปลี่ยนภาษาเป็นไทยเรียบร้อย');
+            } else {
+                enOption.classList.add('active');
+                thOption.classList.remove('active');
+                
+                // อัพเดตข้อความบางส่วนเป็นภาษาอังกฤษ
+                document.querySelector('.header h1').innerHTML = '<i class="fas fa-boxes"></i> Stock Management <span class="offline-notice"><i class="fas fa-wifi-slash"></i> Offline Mode</span>';
+                document.getElementById('settingsButton').innerHTML = '<i class="fas fa-cog"></i> Settings';
+                document.querySelector('.settings-dropdown a:last-child').innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                
+                alert('Language changed to English');
+            }
+            
+            document.getElementById('settingsDropdown').classList.remove('show');
+        }
+
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
+                // ในสถานการณ์จริงควรมีการ redirect ไปยังหน้า login
+                // สำหรับตัวอย่างนี้จะแสดงข้อความและรีเฟรชหน้า
+                alert('ออกจากระบบเรียบร้อยแล้ว กำลังกลับไปยังหน้า Login...');
+                // สมมติว่าเรา redirect ไปยังหน้า login.html
+                setTimeout(() => {
+                    // ในสถานการณ์จริงควรใช้ window.location.href = 'login.html';
+                    // สำหรับตัวอย่างนี้จะแสดงข้อความแทน
+                    document.body.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; gap: 20px;">
+                            <h1 style="color: var(--primary);">ออกจากระบบเรียบร้อย</h1>
+                            <p>กำลังนำคุณไปยังหน้า Login...</p>
+                            <button class="btn btn-primary" onclick="window.location.reload()">
+                                <i class="fas fa-arrow-left"></i> กลับสู่หน้าหลัก
+                            </button>
+                        </div>
+                    `;
+                }, 1500);
+            }
+            document.getElementById('settingsDropdown').classList.remove('show');
+        }
+
+        // ฟังก์ชันดูข้อมูลสินค้า
+        function viewProduct(barcode) {
+            const product = sampleProducts.find(p => p.barcode === barcode);
+            if (product) {
+                alert(`ดูข้อมูลสินค้า: ${product.name}\nบาร์โค้ด: ${product.barcode}\nจำนวนคงเหลือ: ${product.quantity} ${product.unit}\nสถานะ: ${product.status === 'in-stock' ? 'พร้อมจำหน่าย' : product.status === 'low-stock' ? 'สต็อคต่ำ' : product.status === 'danger' ? 'ใกล้หมด' : 'หมดสต็อค'}`);
+            }
+        }
+
+        // ฟังก์ชันแก้ไขสินค้า
+        function editProduct(barcode) {
+            const product = sampleProducts.find(p => p.barcode === barcode);
+            if (product) {
+                alert(`แก้ไขสินค้า: ${product.name}\nบาร์โค้ด: ${product.barcode}`);
+            }
+        }
+
+        // ฟังก์ชันลบสินค้า
+        function deleteProduct(barcode) {
+            if (confirm('คุณแน่ใจว่าต้องการลบสินค้านี้?')) {
+                alert(`ลบสินค้าบาร์โค้ด ${barcode} เรียบร้อยแล้ว`);
+            }
+        }
+
+        // โหลดข้อมูลเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            // ตั้งค่าสถานะออฟไลน์เท่านั้น
+            const statusElement = document.getElementById('onlineStatus');
+            statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> ออฟไลน์';
+            statusElement.className = 'status-badge offline';
+            
+            // แสดงข้อมูลสินค้าทั้ง 4 รายการ
+            setTimeout(() => {
+                renderProductTable(sampleProducts);
+            }, 1000);
+            
+            // ตั้งค่าการค้นหาแบบ real-time
+            document.getElementById('searchInput').addEventListener('input', function() {
+                searchProducts();
+            });
+            
+            // ซ่อน dropdown เมื่อกด ESC
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    document.getElementById('settingsDropdown').classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

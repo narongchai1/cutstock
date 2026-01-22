@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงาน - ระบบจัดการสต็อก</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/reports.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-chart-bar"></i> รายงานระบบสต็อก</h1>
+            <div class="user-info">
+                <span id="currentUser" style="font-weight: 600;"></span>
+                <span id="onlineStatus" class="status-badge offline">
+                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                </span>
+                <button class="btn btn-sm btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='reports.html'">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- เนื้อหารายงาน (แสดงเฉพาะเมื่อออนไลน์) -->
+        <div id="onlineReports" style="display: none;">
+            <!-- สรุปยอดรวม -->
+            <div class="report-header">
+                <h2><i class="fas fa-chart-pie"></i> สรุปภาพรวม</h2>
+                <div class="date-filter">
+                    <input type="date" id="startDate">
+                    <span>ถึง</span>
+                    <input type="date" id="endDate">
+                    <button class="btn btn-sm btn-primary" onclick="filterByDate()">
+                        <i class="fas fa-filter"></i> กรอง
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="resetFilter()">
+                        <i class="fas fa-redo"></i> รีเซ็ต
+                    </button>
+                </div>
+            </div>
+            
+            <!-- สรุปยอด -->
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h4>สินค้าทั้งหมด</h4>
+                    <div class="value" id="totalProducts">0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>มูลค่าสต็อก</h4>
+                    <div class="value" id="totalValue">฿0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>กำไรที่คาดการณ์</h4>
+                    <div class="value success" id="potentialProfit">฿0</div>
+                </div>
+                <div class="summary-item">
+                    <h4>สินค้าหมด</h4>
+                    <div class="value danger" id="outOfStockCount">0</div>
+                </div>
+            </div>
+            
+            <!-- กราฟและรายงาน -->
+            <div class="reports-container">
+                <!-- กราฟสถานะสินค้า -->
+                <div class="report-card">
+                    <h3><i class="fas fa-boxes"></i> สถานะสินค้า</h3>
+                    <div class="chart-container">
+                        <canvas id="stockStatusChart"></canvas>
+                    </div>
+                    <ul class="report-list" id="stockStatusList">
+                        <!-- แสดงสถานะสินค้า -->
+                    </ul>
+                </div>
+                
+                <!-- กราฟหมวดหมู่ -->
+                <div class="report-card">
+                    <h3><i class="fas fa-tags"></i> สินค้าตามหมวดหมู่</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <ul class="report-list" id="categoryList">
+                        <!-- แสดงหมวดหมู่ -->
+                    </ul>
+                </div>
+                
+                <!-- รายการสินค้าขายดี -->
+                <div class="report-card">
+                    <h3><i class="fas fa-fire"></i> สินค้าใกล้หมด</h3>
+                    <ul class="report-list" id="lowStockList">
+                        <!-- แสดงสินค้าใกล้หมด -->
+                    </ul>
+                </div>
+                
+                <!-- สินค้ามูลค่าสูงสุด -->
+                <div class="report-card">
+                    <h3><i class="fas fa-gem"></i> สินค้ามูลค่าสูง</h3>
+                    <ul class="report-list" id="highValueList">
+                        <!-- แสดงสินค้ามูลค่าสูง -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- รายงานละเอียด -->
+            <div class="report-card mt-20">
+                <h3><i class="fas fa-list"></i> รายงานสรุป</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>หมวดหมู่</th>
+                                <th>จำนวนสินค้า</th>
+                                <th>มูลค่ารวม</th>
+                                <th>ต้นทุนรวม</th>
+                                <th>กำไรที่คาดการณ์</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedReport">
+                            <!-- แสดงรายงานละเอียด -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- ปุ่มดำเนินการ -->
+            <div class="report-actions">
+                <button class="btn btn-success" onclick="printReport()">
+                    <i class="fas fa-print"></i> พิมพ์รายงาน
+                </button>
+                <button class="btn btn-primary" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> ส่งออก Excel
+                </button>
+                <button class="btn btn-info" onclick="refreshReports()">
+                    <i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล
+                </button>
+            </div>
+        </div>
+        
+        <!-- ข้อความเมื่อออฟไลน์ -->
+        <div id="offlineMessage" class="offline-message">
+            <i class="fas fa-wifi-slash"></i>
+            <h2>ไม่สามารถแสดงรายงานได้</h2>
+            <p>โหมดรายงานสามารถใช้งานได้เฉพาะเมื่อเชื่อมต่ออินเทอร์เน็ตเท่านั้น</p>
+            <p>กรุณาเชื่อมต่ออินเทอร์เน็ตเพื่อดูรายงาน</p>
+            <button class="btn btn-primary mt-20" onclick="window.location.href='stock.html'">
+                <i class="fas fa-arrow-left"></i> กลับไปหน้าสต็อก
+            </button>
+        </div>
+    </div>
+    
+    <!-- Include JavaScript files -->
+    <script src="js/reports.js"></script>
+</body>
+</html>

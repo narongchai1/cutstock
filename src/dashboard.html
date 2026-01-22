@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ด - ระบบจัดการสต็อกสินค้า</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* สีหลักสำหรับระบบ */
+        :root {
+            --primary: #4A6FA5;
+            --primary-light: #6B8CC6;
+            --primary-dark: #2C497B;
+            --secondary: #757575;
+            --success: #66BB6A;
+            --success-light: #81C784;
+            --success-dark: #4CAF50;
+            --warning: #FFB74D;
+            --warning-light: #FFCC80;
+            --warning-dark: #FF9800;
+            --danger: #EF5350;
+            --danger-light: #E57373;
+            --danger-dark: #D32F2F;
+            --info: #29B6F6;
+            --info-light: #4FC3F7;
+            --info-dark: #0288D1;
+            --dark: #263238;
+            --light: #F5F7FA;
+            --gray: #90A4AE;
+            --border: #E0E0E0;
+            --card-bg: #FFFFFF;
+            
+            /* ตัวแปรสำหรับฟอนต์ */
+            --font-heading: 'Kanit', 'Prompt', 'Sarabun', sans-serif;
+            --font-body: 'Sarabun', 'Prompt', sans-serif;
+            --font-mono: 'SF Mono', 'Consolas', 'Courier New', monospace;
+            --font-size-xs: 0.75rem;     /* 12px */
+            --font-size-sm: 0.875rem;    /* 14px */
+            --font-size-base: 1rem;      /* 16px */
+            --font-size-lg: 1.125rem;    /* 18px */
+            --font-size-xl: 1.25rem;     /* 20px */
+            --font-size-2xl: 1.5rem;     /* 24px */
+            --font-size-3xl: 2rem;       /* 32px */
+            --font-size-4xl: 2.5rem;     /* 40px */
+            
+            /* ตัวแปรสำหรับระยะห่าง */
+            --spacing-xs: 0.25rem;   /* 4px */
+            --spacing-sm: 0.5rem;    /* 8px */
+            --spacing-md: 1rem;      /* 16px */
+            --spacing-lg: 1.5rem;    /* 24px */
+            --spacing-xl: 2rem;      /* 32px */
+            --spacing-2xl: 3rem;     /* 48px */
+            
+            /* ตัวแปรสำหรับน้ำหนักฟอนต์ */
+            --font-weight-light: 300;
+            --font-weight-regular: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--font-size-base);
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: var(--spacing-xl);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-radius: 16px;
+            margin-bottom: var(--spacing-xl);
+            box-shadow: 0 6px 18px rgba(74, 111, 165, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .header h1 i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-md);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .user-name {
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: white;
+        }
+        
+        .user-status {
+            font-size: var(--font-size-xs);
+            opacity: 0.9;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 20px;
+            font-family: var(--font-heading);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .status-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-badge.online {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+        }
+        
+        .status-badge.offline {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            color: white;
+        }
+        
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark);
+            font-size: var(--font-size-sm);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            letter-spacing: 0.3px;
+            border: none;
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.2);
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.3);
+        }
+        
+        /* Nav Link (แบบ a tag) */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md) var(--spacing-xl);
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            font-family: var(--font-heading);
+            font-weight: var(--font-weight-semibold);
+            color: var(--dark);
+            font-size: var(--font-size-sm);
+            text-decoration: none;
+            transition: all 0.3s;
+            letter-spacing: 0.3px;
+        }
+        
+        .nav-link:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.2);
+            text-decoration: none;
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.3);
+        }
+        
+        /* Dashboard Container */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            padding: var(--spacing-xl);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .stat-card.primary::before {
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+        
+        .stat-card.success::before {
+            background: linear-gradient(90deg, var(--success), var(--success-light));
+        }
+        
+        .stat-card.warning::before {
+            background: linear-gradient(90deg, var(--warning), var(--warning-light));
+        }
+        
+        .stat-card.danger::before {
+            background: linear-gradient(90deg, var(--danger), var(--danger-light));
+        }
+        
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .stat-card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+        }
+        
+        .stat-card.primary .stat-card-icon {
+            background: linear-gradient(135deg, rgba(74, 111, 165, 0.1), rgba(107, 140, 198, 0.1));
+            color: var(--primary);
+        }
+        
+        .stat-card.success .stat-card-icon {
+            background: linear-gradient(135deg, rgba(102, 187, 106, 0.1), rgba(129, 199, 132, 0.1));
+            color: var(--success);
+        }
+        
+        .stat-card.warning .stat-card-icon {
+            background: linear-gradient(135deg, rgba(255, 183, 77, 0.1), rgba(255, 204, 128, 0.1));
+            color: var(--warning);
+        }
+        
+        .stat-card.danger .stat-card-icon {
+            background: linear-gradient(135deg, rgba(239, 83, 80, 0.1), rgba(229, 115, 115, 0.1));
+            color: var(--danger);
+        }
+        
+        .stat-card-value {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            margin: var(--spacing-sm) 0;
+            line-height: 1;
+        }
+        
+        .stat-card.primary .stat-card-value {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card.success .stat-card-value {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card.warning .stat-card-value {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card.danger .stat-card-value {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card-title {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-sm);
+            color: var(--gray);
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .stat-card-description {
+            font-size: var(--font-size-sm);
+            color: var(--gray);
+            line-height: 1.5;
+            margin-top: var(--spacing-sm);
+        }
+        
+        .stat-card-change {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            margin-top: var(--spacing-sm);
+        }
+        
+        .change-positive {
+            color: var(--success);
+        }
+        
+        .change-negative {
+            color: var(--danger);
+        }
+        
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-xl);
+        }
+        
+        .chart-card {
+            background: var(--card-bg);
+            padding: var(--spacing-xl);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .chart-title {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(245, 245, 245, 0.8), rgba(232, 232, 232, 0.8));
+            border-radius: 12px;
+            border: 2px dashed var(--border);
+        }
+        
+        .chart-placeholder i {
+            font-size: 48px;
+            color: var(--gray);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .chart-placeholder p {
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            margin-top: var(--spacing-xl);
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .action-card {
+            background: var(--card-bg);
+            padding: var(--spacing-lg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary);
+        }
+        
+        .action-card i {
+            font-size: 32px;
+            margin-bottom: var(--spacing-md);
+            color: var(--primary);
+        }
+        
+        .action-card-title {
+            font-family: var(--font-heading);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .action-card-description {
+            font-size: var(--font-size-xs);
+            color: var(--gray);
+            line-height: 1.4;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--gray);
+            font-size: var(--font-size-sm);
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-md);
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
+                padding: var(--spacing-lg);
+            }
+            
+            .header h1 {
+                font-size: var(--font-size-xl);
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+            
+            .nav-btn, .nav-link {
+                justify-content: center;
+                padding: var(--spacing-md);
+            }
+            
+            .stat-card {
+                padding: var(--spacing-lg);
+            }
+            
+            .stat-card-value {
+                font-size: var(--font-size-3xl);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: var(--font-size-lg);
+            }
+            
+            .header-right {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .user-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-tachometer-alt"></i> แดชบอร์ดระบบจัดการสต็อก</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-section">
+                    <div class="user-info-text">
+                        <div class="user-name" id="currentUser">ผู้ดูแลระบบ</div>
+                        <div class="user-status">
+                            <span id="onlineStatus" class="status-badge offline">
+                                <i class="fas fa-wifi-slash"></i> ออฟไลน์
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn active" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
+            </button>
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+            
+            <!-- ตัวอย่าง nav-link ที่คุณขอ -->
+            <a href="reports.html" class="nav-link">
+                <i class="fas fa-chart-bar"></i>
+                <span>รายงาน</span>
+            </a>
+            
+            <!-- ลิงก์ไปหน้า Stock แบบ a tag -->
+            <a href="stock.html" class="nav-link">
+                <i class="fas fa-boxes"></i>
+                <span>จัดการสต็อก</span>
+            </a>
+        </div>
+        
+        <!-- Dashboard Container -->
+        <div class="dashboard-container">
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <!-- จำนวนสินค้า -->
+                <div class="stat-card primary">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-card-title">จำนวนสินค้า</div>
+                            <div class="stat-card-value" id="productCount">0</div>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-description">
+                        รายการสินค้าทั้งหมดในระบบ
+                    </div>
+                    <div class="stat-card-change change-positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>เพิ่มขึ้น 12% จากเดือนที่แล้ว</span>
+                    </div>
+                </div>
+                
+                <!-- มูลค่าสต็อก -->
+                <div class="stat-card success">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-card-title">มูลค่าสต็อก</div>
+                            <div class="stat-card-value" id="stockValue">฿0.00</div>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-description">
+                        มูลค่ารวมของสินค้าทั้งหมด
+                    </div>
+                    <div class="stat-card-change change-positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>เพิ่มขึ้น 8.5% จากเดือนที่แล้ว</span>
+                    </div>
+                </div>
+                
+                <!-- สินค้าใกล้หมด -->
+                <div class="stat-card warning">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-card-title">สินค้าใกล้หมด</div>
+                            <div class="stat-card-value" id="lowStock">0</div>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-description">
+                        สินค้าที่เหลือน้อยกว่าจุดสั่งซื้อขั้นต่ำ
+                    </div>
+                    <div class="stat-card-change change-negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>ลดลง 3% จากเดือนที่แล้ว</span>
+                    </div>
+                </div>
+                
+                <!-- สินค้าหมด -->
+                <div class="stat-card danger">
+                    <div class="stat-card-header">
+                        <div>
+                            <div class="stat-card-title">สินค้าหมด</div>
+                            <div class="stat-card-value" id="outOfStock">0</div>
+                        </div>
+                        <div class="stat-card-icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                    <div class="stat-card-description">
+                        สินค้าที่หมดสต็อกแล้ว
+                    </div>
+                    <div class="stat-card-change change-positive">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>ลดลง 15% จากเดือนที่แล้ว</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <!-- Stock Value Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">มูลค่าสต็อกรายเดือน</h3>
+                        <select class="chart-filter" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: var(--font-body);">
+                            <option>6 เดือนล่าสุด</option>
+                            <option>12 เดือนล่าสุด</option>
+                            <option>ปีนี้</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-line"></i>
+                            <p>กราฟแสดงมูลค่าสต็อกรายเดือน</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stock Status Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">สถานะสินค้า</h3>
+                        <select class="chart-filter" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: var(--font-body);">
+                            <option>ทั้งหมด</option>
+                            <option>ตามหมวดหมู่</option>
+                            <option>ตามสถานที่จัดเก็บ</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>กราฟแสดงสถานะสินค้า</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2 style="font-family: var(--font-heading); margin-bottom: var(--spacing-lg); color: var(--dark);">การดำเนินการด่วน</h2>
+                <div class="quick-actions-grid">
+                    <div class="action-card" onclick="window.location.href='add-product.html'">
+                        <i class="fas fa-plus-circle"></i>
+                        <div class="action-card-title">เพิ่มสินค้าใหม่</div>
+                        <div class="action-card-description">เพิ่มสินค้าใหม่เข้าสู่ระบบ</div>
+                    </div>
+                    
+                    <div class="action-card" onclick="window.location.href='stock.html'">
+                        <i class="fas fa-boxes"></i>
+                        <div class="action-card-title">จัดการสต็อก</div>
+                        <div class="action-card-description">ดูและจัดการสินค้าทั้งหมด</div>
+                    </div>
+                    
+                    <div class="action-card" onclick="showReorderAlert()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <div class="action-card-title">สั่งซื้อสินค้า</div>
+                        <div class="action-card-description">สั่งซื้อสินค้าใกล้หมด</div>
+                    </div>
+                    
+                    <div class="action-card" onclick="showLowStockProducts()">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="action-card-title">สินค้าใกล้หมด</div>
+                        <div class="action-card-description">ดูรายการสินค้าใกล้หมด</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>ระบบจัดการสต็อกสินค้า © 2023 | แสดงข้อมูลล่าสุดเมื่อ: <span id="lastUpdate">-</span></p>
+        </div>
+    </div>
+    
+    <script>
+        // ใช้ข้อมูลจาก localStorage หรือตัวอย่างข้อมูล
+        let products = [];
+
+        // ฟังก์ชันโหลดข้อมูลสินค้า
+        function loadProducts() {
+            const savedProducts = localStorage.getItem('products');
+            if (savedProducts) {
+                try {
+                    products = JSON.parse(savedProducts);
+                    console.log('โหลดข้อมูลสินค้าจาก localStorage:', products.length, 'รายการ');
+                } catch (e) {
+                    console.log('ไม่สามารถโหลดข้อมูลจาก localStorage:', e);
+                    products = [];
+                }
+            }
+            
+            // ถ้าไม่มีข้อมูลใน localStorage ให้ใช้ตัวอย่างข้อมูล
+            if (products.length === 0) {
+                products = [
+                    {
+                        barcode: "8901234567890",
+                        name: "นมกล่อง UHT รสจืด",
+                        category: "เครื่องดื่ม",
+                        unit: "แพ็ค",
+                        price: 150.00,
+                        cost: 120.00,
+                        minOrder: 20,
+                        quantity: 45,
+                        location: "A-01-02",
+                        status: "in-stock",
+                        expiryDate: "2024-12-31",
+                        warrantyDate: "2024-06-30"
+                    },
+                    {
+                        barcode: "8901234567891",
+                        name: "น้ำปลาแท้ ซีฟู้ด",
+                        category: "เครื่องปรุง",
+                        unit: "ขวด",
+                        price: 85.00,
+                        cost: 65.00,
+                        minOrder: 30,
+                        quantity: 12,
+                        location: "B-03-01",
+                        status: "low-stock",
+                        expiryDate: "2025-03-15",
+                        warrantyDate: "2024-09-30"
+                    },
+                    {
+                        barcode: "8901234567892",
+                        name: "ยาสีฟันคอลเกต 125g",
+                        category: "ของใช้ในบ้าน",
+                        unit: "หลอด",
+                        price: 75.00,
+                        cost: 55.00,
+                        minOrder: 50,
+                        quantity: 0,
+                        location: "C-02-04",
+                        status: "out-of-stock",
+                        expiryDate: "2026-08-20",
+                        warrantyDate: "2025-12-31"
+                    },
+                    {
+                        barcode: "8901234567893",
+                        name: "แบตเตอรี่ AA อัลคาไลน์",
+                        category: "เครื่องใช้ไฟฟ้า",
+                        unit: "ชุด",
+                        price: 120.00,
+                        cost: 90.00,
+                        minOrder: 40,
+                        quantity: 8,
+                        location: "D-01-03",
+                        status: "danger",
+                        expiryDate: "2027-05-10",
+                        warrantyDate: "2026-05-10"
+                    }
+                ];
+                console.log('ใช้ข้อมูลตัวอย่าง:', products.length, 'รายการ');
+            }
+            
+            return products;
+        }
+
+        // ฟังก์ชันจัดรูปแบบตัวเลขเป็นสกุลเงินไทย
+        function formatCurrency(amount) {
+            return '฿' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        // ฟังก์ชันคำนวณและอัพเดตข้อมูลแดชบอร์ด
+        function updateDashboardData() {
+            const productCount = products.length;
+            const stockValue = products.reduce((sum, product) => sum + (product.cost * product.quantity), 0);
+            
+            // คำนวณสินค้าใกล้หมด (low-stock หรือ danger) และสินค้าหมด (out-of-stock)
+            const lowStock = products.filter(p => p.status === 'low-stock' || p.status === 'danger').length;
+            const outOfStock = products.filter(p => p.status === 'out-of-stock').length;
+            
+            // อัพเดตข้อมูลในแดชบอร์ด
+            document.getElementById('productCount').textContent = productCount;
+            document.getElementById('stockValue').textContent = formatCurrency(stockValue);
+            document.getElementById('lowStock').textContent = lowStock;
+            document.getElementById('outOfStock').textContent = outOfStock;
+            
+            // อัพเดตเวลาล่าสุด
+            const now = new Date();
+            const lastUpdate = now.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = lastUpdate;
+            
+            return { productCount, stockValue, lowStock, outOfStock };
+        }
+
+        // ฟังก์ชันสร้างตัวอย่างข้อมูลสำหรับกราฟ
+        function createChartData() {
+            // สร้างข้อมูลสำหรับกราฟมูลค่าสต็อกรายเดือน
+            const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.'];
+            const stockValues = months.map(() => Math.floor(Math.random() * 1000000) + 500000);
+            
+            // สร้างข้อมูลสำหรับกราฟสถานะสินค้า (ใช้ข้อมูลจริงจาก products)
+            const statusData = [
+                { 
+                    status: 'พร้อมจำหน่าย', 
+                    count: products.filter(p => p.quantity > p.minOrder * 0.6).length, 
+                    color: '#66BB6A' 
+                },
+                { 
+                    status: 'สต็อกต่ำ', 
+                    count: products.filter(p => p.quantity > 0 && p.quantity <= p.minOrder * 0.6 && p.quantity > p.minOrder * 0.3).length, 
+                    color: '#FFB74D' 
+                },
+                { 
+                    status: 'ใกล้หมด', 
+                    count: products.filter(p => p.quantity > 0 && p.quantity <= p.minOrder * 0.3).length, 
+                    color: '#EF5350' 
+                },
+                { 
+                    status: 'หมดสต็อก', 
+                    count: products.filter(p => p.quantity === 0).length, 
+                    color: '#9E9E9E' 
+                }
+            ];
+            
+            return { months, stockValues, statusData };
+        }
+
+        // ฟังก์ชันสร้างกราฟอย่างง่าย
+        function renderSimpleChart() {
+            const chartData = createChartData();
+            const chartContainers = document.querySelectorAll('.chart-placeholder');
+            
+            // อัพเดตข้อความในกราฟมูลค่าสต็อกรายเดือน
+            if (chartContainers[0]) {
+                const stockValueSum = chartData.stockValues.reduce((a, b) => a + b, 0);
+                const avgStockValue = stockValueSum / chartData.stockValues.length;
+                chartContainers[0].innerHTML = `
+                    <i class="fas fa-chart-line"></i>
+                    <p>มูลค่าเฉลี่ย: ${formatCurrency(avgStockValue)}</p>
+                    <p style="font-size: 12px; margin-top: 5px;">6 เดือนล่าสุด</p>
+                `;
+            }
+            
+            // อัพเดตข้อความในกราฟสถานะสินค้า
+            if (chartContainers[1]) {
+                const totalProducts = chartData.statusData.reduce((sum, item) => sum + item.count, 0);
+                let statusHtml = '<div style="text-align: left; margin-top: 10px;">';
+                chartData.statusData.forEach(item => {
+                    if (item.count > 0) {
+                        const percentage = totalProducts > 0 ? Math.round((item.count / totalProducts) * 100) : 0;
+                        statusHtml += `
+                            <div style="display: flex; align-items: center; margin: 5px 0;">
+                                <div style="width: 12px; height: 12px; background: ${item.color}; border-radius: 2px; margin-right: 8px;"></div>
+                                <span style="font-size: 12px;">${item.status}: ${item.count} (${percentage}%)</span>
+                            </div>
+                        `;
+                    }
+                });
+                statusHtml += '</div>';
+                
+                chartContainers[1].innerHTML = `
+                    <i class="fas fa-chart-pie"></i>
+                    <p>สินค้าทั้งหมด: ${totalProducts} รายการ</p>
+                    ${statusHtml}
+                `;
+            }
+        }
+
+        // ฟังก์ชันแสดงรายการสินค้าใกล้หมด
+        function showLowStockProducts() {
+            const lowStockProducts = products.filter(p => 
+                p.status === 'low-stock' || p.status === 'danger'
+            );
+            
+            if (lowStockProducts.length === 0) {
+                alert('ไม่มีสินค้าใกล้หมดในขณะนี้');
+                return;
+            }
+            
+            let message = 'รายการสินค้าใกล้หมด:\n\n';
+            lowStockProducts.forEach(product => {
+                const statusText = product.status === 'low-stock' ? 'สต็อกต่ำ' : 'ใกล้หมด';
+                message += `• ${product.name}\n`;
+                message += `  รหัส: ${product.barcode}\n`;
+                message += `  จำนวนคงเหลือ: ${product.quantity} ${product.unit}\n`;
+                message += `  ต่ำกว่าจุดสั่งซื้อ: ${product.quantity}/${product.minOrder} ${product.unit}\n`;
+                message += `  สถานะ: ${statusText}\n`;
+                message += `  ตำแหน่งจัดเก็บ: ${product.location}\n\n`;
+            });
+            
+            alert(message);
+        }
+
+        // ฟังก์ชันแสดงแจ้งเตือนการสั่งซื้อ
+        function showReorderAlert() {
+            const reorderProducts = products.filter(p => 
+                p.status === 'low-stock' || p.status === 'danger'
+            );
+            
+            if (reorderProducts.length === 0) {
+                alert('ไม่มีสินค้าที่ต้องการสั่งซื้อในขณะนี้');
+            } else {
+                alert(`มีสินค้าที่ต้องสั่งซื้อ ${reorderProducts.length} รายการ\n\nกรุณาไปที่หน้ารายงานเพื่อดำเนินการสั่งซื้อ`);
+            }
+        }
+
+        // ฟังก์ชันจำลองสถานะออนไลน์/ออฟไลน์
+        function toggleOnlineStatus() {
+            const statusElement = document.getElementById('onlineStatus');
+            const isOffline = statusElement.classList.contains('offline');
+            
+            if (isOffline) {
+                statusElement.classList.remove('offline');
+                statusElement.classList.add('online');
+                statusElement.innerHTML = '<i class="fas fa-wifi"></i> ออนไลน์';
+                
+                // อัพเดตข้อมูลเมื่อเปลี่ยนเป็นออนไลน์
+                updateDashboardData();
+                renderSimpleChart();
+                
+                // แสดงข้อความแจ้งเตือน
+                console.log('เปลี่ยนสถานะเป็นออนไลน์');
+            } else {
+                statusElement.classList.remove('online');
+                statusElement.classList.add('offline');
+                statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> ออฟไลน์';
+                console.log('เปลี่ยนสถานะเป็นออฟไลน์');
+            }
+        }
+
+        // ฟังก์ชันกรองกราฟ
+        function setupChartFilters() {
+            const filters = document.querySelectorAll('.chart-filter');
+            
+            filters.forEach(filter => {
+                filter.addEventListener('change', function() {
+                    console.log('กรองข้อมูลกราฟเป็น:', this.value);
+                    renderSimpleChart();
+                });
+            });
+        }
+
+        // ฟังก์ชันตรวจสอบไฟล์ stock.html
+        function checkStockPage() {
+            fetch('stock.html')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('ไฟล์ stock.html พบและพร้อมใช้งาน');
+                        return true;
+                    } else {
+                        console.warn('ไฟล์ stock.html ไม่พบในเซิร์ฟเวอร์');
+                        // สร้างปุ่มสำรองถ้าไม่มีไฟล์
+                        createFallbackButtons();
+                        return false;
+                    }
+                })
+                .catch(error => {
+                    console.log('เกิดข้อผิดพลาดในการตรวจสอบไฟล์ stock.html:', error);
+                    return false;
+                });
+        }
+
+        // ฟังก์ชันสร้างปุ่มสำรอง
+        function createFallbackButtons() {
+            console.log('กำลังสร้างปุ่มสำรอง...');
+            // สามารถเพิ่มโค้ดสร้างปุ่มสำรองได้ที่นี่
+        }
+
+        // ฟังก์ชันติดตามการคลิกลิงก์
+        function setupLinkTracking() {
+            // ติดตามการคลิกปุ่มและลิงก์
+            document.addEventListener('click', function(e) {
+                // ติดตามปุ่ม
+                if (e.target.closest('.nav-btn')) {
+                    const button = e.target.closest('.nav-btn');
+                    console.log('คลิกปุ่ม:', button.textContent.trim());
+                }
+                
+                // ติดตามลิงก์
+                if (e.target.closest('a')) {
+                    const link = e.target.closest('a');
+                    console.log('คลิกลิงก์:', link.href);
+                }
+            });
+        }
+
+        // ฟังก์ชันตรวจสอบสิทธิ์
+        function checkPermissions() {
+            // ตรวจสอบว่าผู้ใช้มีสิทธิ์เข้าถึงหน้าต่างๆ หรือไม่
+            const user = localStorage.getItem('currentUser') || 'ผู้ดูแลระบบ';
+            document.getElementById('currentUser').textContent = user;
+            
+            // ตรวจสอบสถานะออนไลน์จาก localStorage
+            const isOnline = localStorage.getItem('isOnline') === 'true';
+            const statusElement = document.getElementById('onlineStatus');
+            
+            if (isOnline) {
+                statusElement.classList.remove('offline');
+                statusElement.classList.add('online');
+                statusElement.innerHTML = '<i class="fas fa-wifi"></i> ออนไลน์';
+            } else {
+                statusElement.classList.remove('online');
+                statusElement.classList.add('offline');
+                statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> ออฟไลน์';
+            }
+        }
+
+        // ฟังก์ชันเริ่มต้นระบบ
+        function initDashboard() {
+            console.log('เริ่มต้นแดชบอร์ด...');
+            
+            // ตรวจสอบสิทธิ์
+            checkPermissions();
+            
+            // โหลดข้อมูลสินค้า
+            loadProducts();
+            
+            // อัพเดตข้อมูลแดชบอร์ด
+            updateDashboardData();
+            
+            // สร้างกราฟ
+            renderSimpleChart();
+            
+            // ตั้งค่าการกรองกราฟ
+            setupChartFilters();
+            
+            // ตั้งค่าให้สามารถเปลี่ยนสถานะออนไลน์/ออฟไลน์ได้
+            document.getElementById('onlineStatus').addEventListener('click', toggleOnlineStatus);
+            
+            // ตรวจสอบไฟล์ stock.html
+            checkStockPage();
+            
+            // ติดตามการคลิกลิงก์
+            setupLinkTracking();
+            
+            // อัพเดตข้อมูลทุก 30 วินาที
+            setInterval(() => {
+                loadProducts();
+                updateDashboardData();
+                console.log('อัพเดตข้อมูลแดชบอร์ดอัตโนมัติ');
+            }, 30000);
+            
+            // เพิ่มข้อมูลตัวอย่างเพิ่มเติมหลังจากโหลดหน้า
+            setTimeout(() => {
+                // ตรวจสอบว่ามีข้อมูลน้อยเกินไปหรือไม่
+                if (products.length < 10) {
+                    const additionalProducts = [
+                        {
+                            barcode: "8901234567894",
+                            name: "น้ำยาล้างจานซันไลต์",
+                            category: "ของใช้ในบ้าน",
+                            unit: "ขวด",
+                            price: 65.00,
+                            cost: 45.00,
+                            minOrder: 25,
+                            quantity: 32,
+                            location: "A-02-01",
+                            status: "in-stock",
+                            expiryDate: "2025-10-15",
+                            warrantyDate: "2024-12-31"
+                        },
+                        {
+                            barcode: "8901234567895",
+                            name: "ผงซักฟอกบรีส",
+                            category: "ของใช้ในบ้าน",
+                            unit: "ถุง",
+                            price: 180.00,
+                            cost: 140.00,
+                            minOrder: 15,
+                            quantity: 5,
+                            location: "B-02-03",
+                            status: "danger",
+                            expiryDate: "2026-04-30",
+                            warrantyDate: "2025-06-30"
+                        },
+                        {
+                            barcode: "8901234567896",
+                            name: "กระดาษชำระ 3M",
+                            category: "ของใช้ในบ้าน",
+                            unit: "ม้วน",
+                            price: 35.00,
+                            cost: 25.00,
+                            minOrder: 100,
+                            quantity: 22,
+                            location: "C-01-05",
+                            status: "low-stock",
+                            expiryDate: "2027-01-20",
+                            warrantyDate: "2026-07-20"
+                        }
+                    ];
+                    
+                    // เพิ่มข้อมูลลงใน products
+                    additionalProducts.forEach(product => {
+                        products.push(product);
+                    });
+                    
+                    // อัพเดตข้อมูลใหม่
+                    updateDashboardData();
+                    renderSimpleChart();
+                    
+                    console.log('เพิ่มข้อมูลตัวอย่างเพิ่มเติมสำเร็จ');
+                }
+            }, 2000);
+            
+            console.log('แดชบอร์ดพร้อมใช้งาน');
+        }
+
+        // เริ่มต้นระบบเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

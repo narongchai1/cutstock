@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เพิ่มสินค้า - ระบบจัดการสต็อก</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* สีหลักสำหรับระบบ */
+        :root {
+            --primary: #4A6FA5;
+            --primary-light: #6B8CC6;
+            --primary-dark: #2C497B;
+            --secondary: #FF7E5F;
+            --success: #66BB6A;
+            --success-light: #81C784;
+            --success-dark: #4CAF50;
+            --warning: #FFB74D;
+            --warning-light: #FFCC80;
+            --warning-dark: #FF9800;
+            --danger: #EF5350;
+            --danger-light: #E57373;
+            --danger-dark: #D32F2F;
+            --info: #29B6F6;
+            --info-light: #4FC3F7;
+            --info-dark: #0288D1;
+            --dark: #263238;
+            --light: #F5F7FA;
+            --gray: #90A4AE;
+            --border: #E0E0E0;
+            --card-bg: #FFFFFF;
+        }
+
+        /* Reset และ Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Prompt', 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header - เหมือนหน้า Stock */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 22px 28px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 18px rgba(74, 111, 165, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        
+        .header h1 i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: white;
+        }
+        
+        .user-status {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        /* Navigation - เหมือนหน้า Stock */
+        .nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 14px 26px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: 0 4px 8px rgba(74, 111, 165, 0.3);
+        }
+        
+        /* Search Box - เหมือนหน้า Stock */
+        .search-box {
+            margin-bottom: 28px;
+            display: flex;
+            gap: 14px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: var(--light);
+            font-family: inherit;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+            background: white;
+        }
+        
+        /* Summary Cards - เหมือนหน้า Stock */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+            margin-bottom: 32px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-light);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .card.success::before {
+            background: linear-gradient(90deg, var(--success), var(--success-light));
+        }
+        
+        .card.warning::before {
+            background: linear-gradient(90deg, var(--warning), var(--warning-light));
+        }
+        
+        .card.danger::before {
+            background: linear-gradient(90deg, var(--danger), var(--danger-light));
+        }
+        
+        .card h3 {
+            color: var(--dark);
+            margin-bottom: 14px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .card h3 i {
+            font-size: 18px;
+        }
+        
+        .card p {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card.success p {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .card.warning p {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .card.danger p {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            -webkit-background-clip: text;
+        }
+        
+        .form-hint {
+            color: var(--gray);
+            font-size: 13px;
+            margin-top: 6px;
+            display: block;
+            font-weight: 500;
+        }
+        
+        /* Form Container - ออกแบบใหม่ให้เหมือนหน้า Stock */
+        .form-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            margin-top: 24px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .form-section h3 {
+            color: var(--dark);
+            margin-bottom: 22px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .form-section h3 i {
+            color: var(--primary);
+            background: rgba(74, 111, 165, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 22px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group label i {
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: var(--light);
+            font-family: inherit;
+            color: var(--dark);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+            background: white;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+        
+        /* Auto Generate Section */
+        .auto-generate {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .auto-generate input {
+            flex: 1;
+        }
+        
+        /* Barcode Preview */
+        .barcode-preview {
+            text-align: center;
+            padding: 25px;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, rgba(74, 111, 165, 0.05), rgba(74, 111, 165, 0.02));
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        
+        .barcode-preview:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(74, 111, 165, 0.1), rgba(74, 111, 165, 0.05));
+        }
+        
+        /* Category Selectors */
+        .category-selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+        
+        /* Status Options */
+        .status-options {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .status-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .status-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-option input[type="radio"]:checked + .badge {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-option input[type="radio"] {
+            display: none;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, var(--success-light), var(--success));
+            color: white;
+        }
+        
+        .badge-warning {
+            background: linear-gradient(135deg, var(--warning-light), var(--warning));
+            color: white;
+        }
+        
+        .badge-danger {
+            background: linear-gradient(135deg, var(--danger-light), var(--danger));
+            color: white;
+        }
+        
+        /* Buttons - เหมือนหน้า Stock */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 187, 106, 0.25);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, var(--success-dark), var(--success));
+            box-shadow: 0 8px 20px rgba(102, 187, 106, 0.35);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 183, 77, 0.25);
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(135deg, var(--warning-dark), var(--warning));
+            box-shadow: 0 8px 20px rgba(255, 183, 77, 0.35);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.25);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, var(--danger-dark), var(--danger));
+            box-shadow: 0 8px 20px rgba(239, 83, 80, 0.35);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, var(--info), var(--info-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(41, 182, 246, 0.25);
+        }
+        
+        .btn-info:hover {
+            background: linear-gradient(135deg, var(--info-dark), var(--info));
+            box-shadow: 0 8px 20px rgba(41, 182, 246, 0.35);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(74, 111, 165, 0.25);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            box-shadow: 0 8px 20px rgba(74, 111, 165, 0.35);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--gray), #78909C);
+            color: white;
+            box-shadow: 0 4px 12px rgba(144, 164, 174, 0.25);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #78909C, #607D8B);
+            box-shadow: 0 8px 20px rgba(144, 164, 174, 0.35);
+        }
+        
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 18px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge.online {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+        }
+        
+        .status-badge.offline {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            color: white;
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 18px 24px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, var(--success-light), var(--success));
+            color: white;
+            border-left: 5px solid var(--success-dark);
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, var(--danger-light), var(--danger));
+            color: white;
+            border-left: 5px solid var(--danger-dark);
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: white;
+            margin-left: 15px;
+            transition: color 0.3s;
+            font-size: 18px;
+        }
+        
+        .btn-close:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Auto Clear Badge */
+        .auto-clear-badge {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #FF8A65, #FF7043);
+            color: white;
+            margin-left: 10px;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(255, 138, 101, 0.2);
+        }
+        
+        /* Select Styling */
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A6FA5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 18px center;
+            background-size: 16px;
+            padding-right: 50px;
+        }
+        
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Settings Menu - เหมือนหน้า Stock */
+        .settings-menu {
+            position: relative;
+        }
+        
+        .settings-dropdown {
+            position: fixed;
+            background: var(--card-bg);
+            min-width: 200px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.2s ease;
+            display: none;
+            top: 100px;
+            right: 30px;
+        }
+        
+        .settings-dropdown.show {
+            display: block;
+        }
+        
+        .settings-dropdown a {
+            display: block;
+            padding: 16px 24px;
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+        }
+        
+        .settings-dropdown a:hover {
+            background: linear-gradient(to right, rgba(74, 111, 165, 0.1), transparent);
+            color: var(--primary);
+        }
+        
+        .settings-dropdown a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 18px;
+                padding: 20px;
+            }
+            
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-btn {
+                justify-content: center;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .form-row,
+            .category-selectors {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-options {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .auto-generate {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .settings-dropdown {
+                position: fixed;
+                right: 15px;
+                left: 15px;
+                top: 100px;
+                max-width: none;
+                width: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .header-right {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .user-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .card p {
+                font-size: 28px;
+            }
+            
+            .settings-dropdown {
+                right: 10px;
+                left: 10px;
+                top: 90px;
+            }
+        }
+        
+        /* Focus Styles */
+        *:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+            border-radius: 4px;
+        }
+        
+        /* Selection */
+        ::selection {
+            background: rgba(74, 111, 165, 0.3);
+            color: white;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header - เหมือนหน้า Stock -->
+        <div class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-section">
+                    <div class="user-info-text">
+                        <div class="user-name" id="currentUser">ผู้ดูแลระบบ</div>
+                        <div class="user-status">
+                            <span id="onlineStatus" class="status-badge offline">
+                                <i class="fas fa-wifi-slash"></i> ออฟไลน์
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings Menu - เหมือนหน้า Stock -->
+                <div class="settings-menu">
+                    <button class="btn btn-secondary" onclick="toggleSettings()" id="settingsButton">
+                        <i class="fas fa-cog"></i> ตั้งค่า
+                    </button>
+                    <div id="settingsDropdown" class="settings-dropdown">
+                        <a href="#" onclick="changeLanguage('th')">
+                            <i class="fas fa-language"></i> ภาษาไทย
+                        </a>
+                        <a href="#" onclick="changeLanguage('en')">
+                            <i class="fas fa-language"></i> English
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="logout()" style="color: var(--danger);">
+                            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation - เหมือนหน้า Stock -->
+        <div class="nav">
+            <button class="nav-btn active">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+            
+            <form id="productForm">
+                <!-- ข้อมูลพื้นฐาน -->
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน</h3>
+                    
+                    <div class="form-group">
+                        <label for="productId"><i class="fas fa-barcode"></i> รหัสสินค้า *</label>
+                        <div class="auto-generate">
+                            <input type="text" id="productId" class="form-control" placeholder="P001" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="barcode"><i class="fas fa-qrcode"></i> บาร์โค้ด</label>
+                        <input type="text" id="barcode" class="form-control" placeholder="8901234567890">
+                        <div class="barcode-preview" id="barcodePreview">
+                            <div>ตัวอย่างบาร์โค้ด</div>
+                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
+                            <div style="color: var(--gray); font-size: 13px;">สแกนบาร์โค้ดหรือป้อนด้วยมือ</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productName"><i class="fas fa-tag"></i> ชื่อสินค้า *</label>
+                        <input type="text" id="productName" class="form-control" placeholder="กรอกชื่อสินค้า" required>
+                    </div>
+                </div>
+                
+                <!-- ข้อมูลราคาและสต็อก -->
+                <div class="form-section">
+                    <h3><i class="fas fa-money-bill-wave"></i> ข้อมูลราคาและสต็อก</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price"><i class="fas fa-tags"></i> ราคาขาย (บาท) *</label>
+                            <input type="number" id="price" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cost"><i class="fas fa-money-bill"></i> ต้นทุน (บาท) *</label>
+                            <input type="number" id="cost" class="form-control" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantity"><i class="fas fa-boxes"></i> จำนวนสต็อก *</label>
+                        <input type="number" id="quantity" class="form-control" placeholder="0" min="0" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="reorderPoint"><i class="fas fa-exclamation-triangle"></i> จุดสั่งขั้นต่ำ</label>
+                            <input type="number" id="reorderPoint" class="form-control" placeholder="10" min
