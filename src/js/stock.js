@@ -1,15 +1,24 @@
+<<<<<<< HEAD
 // stock.js - ระบบจัดการสต็อกสินค้า (อัพเดท)
 
 // ตรวจสอบการยืนยันตัวตน
+=======
+// ตรวจสอบสถานะการเข้าสู่ระบบ
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 function checkAuth() {
     const user = localStorage.getItem('user');
     if (!user) {
         window.location.href = 'index.html';
+<<<<<<< HEAD
         return null;
+=======
+        return false;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
     }
     return JSON.parse(user);
 }
 
+<<<<<<< HEAD
 // ตัวแปรเก็บข้อมูลสินค้า
 let productsData = [];
 
@@ -375,6 +384,74 @@ async function loadProducts() {
 }
 
 // แสดงสินค้าในตาราง
+=======
+// แสดง Alert
+function showAlert(message, type = 'info') {
+    // สร้าง element alert ถ้ายังไม่มี
+    let alertContainer = document.getElementById('alertContainer');
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = 'alertContainer';
+        alertContainer.style.position = 'fixed';
+        alertContainer.style.top = '20px';
+        alertContainer.style.right = '20px';
+        alertContainer.style.zIndex = '9999';
+        alertContainer.style.maxWidth = '400px';
+        document.body.appendChild(alertContainer);
+    }
+    
+    const alertId = 'alert-' + Date.now();
+    const alertElement = document.createElement('div');
+    alertElement.id = alertId;
+    alertElement.className = `alert alert-${type}`;
+    alertElement.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
+        ${message}
+        <button class="btn-close" onclick="document.getElementById('${alertId}').remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    alertContainer.appendChild(alertElement);
+    
+    // ลบ alert อัตโนมัติหลังจาก 5 วินาที
+    setTimeout(() => {
+        if (document.getElementById(alertId)) {
+            document.getElementById(alertId).remove();
+        }
+    }, 5000);
+}
+
+// จัดรูปแบบเงิน
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('th-TH', {
+        style: 'currency',
+        currency: 'THB',
+        minimumFractionDigits: 0
+    }).format(amount || 0);
+}
+
+// แสดงสถานะสินค้า
+function getStatusBadge(status, stock) {
+    let badgeClass = 'badge-secondary';
+    let badgeText = status;
+    
+    if (status === 'มีสินค้า' || (stock > 0 && !status)) {
+        badgeClass = 'badge-success';
+        badgeText = 'มีสินค้า';
+    } else if (status === 'สินค้าหมด' || (stock === 0 && !status)) {
+        badgeClass = 'badge-danger';
+        badgeText = 'สินค้าหมด';
+    } else if (status === 'สินค้าจำกัด' || (stock > 0 && stock <= 10 && !status)) {
+        badgeClass = 'badge-warning';
+        badgeText = 'สินค้าจำกัด';
+    }
+    
+    return `<span class="badge ${badgeClass}">${badgeText}</span>`;
+}
+
+// แสดงข้อมูลสินค้าในตาราง
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 function displayProducts(products) {
     const tbody = document.getElementById('productTableBody');
     if (!tbody) return;
@@ -384,6 +461,7 @@ function displayProducts(products) {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
+<<<<<<< HEAD
                 <td colspan="15" class="text-center" style="padding: 40px;">
                     <i class="fas fa-box-open" style="font-size: 48px; color: var(--gray); margin-bottom: 15px;"></i>
                     <p style="color: var(--gray); font-weight: 500;">ไม่มีข้อมูลสินค้า</p>
@@ -391,10 +469,14 @@ function displayProducts(products) {
                         <i class="fas fa-plus-circle"></i> เพิ่มสินค้าตัวแรก
                     </button>
                 </td>
+=======
+                <td colspan="9" class="text-center">ไม่มีข้อมูลสินค้า</td>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             </tr>
         `;
         return;
     }
+<<<<<<< HEAD
     
     products.forEach((product, index) => {
         const row = document.createElement('tr');
@@ -499,11 +581,54 @@ function displayProducts(products) {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
+=======
+    // ในส่วนของ editProduct function (บรรทัดประมาณ 90-105)
+async function editProduct(productId) {
+    try {
+        const products = await window.electronAPI.getProducts();
+        const product = products.find(p => p.id === productId);
+        
+        if (product) {
+            // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
+            sessionStorage.setItem('editProduct', JSON.stringify(product));
+            
+            // ไปยังหน้าแก้ไขสินค้า
+            window.location.href = 'edit-product.html';
+        } else {
+            showAlert('ไม่พบข้อมูลสินค้าที่ต้องการแก้ไข', 'danger');
+        }
+    } catch (error) {
+        console.error('Error in editProduct:', error);
+        showAlert('เกิดข้อผิดพลาดในการแก้ไขสินค้า', 'danger');
+    }
+}
+    
+    products.forEach(product => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${product.id}</td>
+            <td>${product.barcode || '-'}</td>
+            <td>${product.name}</td>
+            <td class="text-right">${formatCurrency(product.price)}</td>
+            <td class="text-right">${formatCurrency(product.cost)}</td>
+            <td class="text-right">${product.stock || 0}</td>
+            <td>${product.category || '-'} ${product.subcategory ? '> ' + product.subcategory : ''}</td>
+            <td>${getStatusBadge(product.status, product.stock)}</td>
+            <td>
+                <button class="btn btn-sm btn-warning btn-edit" data-id="${product.id}">
+                    <i class="fas fa-edit"></i> แก้ไข
+                </button>
+                <button class="btn btn-sm btn-danger btn-delete" data-id="${product.id}">
+                    <i class="fas fa-trash"></i> ลบ
+                </button>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             </td>
         `;
         
         tbody.appendChild(row);
     });
+<<<<<<< HEAD
 }
 
 // อัพเดทการ์ดสรุป
@@ -550,12 +675,84 @@ function editProduct(productId) {
     // บันทึกลง localStorage เพื่อใช้ในหน้า edit
     localStorage.setItem('editing_product_id', productId);
     window.location.href = 'edit-product.html';
+=======
+    
+    // เพิ่ม event listener ให้ปุ่มแก้ไขและลบ
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            editProduct(productId);
+        });
+    });
+    
+    document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            deleteProduct(productId);
+        });
+    });
+}
+
+// โหลดข้อมูลสินค้า
+async function loadProducts() {
+    try {
+        const products = await window.electronAPI.getProducts();
+        displayProducts(products);
+        
+        // แสดงจำนวนสินค้า
+        document.getElementById('productCount').textContent = products.length;
+        
+        // คำนวณมูลค่าสต็อก
+        const totalValue = products.reduce((sum, product) => {
+            const stock = product.stock || 0;
+            const cost = product.cost || 0;
+            return sum + (stock * cost);
+        }, 0);
+        
+        document.getElementById('stockValue').textContent = formatCurrency(totalValue);
+        
+        // คำนวณสินค้าใกล้หมด (น้อยกว่า 10 ชิ้น)
+        const lowStock = products.filter(p => {
+            const stock = p.stock || 0;
+            return stock > 0 && stock <= 10;
+        }).length;
+        
+        document.getElementById('lowStock').textContent = lowStock;
+        
+        // คำนวณสินค้าหมด
+        const outOfStock = products.filter(p => {
+            const stock = p.stock || 0;
+            return stock === 0;
+        }).length;
+        
+        document.getElementById('outOfStock').textContent = outOfStock;
+        
+    } catch (error) {
+        console.error('Error loading products:', error);
+        showAlert('เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า', 'danger');
+    }
+}
+
+// แก้ไขสินค้า
+async function editProduct(productId) {
+    const products = await window.electronAPI.getProducts();
+    const product = products.find(p => p.id === productId);
+    
+    if (product) {
+        // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
+        sessionStorage.setItem('editProduct', JSON.stringify(product));
+        
+        // ไปยังหน้าแก้ไขสินค้า
+        window.location.href = 'edit-product.html';
+    }
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 }
 
 // ลบสินค้า
 async function deleteProduct(productId) {
     if (confirm('คุณแน่ใจว่าต้องการลบสินค้านี้?')) {
         try {
+<<<<<<< HEAD
             let result;
             
             if (window.electronAPI && window.electronAPI.deleteProduct) {
@@ -584,6 +781,15 @@ async function deleteProduct(productId) {
                 saveDataForReports(updatedProducts);
             } else {
                 showAlert(result.error || 'เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
+=======
+            const result = await window.electronAPI.deleteProduct(productId);
+            
+            if (result.success) {
+                showAlert('ลบสินค้าเรียบร้อยแล้ว', 'success');
+                loadProducts(); // โหลดข้อมูลใหม่
+            } else {
+                showAlert('เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             }
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -593,6 +799,7 @@ async function deleteProduct(productId) {
 }
 
 // ตรวจสอบสถานะออนไลน์
+<<<<<<< HEAD
 function checkOnlineStatus() {
     // ตั้งค่าให้เป็น offline ตลอดเวลา
     updateOnlineStatus(false);
@@ -728,12 +935,54 @@ function closeSettingsOnClickOutside(event) {
 // อัพเดทข้อมูลทุกครั้งที่โหลดหน้า
 document.addEventListener('DOMContentLoaded', function() {
     // ตรวจสอบการยืนยันตัวตน
+=======
+async function checkOnlineStatus() {
+    try {
+        const isOnline = await window.electronAPI.checkOnlineStatus();
+        updateOnlineStatus(isOnline);
+        return isOnline;
+    } catch (error) {
+        console.error('Error checking online status:', error);
+        return false;
+    }
+}
+
+// อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
+function updateOnlineStatus(isOnline) {
+    const statusElement = document.getElementById('onlineStatus');
+    if (statusElement) {
+        if (isOnline) {
+            statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+            statusElement.classList.remove('offline');
+            statusElement.classList.add('online');
+            
+            // แสดงเมนูออนไลน์
+            document.querySelectorAll('.online-only').forEach(el => {
+                el.style.display = 'block';
+            });
+        } else {
+            statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+            statusElement.classList.remove('online');
+            statusElement.classList.add('offline');
+            
+            // ซ่อนเมนูออนไลน์
+            document.querySelectorAll('.online-only').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+    }
+}
+
+// Initialize เมื่อหน้าโหลด
+document.addEventListener('DOMContentLoaded', function() {
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
     const user = checkAuth();
     if (!user) return;
     
     // แสดงชื่อผู้ใช้
     const userElement = document.getElementById('currentUser');
     if (userElement) {
+<<<<<<< HEAD
         userElement.textContent = user.name || 'ผู้ดูแลระบบ';
     }
     
@@ -872,3 +1121,21 @@ window.closeSettingsOnClickOutside = closeSettingsOnClickOutside;
 window.viewProduct = viewProduct;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
+=======
+        userElement.textContent = user.name;
+    }
+    
+    // โหลดข้อมูลสินค้า
+    loadProducts();
+    
+    // ตรวจสอบสถานะออนไลน์
+    checkOnlineStatus();
+    
+    // ฟังการเปลี่ยนสถานะเครือข่าย
+    if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
+        window.electronAPI.onOnlineStatusChange((isOnline) => {
+            updateOnlineStatus(isOnline);
+        });
+    }
+});
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547

@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const net = require('net'); // เพิ่ม net module
+=======
+const { app, BrowserWindow, ipcMain, net } = require('electron');
+const path = require('path');
+const fs = require('fs');
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 
 // สร้างโฟลเดอร์ข้อมูล
 const dataDir = path.join(__dirname, 'data');
@@ -25,12 +31,23 @@ const backendUrlRaw = process.env.BACKEND_URL || appConfig.backendUrl || 'http:/
 const backendUrl = backendUrlRaw.replace(/\/+$/, '');
 const apiTimeoutMs = Number(appConfig.apiTimeoutMs) || 5000;
 const healthCheckTtlMs = Number(appConfig.healthCheckTtlMs) || 3000;
+<<<<<<< HEAD
 
 let lastHealthCheckAt = 0;
 let lastHealthStatus = false;
 
 // เพิ่ม: กำหนด path สำหรับไฟล์ products
 const productsFilePath = path.join(dataDir, 'products.json');
+=======
+const internetCheckUrl = appConfig.internetCheckUrl || 'https://1.1.1.1/cdn-cgi/trace';
+const internetCheckTimeoutMs = Number(appConfig.internetCheckTimeoutMs) || 2500;
+const requireInternetForOnlineStatus = appConfig.requireInternetForOnlineStatus !== false;
+
+let lastHealthCheckAt = 0;
+let lastHealthStatus = false;
+let lastInternetCheckAt = 0;
+let lastInternetStatus = false;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 
 async function safeReadJson(response) {
     try {
@@ -69,6 +86,7 @@ async function apiRequest(pathname, options = {}) {
     }
 }
 
+<<<<<<< HEAD
 async function isBackendOnline() {
     // ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตโดยใช้ net module
     try {
@@ -98,6 +116,80 @@ async function isBackendOnline() {
         console.log('Network check error:', error);
         return false;
     }
+=======
+async function apiRequestAbsolute(url, options = {}) {
+    const controller = new AbortController();
+    const timeoutMs = Number(options.timeoutMs) || apiTimeoutMs;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const headers = {
+        Accept: 'application/json',
+        ...(options.headers || {}),
+    };
+
+    if (options.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers,
+            signal: controller.signal,
+        });
+        const data = await safeReadJson(response);
+        return { ok: response.ok, status: response.status, data };
+    } catch (error) {
+        return { ok: false, error };
+    } finally {
+        clearTimeout(timeout);
+    }
+}
+
+async function isInternetOnline() {
+    if (!net.isOnline()) {
+        return false;
+    }
+
+    const now = Date.now();
+    if (now - lastInternetCheckAt < healthCheckTtlMs) {
+        return lastInternetStatus;
+    }
+
+    if (!internetCheckUrl) {
+        lastInternetCheckAt = now;
+        lastInternetStatus = true;
+        return true;
+    }
+
+    const result = await apiRequestAbsolute(internetCheckUrl, {
+        method: 'HEAD',
+        timeoutMs: internetCheckTimeoutMs,
+    });
+    lastInternetCheckAt = now;
+    lastInternetStatus = result.ok;
+    return lastInternetStatus;
+}
+
+async function isBackendOnline() {
+    if (requireInternetForOnlineStatus) {
+        const internetOk = await isInternetOnline();
+        if (!internetOk) {
+            return false;
+        }
+    } else if (!net.isOnline()) {
+        return false;
+    }
+
+    const now = Date.now();
+    if (now - lastHealthCheckAt < healthCheckTtlMs) {
+        return lastHealthStatus;
+    }
+
+    const result = await apiRequest('/api/health');
+    lastHealthCheckAt = now;
+    lastHealthStatus = result.ok;
+    return lastHealthStatus;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 }
 
 function createWindow() {
@@ -116,11 +208,16 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
 
     // เปิด DevTools สำหรับการพัฒนา
+<<<<<<< HEAD
     // mainWindow.webContents.openDevTools();
+=======
+    mainWindow.webContents.openDevTools();
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+<<<<<<< HEAD
 
     return mainWindow;
 }
@@ -423,6 +520,33 @@ function setupReportHandlers() {
 
 const database = require('./src/js/database');
 
+=======
+}
+
+app.whenReady().then(() => {
+    createWindow();
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
+});
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+// IPC Handlers
+const database = require('./src/js/database');
+
+ipcMain.handle('check-online-status', async () => {
+    return await isBackendOnline();
+});
+
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
 ipcMain.handle('save-product', async (event, product) => {
     const isOnline = await isBackendOnline();
     if (isOnline) {
@@ -492,6 +616,7 @@ ipcMain.handle('get-categories', async () => {
 
     return await database.getCategories();
 });
+<<<<<<< HEAD
 
 // ========== App Lifecycle ==========
 
@@ -538,3 +663,5 @@ module.exports = {
     getProductsFromStock,
     calculateReportStats
 };
+=======
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547

@@ -17,10 +17,18 @@
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
+<<<<<<< HEAD
     "electron": "^28.3.3",
+=======
+    "electron": "^28.0.0",
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
     "electron-builder": "^24.0.0"
   },
   "dependencies": {
     "lowdb": "^5.0.5"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547

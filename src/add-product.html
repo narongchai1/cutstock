@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มสินค้า - ระบบจัดการสต็อก</title>
+<<<<<<< HEAD
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* สีหลักสำหรับระบบ */
@@ -356,11 +357,42 @@
             font-weight: 600;
             color: var(--dark);
             font-size: 15px;
+=======
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
+<<<<<<< HEAD
         .form-group label i {
             color: var(--primary);
             width: 20px;
@@ -396,12 +428,30 @@
         .auto-generate {
             display: flex;
             gap: 12px;
+=======
+        .barcode-preview {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            margin-top: 10px;
+            background: #f9f9f9;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .auto-generate {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
         }
         
         .auto-generate input {
             flex: 1;
         }
         
+<<<<<<< HEAD
         /* Barcode Preview */
         .barcode-preview {
             text-align: center;
@@ -430,12 +480,18 @@
         .status-options {
             display: flex;
             gap: 25px;
+=======
+        .status-options {
+            display: flex;
+            gap: 20px;
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             flex-wrap: wrap;
         }
         
         .status-option {
             display: flex;
             align-items: center;
+<<<<<<< HEAD
             gap: 10px;
             cursor: pointer;
             padding: 12px 20px;
@@ -879,11 +935,31 @@
         
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+=======
+            gap: 8px;
+        }
+        
+        .status-option input[type="radio"] {
+            margin: 0;
+        }
+        
+        .category-selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .category-selectors {
+                grid-template-columns: 1fr;
+            }
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
         }
     </style>
 </head>
 <body>
     <div class="container">
+<<<<<<< HEAD
         <!-- Header - เหมือนหน้า Stock -->
         <div class="header">
             <div class="header-content">
@@ -932,13 +1008,41 @@
                 <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
             </button>
             <button class="nav-btn" onclick="window.location.href='add-product.html'">
+=======
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่</h1>
+            <div class="user-info">
+                <span id="currentUser" style="font-weight: 600;"></span>
+                <span id="onlineStatus" class="status-badge offline">
+                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                </span>
+                <button class="btn btn-sm btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='add-product.html'">
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
                 <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
             </button>
         </div>
         
         <!-- Form Container -->
         <div class="form-container">
+<<<<<<< HEAD
             <!-- Alert Container -->
+=======
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
             <div id="alertContainer"></div>
             
             <form id="productForm">
@@ -950,6 +1054,12 @@
                         <label for="productId"><i class="fas fa-barcode"></i> รหัสสินค้า *</label>
                         <div class="auto-generate">
                             <input type="text" id="productId" class="form-control" placeholder="P001" required>
+<<<<<<< HEAD
+=======
+                            <button type="button" class="btn btn-info" onclick="generateProductId()">
+                                <i class="fas fa-sync-alt"></i> สร้างอัตโนมัติ
+                            </button>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
                         </div>
                     </div>
                     
@@ -959,13 +1069,21 @@
                         <div class="barcode-preview" id="barcodePreview">
                             <div>ตัวอย่างบาร์โค้ด</div>
                             <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
+<<<<<<< HEAD
                             <div style="color: var(--gray); font-size: 13px;">สแกนบาร์โค้ดหรือป้อนด้วยมือ</div>
+=======
+                            <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="productName"><i class="fas fa-tag"></i> ชื่อสินค้า *</label>
+<<<<<<< HEAD
                         <input type="text" id="productName" class="form-control" placeholder="กรอกชื่อสินค้า" required>
+=======
+                        <input type="text" id="productName" class="form-control" placeholder="ชื่อสินค้า" required>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
                     </div>
                 </div>
                 
@@ -986,6 +1104,7 @@
                     </div>
                     
                     <div class="form-group">
+<<<<<<< HEAD
                         <label for="quantity"><i class="fas fa-boxes"></i> จำนวนสต็อก *</label>
                         <input type="number" id="quantity" class="form-control" placeholder="0" min="0" required>
                     </div>
@@ -994,3 +1113,349 @@
                         <div class="form-group">
                             <label for="reorderPoint"><i class="fas fa-exclamation-triangle"></i> จุดสั่งขั้นต่ำ</label>
                             <input type="number" id="reorderPoint" class="form-control" placeholder="10" min
+=======
+                        <label for="stock"><i class="fas fa-boxes"></i> จำนวนสต็อก *</label>
+                        <input type="number" id="stock" class="form-control" placeholder="0" min="0" required>
+                    </div>
+                </div>
+                
+                <!-- หมวดหมู่ -->
+                <div class="form-section">
+                    <h3><i class="fas fa-tags"></i> หมวดหมู่</h3>
+                    
+                    <div class="category-selectors">
+                        <div class="form-group">
+                            <label for="category"><i class="fas fa-folder"></i> หมวดหมู่หลัก</label>
+                            <select id="category" class="form-control">
+                                <option value="">เลือกหมวดหมู่</option>
+                                <option value="อิเล็กทรอนิกส์">อิเล็กทรอนิกส์</option>
+                                <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
+                                <option value="เครื่องเขียน">เครื่องเขียน</option>
+                                <option value="ของใช้ในครัว">ของใช้ในครัว</option>
+                                <option value="เสื้อผ้า">เสื้อผ้า</option>
+                                <option value="เครื่องดื่ม">เครื่องดื่ม</option>
+                                <option value="อาหาร">อาหาร</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subcategory"><i class="fas fa-folder-open"></i> หมวดหมู่ย่อย</label>
+                            <input type="text" id="subcategory" class="form-control" placeholder="หมวดหมู่ย่อย">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- สถานะสินค้า -->
+                <div class="form-section">
+                    <h3><i class="fas fa-check-circle"></i> สถานะสินค้า</h3>
+                    
+                    <div class="status-options">
+                        <label class="status-option">
+                            <input type="radio" name="status" value="มีสินค้า" checked>
+                            <span class="badge badge-success">มีสินค้า</span>
+                        </label>
+                        
+                        <label class="status-option">
+                            <input type="radio" name="status" value="สินค้าจำกัด">
+                            <span class="badge badge-warning">สินค้าจำกัด</span>
+                        </label>
+                        
+                        <label class="status-option">
+                            <input type="radio" name="status" value="สินค้าหมด">
+                            <span class="badge badge-danger">สินค้าหมด</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- ปุ่มดำเนินการ -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-save"></i> บันทึกสินค้า
+                    </button>
+                    
+                    <button type="button" class="btn btn-warning btn-lg" onclick="clearForm()">
+                        <i class="fas fa-eraser"></i> ล้างแบบฟอร์ม
+                    </button>
+                    
+                    <button type="button" class="btn btn-danger btn-lg" onclick="cancelForm()">
+                        <i class="fas fa-times"></i> ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // ตรวจสอบสถานะการเข้าสู่ระบบ
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return JSON.parse(user);
+        }
+        
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // สร้างรหัสสินค้าอัตโนมัติ
+        async function generateProductId() {
+            try {
+                const products = await window.electronAPI.getProducts();
+                let maxId = 0;
+                
+                products.forEach(product => {
+                    if (product.id && product.id.startsWith('P')) {
+                        const num = parseInt(product.id.substring(1));
+                        if (num > maxId) maxId = num;
+                    }
+                });
+                
+                const newId = `P${(maxId + 1).toString().padStart(3, '0')}`;
+                document.getElementById('productId').value = newId;
+                
+            } catch (error) {
+                console.error('Error generating product ID:', error);
+                document.getElementById('productId').value = 'P001';
+            }
+        }
+        
+        // แสดงข้อความแจ้งเตือน
+        function showAlert(message, type = 'info') {
+            let alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) {
+                alertContainer = document.createElement('div');
+                alertContainer.id = 'alertContainer';
+                alertContainer.style.position = 'fixed';
+                alertContainer.style.top = '20px';
+                alertContainer.style.right = '20px';
+                alertContainer.style.zIndex = '9999';
+                alertContainer.style.maxWidth = '400px';
+                document.body.appendChild(alertContainer);
+            }
+            
+            const alertId = 'alert-' + Date.now();
+            const alertElement = document.createElement('div');
+            alertElement.id = alertId;
+            alertElement.className = `alert alert-${type}`;
+            alertElement.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+                <button class="btn-close" onclick="document.getElementById('${alertId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            alertContainer.appendChild(alertElement);
+            
+            // ลบ alert อัตโนมัติหลังจาก 5 วินาที
+            setTimeout(() => {
+                if (document.getElementById(alertId)) {
+                    document.getElementById(alertId).remove();
+                }
+            }, 5000);
+        }
+        
+        // ล้างแบบฟอร์ม
+        function clearForm() {
+            if (confirm('คุณแน่ใจว่าต้องการล้างข้อมูลทั้งหมดในแบบฟอร์ม?')) {
+                document.getElementById('productForm').reset();
+                generateProductId();
+            }
+        }
+        
+        // ยกเลิกและกลับไปหน้าสต็อก
+        function cancelForm() {
+            if (confirm('คุณแน่ใจว่าต้องการยกเลิกการเพิ่มสินค้า?')) {
+                window.location.href = 'stock.html';
+            }
+        }
+        
+        // บันทึกสินค้า
+        async function saveProduct(productData) {
+            try {
+                const result = await window.electronAPI.saveProduct(productData);
+                return result;
+            } catch (error) {
+                console.error('Error saving product:', error);
+                throw error;
+            }
+        }
+        
+        // ตรวจสอบสถานะออนไลน์
+        async function checkOnlineStatus() {
+            try {
+                const isOnline = await window.electronAPI.checkOnlineStatus();
+                updateOnlineStatus(isOnline);
+                return isOnline;
+            } catch (error) {
+                console.error('Error checking online status:', error);
+                return false;
+            }
+        }
+        
+        // อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
+        function updateOnlineStatus(isOnline) {
+            const statusElement = document.getElementById('onlineStatus');
+            if (statusElement) {
+                if (isOnline) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    
+                    // แสดงเมนูออนไลน์
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+                    statusElement.classList.remove('online');
+                    statusElement.classList.add('offline');
+                    
+                    // ซ่อนเมนูออนไลน์
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+            }
+        }
+        
+        // Initialize เมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            // แสดงชื่อผู้ใช้
+            const userElement = document.getElementById('currentUser');
+            if (userElement) {
+                userElement.textContent = user.name;
+            }
+            
+            // สร้างรหัสสินค้าอัตโนมัติ
+            await generateProductId();
+            
+            // ตรวจสอบสถานะออนไลน์
+            await checkOnlineStatus();
+            
+            // ฟังการเปลี่ยนสถานะเครือข่าย
+            if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
+                window.electronAPI.onOnlineStatusChange((isOnline) => {
+                    updateOnlineStatus(isOnline);
+                });
+            }
+            
+            // จัดการฟอร์ม
+            const productForm = document.getElementById('productForm');
+            if (productForm) {
+                productForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // รวบรวมข้อมูลจากฟอร์ม
+                    const productData = {
+                        id: document.getElementById('productId').value.trim(),
+                        barcode: document.getElementById('barcode').value.trim(),
+                        name: document.getElementById('productName').value.trim(),
+                        price: parseFloat(document.getElementById('price').value) || 0,
+                        cost: parseFloat(document.getElementById('cost').value) || 0,
+                        stock: parseInt(document.getElementById('stock').value) || 0,
+                        category: document.getElementById('category').value,
+                        subcategory: document.getElementById('subcategory').value.trim(),
+                        status: document.querySelector('input[name="status"]:checked').value
+                    };
+                    
+                    // ตรวจสอบข้อมูลที่จำเป็น
+                    if (!productData.id || !productData.name) {
+                        showAlert('กรุณากรอกรหัสสินค้าและชื่อสินค้า', 'danger');
+                        return;
+                    }
+                    
+                    if (productData.price <= 0 || productData.cost <= 0) {
+                        showAlert('กรุณากรอกราคาขายและต้นทุนที่มากกว่า 0', 'danger');
+                        return;
+                    }
+                    
+                    // ปุ่มบันทึกเปลี่ยนเป็นกำลังโหลด
+                    const submitBtn = productForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        // บันทึกสินค้า
+                        const result = await saveProduct(productData);
+                        
+                        if (result.success) {
+                            showAlert('บันทึกสินค้าเรียบร้อยแล้ว!', 'success');
+                            
+                            // รีเซ็ตฟอร์มหลังจากบันทึกสำเร็จ
+                            setTimeout(() => {
+                                productForm.reset();
+                                generateProductId();
+                                window.location.href = 'stock.html';
+                            }, 1500);
+                        } else {
+                            showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
+                        }
+                    } catch (error) {
+                        console.error('Error saving product:', error);
+                        showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า: ' + error.message, 'danger');
+                    } finally {
+                        // คืนสถานะปุ่ม
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+            
+            // อัพเดทบาร์โค้ดตัวอย่าง
+            const barcodeInput = document.getElementById('barcode');
+            const barcodePreview = document.getElementById('barcodePreview');
+            
+            if (barcodeInput && barcodePreview) {
+                barcodeInput.addEventListener('input', function() {
+                    const value = this.value.trim();
+                    if (value) {
+                        barcodePreview.innerHTML = `
+                            <div>บาร์โค้ดที่ป้อน</div>
+                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">${value}</div>
+                            <div style="color: #7f8c8d; font-size: 12px;">สามารถสแกนได้</div>
+                        `;
+                    } else {
+                        barcodePreview.innerHTML = `
+                            <div>ตัวอย่างบาร์โค้ด</div>
+                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
+                            <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
+                        `;
+                    }
+                });
+            }
+            
+            // อัพเดทสถานะตามจำนวนสต็อก
+            const stockInput = document.getElementById('stock');
+            if (stockInput) {
+                stockInput.addEventListener('input', function() {
+                    const stockValue = parseInt(this.value) || 0;
+                    const statusRadios = document.getElementsByName('status');
+                    
+                    if (stockValue === 0) {
+                        statusRadios[2].checked = true; // สินค้าหมด
+                    } else if (stockValue <= 10) {
+                        statusRadios[1].checked = true; // สินค้าจำกัด
+                    } else {
+                        statusRadios[0].checked = true; // มีสินค้า
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+>>>>>>> a6ffa4fc6e1fed32c770c0ef139e43a76ce05547
