@@ -50,9 +50,11 @@ type Product {
 type StockMovement {
   id: ID!
   product_id: ID!
+  lot_id: ID
   type: String!
   qty: Int!
   device_id: String
+  synced_at: DateTime
   created_at: DateTime!
 }
 
@@ -99,13 +101,21 @@ type Mutation {
     product_id: ID!
     qty: Int!
     device_id: String
-  ): Boolean!
+    lot_id: ID
+  ): StockMutationPayload!
     @field(resolver: "App\\GraphQL\\Mutations\\StockIn")
 
   stockOut(
     product_id: ID!
     qty: Int!
     device_id: String
-  ): Boolean!
+    lot_id: ID
+  ): StockMutationPayload!
     @field(resolver: "App\\GraphQL\\Mutations\\StockOut")
+}
+
+type StockMutationPayload {
+  success: Boolean!
+  product: Product
+  movement: StockMovement
 }

@@ -93,6 +93,8 @@ class ProductController extends Controller
             'size' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:255'],
             'subcategory' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
             'main_category' => ['nullable', 'string', 'max:255'],
             'sub_category' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:255'],
@@ -102,6 +104,7 @@ class ProductController extends Controller
             'warranty_expiry_date' => ['nullable', 'date'],
             'storage_location' => ['nullable', 'string', 'max:255'],
             'sale_location' => ['nullable', 'string', 'max:255'],
+            'reorder_point' => ['nullable', 'integer', 'min:0'],
         ];
 
         if ($allowId) {

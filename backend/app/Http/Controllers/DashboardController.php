@@ -3,11 +3,97 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function summary(Request $request)
+    {
+        return response()->json($this->buildStockStats($request));
+    }
+
+    public function salesSummary(Request $request)
+    {
+        $dateInput = $request->query('date');
+        $date = $dateInput ? Carbon::parse($dateInput)->toDateString() : Carbon::today()->toDateString();
+
+        $summary = DB::table('daily_sales_summaries')
+            ->where('summary_date', $date)
+            ->first();
+
+        return response()->json([
+            'date' => $date,
+            'totalSales' => (float) ($summary->total_sales ?? 0),
+            'totalCost' => (float) ($summary->total_cost ?? 0),
+            'dailyExpense' => (float) ($summary->daily_expense ?? 0),
+            'netProfit' => (float) ($summary->net_profit ?? 0),
+        ]);
+    }
+
+    public function stockSummary(Request $request)
+    {
+        $stats = $this->buildStockStats($request);
+
+        return response()->json([
+            'summary' => $stats['summary'],
+            'stockStatus' => $stats['stockStatus'],
+            'categories' => $stats['categories'],
+            'thresholds' => $stats['thresholds'],
+        ]);
+    }
+
+    public function lowStock(Request $request)
+    {
+        $stats = $this->buildStockStats($request);
+
+        return response()->json([
+            'items' => $stats['lowStockItems'],
+            'thresholds' => [
+                'lowStock' => $stats['thresholds']['lowStock'],
+                'limitedStock' => $stats['thresholds']['limitedStock'],
+            ],
+        ]);
+    }
+
+    public function nearExpire(Request $request)
+    {
+        $days = $this->getIntQuery($request, 'days', 30, 1);
+        $today = Carbon::today();
+        $cutoff = $today->copy()->addDays($days);
+
+        $items = Product::query()
+            ->select('id', 'name', 'stock', 'expiry_date', 'warranty_expiry_date')
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<=', $cutoff)
+            ->orderBy('expiry_date')
+            ->get();
+
+        return response()->json([
+            'asOf' => $today->toDateString(),
+            'days' => $days,
+            'cutoff' => $cutoff->toDateString(),
+            'items' => $items,
+        ]);
+    }
+
+    public function systemStatus()
+    {
+        $lastMovementAt = StockMovement::query()->max('created_at');
+        $lastSyncAt = StockMovement::query()->whereNotNull('synced_at')->max('synced_at');
+
+        return response()->json([
+            'serverTime' => Carbon::now()->toDateTimeString(),
+            'totalProducts' => Product::count(),
+            'totalStockMovements' => StockMovement::count(),
+            'lastStockMovementAt' => $lastMovementAt,
+            'lastSyncAt' => $lastSyncAt,
+        ]);
+    }
+
+    private function buildStockStats(Request $request): array
     {
         $lowStockThreshold = $this->getIntQuery($request, 'low_stock_threshold', 5, 0);
         $limitedStockThreshold = $this->getIntQuery($request, 'limited_stock_threshold', 10, 0);
@@ -100,7 +186,7 @@ class DashboardController extends Controller
 
         $stats['categories'] = array_values($categoryStats);
 
-        return response()->json($stats);
+        return $stats;
     }
 
     private function getIntQuery(Request $request, string $key, int $default, int $min): int

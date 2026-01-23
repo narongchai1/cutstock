@@ -39,4 +39,17 @@ class AuthController extends Controller
             'token' => 'api-token-' . Str::random(32),
         ]);
     }
+
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        if ($user) {
+            $user->tokens()->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ออกจากระบบสำเร็จ',
+        ]);
+    }
 }

@@ -26,6 +26,8 @@ class Product extends Model
         'size',
         'category',
         'subcategory',
+        'category_id',
+        'unit_id',
         'main_category',
         'sub_category',
         'status',
@@ -35,6 +37,7 @@ class Product extends Model
         'warranty_expiry_date',
         'storage_location',
         'sale_location',
+        'reorder_point',
     ];
 
     protected $casts = [
@@ -46,5 +49,8 @@ class Product extends Model
         'last_stock_added_at' => 'date',
         'expiry_date' => 'date',
         'warranty_expiry_date' => 'date',
+        'category_id' => 'integer',
+        'unit_id' => 'integer',
+        'reorder_point' => 'integer',
     ];
 }
