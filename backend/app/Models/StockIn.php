@@ -5,21 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StockMovement extends Model
+class StockIn extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'id',
         'product_id',
         'lot_id',
-        'type',
-        'qty',
-        'device_id',
-        'synced_at',
+        'quantity',
     ];
 
-    public $incrementing = false;
-
-    protected $keyType = 'string';
+    protected $casts = [
+        'product_id' => 'integer',
+        'lot_id' => 'integer',
+        'quantity' => 'float',
+    ];
 }

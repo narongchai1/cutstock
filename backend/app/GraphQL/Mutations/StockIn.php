@@ -2,65 +2,64 @@
 
 namespace App\GraphQL\Mutations;
 
+use App\Models\Lot;
 use App\Models\Product;
-use App\Models\StockMovement;
+use App\Models\StockIn as StockInModel;
+use App\Services\StockService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class StockIn
 {
     public function __invoke($_, array $args): array
     {
         $productId = $args['product_id'] ?? null;
-        $qty = (int) ($args['qty'] ?? 0);
+        $quantity = (float) ($args['quantity'] ?? 0);
 
-        if (!$productId || $qty < 1) {
+        if (!$productId || $quantity <= 0) {
             return ['success' => false];
         }
 
-        return DB::transaction(function () use ($args, $productId, $qty) {
+        return DB::transaction(function () use ($args, $productId, $quantity) {
             $product = Product::query()->lockForUpdate()->find($productId);
             if (!$product) {
                 return ['success' => false];
             }
 
-            $currentStock = (int) ($product->stock ?? 0);
-            $newStock = $currentStock + $qty;
+            $lotId = $args['lot_id'] ?? null;
+            $lot = null;
 
-            if (!empty($args['lot_id'])) {
-                $lot = DB::table('lots')
-                    ->where('id', $args['lot_id'])
-                    ->lockForUpdate()
-                    ->first();
-
+            if ($lotId) {
+                $lot = Lot::query()->lockForUpdate()->find($lotId);
                 if (!$lot || $lot->product_id !== $product->id) {
                     return ['success' => false];
                 }
 
-                $currentLotQty = (float) ($lot->remaining_qty ?? 0);
-                DB::table('lots')
-                    ->where('id', $args['lot_id'])
-                    ->update(['remaining_qty' => $currentLotQty + $qty]);
+                $lot->remaining_qty = (float) $lot->remaining_qty + $quantity;
+                $lot->save();
+            } elseif (!empty($args['expiry_date']) || !empty($args['supplier_id']) || !empty($args['warranty'])) {
+                $lot = Lot::create([
+                    'product_id' => $product->id,
+                    'expiry_date' => $args['expiry_date'] ?? null,
+                    'supplier_id' => $args['supplier_id'] ?? null,
+                    'warranty' => $args['warranty'] ?? null,
+                    'remaining_qty' => $quantity,
+                ]);
+                $lotId = $lot->id;
             }
 
-            $product->stock = $newStock;
-            $product->last_stock_added = $qty;
-            $product->last_stock_added_at = now()->toDateString();
-            $product->save();
-
-            $movement = StockMovement::create([
-                'id' => (string) Str::uuid(),
+            $stockIn = StockInModel::create([
                 'product_id' => $product->id,
-                'lot_id' => $args['lot_id'] ?? null,
-                'type' => 'IN',
-                'qty' => $qty,
-                'device_id' => $args['device_id'] ?? null,
+                'lot_id' => $lotId,
+                'quantity' => $quantity,
             ]);
+
+            $product->setAttribute('stock', (float) StockService::getStock($product->id));
 
             return [
                 'success' => true,
                 'product' => $product,
-                'movement' => $movement,
+                'stock_in' => $stockIn,
+                'lot' => $lot,
             ];
         });
     }

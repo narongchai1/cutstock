@@ -18,13 +18,12 @@ class AuthController extends Controller
 
         $user = User::query()
             ->where('username', $credentials['username'])
-            ->orWhere('email', $credentials['username'])
             ->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+                'message' => 'Invalid username or password.',
             ], 401);
         }
 
@@ -32,8 +31,7 @@ class AuthController extends Controller
             'success' => true,
             'user' => [
                 'id' => $user->id,
-                'username' => $user->username ?? $user->email,
-                'name' => $user->name,
+                'username' => $user->username,
                 'role' => $user->role ?? 'staff',
             ],
             'token' => 'api-token-' . Str::random(32),
@@ -49,7 +47,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'ออกจากระบบสำเร็จ',
+            'message' => 'Logout success.',
         ]);
     }
 }

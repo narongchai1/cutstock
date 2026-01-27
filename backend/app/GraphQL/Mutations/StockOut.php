@@ -2,72 +2,81 @@
 
 namespace App\GraphQL\Mutations;
 
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Lot;
 use App\Models\Product;
-use App\Models\StockMovement;
+use App\Services\StockService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class StockOut
 {
     public function __invoke($_, array $args): array
     {
         $productId = $args['product_id'] ?? null;
-        $qty = (int) ($args['qty'] ?? 0);
+        $quantity = (float) ($args['quantity'] ?? 0);
 
-        if (!$productId || $qty < 1) {
+        if (!$productId || $quantity <= 0) {
             return ['success' => false];
         }
 
-        return DB::transaction(function () use ($args, $productId, $qty) {
+        return DB::transaction(function () use ($args, $productId, $quantity) {
             $product = Product::query()->lockForUpdate()->find($productId);
             if (!$product) {
                 return ['success' => false];
             }
 
-            $currentStock = (int) ($product->stock ?? 0);
-            $newStock = $currentStock - $qty;
-
-            if ($newStock < 0) {
+            $currentStock = (float) StockService::getStock($product->id);
+            if ($currentStock < $quantity) {
                 return ['success' => false];
             }
 
             if (!empty($args['lot_id'])) {
-                $lot = DB::table('lots')
-                    ->where('id', $args['lot_id'])
-                    ->lockForUpdate()
-                    ->first();
-
+                $lot = Lot::query()->lockForUpdate()->find($args['lot_id']);
                 if (!$lot || $lot->product_id !== $product->id) {
                     return ['success' => false];
                 }
 
-                $currentLotQty = (float) ($lot->remaining_qty ?? 0);
-                $newLotQty = $currentLotQty - $qty;
-                if ($newLotQty < 0) {
+                if ((float) $lot->remaining_qty < $quantity) {
                     return ['success' => false];
                 }
 
-                DB::table('lots')
-                    ->where('id', $args['lot_id'])
-                    ->update(['remaining_qty' => $newLotQty]);
+                $lot->remaining_qty = (float) $lot->remaining_qty - $quantity;
+                $lot->save();
             }
 
-            $product->stock = $newStock;
-            $product->save();
+            $unitPrice = (float) ($args['unit_price'] ?? $product->sale_price ?? 0);
 
-            $movement = StockMovement::create([
-                'id' => (string) Str::uuid(),
+            $invoice = null;
+            if (!empty($args['invoice_id'])) {
+                $invoice = Invoice::query()->lockForUpdate()->find($args['invoice_id']);
+            }
+
+            if (!$invoice) {
+                $invoice = Invoice::create([
+                    'issued_at' => $args['issued_at'] ?? now(),
+                    'user_id' => $args['user_id'] ?? null,
+                    'total_amount' => 0,
+                ]);
+            }
+
+            $invoiceItem = InvoiceItem::create([
+                'invoice_id' => $invoice->id,
                 'product_id' => $product->id,
-                'lot_id' => $args['lot_id'] ?? null,
-                'type' => 'OUT',
-                'qty' => $qty,
-                'device_id' => $args['device_id'] ?? null,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
             ]);
+
+            $invoice->total_amount = (float) $invoice->total_amount + ($quantity * $unitPrice);
+            $invoice->save();
+
+            $product->setAttribute('stock', (float) StockService::getStock($product->id));
 
             return [
                 'success' => true,
                 'product' => $product,
-                'movement' => $movement,
+                'invoice' => $invoice,
+                'invoice_item' => $invoiceItem,
             ];
         });
     }

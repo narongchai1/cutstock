@@ -1,24 +1,23 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\GraphQL\Queries;
 
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\StockService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class DashboardController extends Controller
+class DashboardQuery
 {
-    public function summary(Request $request)
+    public function stockStats($_, array $args): array
     {
-        return response()->json($this->buildStockStats($request));
+        return $this->buildStockStats($args);
     }
 
-    public function salesSummary(Request $request)
+    public function salesSummary($_, array $args): array
     {
-        $dateInput = $request->query('date');
+        $dateInput = $args['date'] ?? null;
         $date = $dateInput ? Carbon::parse($dateInput)->toDateString() : Carbon::today()->toDateString();
 
         $totalSales = (float) (DB::table('invoices')
@@ -35,43 +34,18 @@ class DashboardController extends Controller
         $dailyExpense = 0.0;
         $netProfit = $totalSales - $totalCost - $dailyExpense;
 
-        return response()->json([
+        return [
             'date' => $date,
             'totalSales' => $totalSales,
             'totalCost' => $totalCost,
             'dailyExpense' => $dailyExpense,
             'netProfit' => $netProfit,
-        ]);
+        ];
     }
 
-    public function stockSummary(Request $request)
+    public function nearExpire($_, array $args): array
     {
-        $stats = $this->buildStockStats($request);
-
-        return response()->json([
-            'summary' => $stats['summary'],
-            'stockStatus' => $stats['stockStatus'],
-            'categories' => $stats['categories'],
-            'thresholds' => $stats['thresholds'],
-        ]);
-    }
-
-    public function lowStock(Request $request)
-    {
-        $stats = $this->buildStockStats($request);
-
-        return response()->json([
-            'items' => $stats['lowStockItems'],
-            'thresholds' => [
-                'lowStock' => $stats['thresholds']['lowStock'],
-                'limitedStock' => $stats['thresholds']['limitedStock'],
-            ],
-        ]);
-    }
-
-    public function nearExpire(Request $request)
-    {
-        $days = $this->getIntQuery($request, 'days', 30, 1);
+        $days = $this->getIntArg($args, 'days', 30, 1);
         $today = Carbon::today();
         $cutoff = $today->copy()->addDays($days);
 
@@ -90,15 +64,15 @@ class DashboardController extends Controller
             ->orderBy('lots.expiry_date')
             ->get();
 
-        return response()->json([
+        return [
             'asOf' => $today->toDateString(),
             'days' => $days,
             'cutoff' => $cutoff->toDateString(),
             'items' => $items,
-        ]);
+        ];
     }
 
-    public function systemStatus()
+    public function systemStatus(): array
     {
         $lastStockIn = DB::table('stock_ins')->max('created_at');
         $lastStockOut = DB::table('invoice_items')->max('created_at');
@@ -112,23 +86,23 @@ class DashboardController extends Controller
             $lastMovementAt = date('Y-m-d H:i:s', $lastMovementAt);
         }
 
-        return response()->json([
+        return [
             'serverTime' => Carbon::now()->toDateTimeString(),
             'totalProducts' => Product::count(),
             'totalStockMovements' => DB::table('stock_ins')->count() + DB::table('invoice_items')->count(),
             'lastStockMovementAt' => $lastMovementAt,
             'lastSyncAt' => null,
-        ]);
+        ];
     }
 
-    private function buildStockStats(Request $request): array
+    private function buildStockStats(array $args): array
     {
-        $lowStockThreshold = $this->getIntQuery($request, 'low_stock_threshold', 5, 0);
-        $limitedStockThreshold = $this->getIntQuery($request, 'limited_stock_threshold', 10, 0);
+        $lowStockThreshold = $this->getIntArg($args, 'low_stock_threshold', 5, 0);
+        $limitedStockThreshold = $this->getIntArg($args, 'limited_stock_threshold', 10, 0);
         if ($limitedStockThreshold < $lowStockThreshold) {
             $limitedStockThreshold = $lowStockThreshold;
         }
-        $highValueThreshold = $this->getIntQuery($request, 'high_value_threshold', 10000, 0);
+        $highValueThreshold = $this->getIntArg($args, 'high_value_threshold', 10000, 0);
 
         $stats = [
             'summary' => [
@@ -221,15 +195,14 @@ class DashboardController extends Controller
         return $stats;
     }
 
-    private function getIntQuery(Request $request, string $key, int $default, int $min): int
+    private function getIntArg(array $args, string $key, int $default, int $min): int
     {
-        $value = $request->query($key, $default);
+        $value = $args[$key] ?? $default;
         if (!is_numeric($value)) {
             return $default;
         }
 
         $value = (int) $value;
-
         if ($value < $min) {
             $value = $min;
         }

@@ -2,27 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\StockIn;
+use App\Services\StockService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        return response()->json(Product::orderByDesc('created_at')->get());
+        $products = Product::orderByDesc('created_at')->get();
+        $stockMap = StockService::getStockMap($products->pluck('id')->all());
+
+        $products->each(function (Product $product) use ($stockMap) {
+            $product->setAttribute('stock', (float) ($stockMap[$product->id] ?? 0));
+        });
+
+        return response()->json($products);
     }
 
     public function store(Request $request)
     {
-        $data = $this->normalizeProductData($this->validatedData($request, true));
-        $productId = $data['id'] ?? (string) Str::uuid();
-        $data['id'] = $productId;
+        $data = $this->validatedData($request, true);
+        $initialStock = $data['initial_stock'] ?? $data['stock'] ?? null;
+        unset($data['initial_stock'], $data['stock']);
 
-        $values = $data;
-        unset($values['id']);
+        $product = Product::create($data);
 
-        $product = Product::updateOrCreate(['id' => $productId], $values);
+        if ($initialStock !== null && (float) $initialStock > 0) {
+            StockIn::create([
+                'product_id' => $product->id,
+                'quantity' => (float) $initialStock,
+            ]);
+        }
+
+        $product->setAttribute('stock', (float) ($initialStock ?? 0));
 
         return response()->json([
             'success' => true,
@@ -32,9 +48,13 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        $data = $this->normalizeProductData($this->validatedData($request, false));
+        $data = $this->validatedData($request, false, $product->id);
+        unset($data['initial_stock'], $data['stock']);
+
         $product->fill($data);
         $product->save();
+
+        $product->setAttribute('stock', (float) StockService::getStock($product->id));
 
         return response()->json([
             'success' => true,
@@ -51,91 +71,35 @@ class ProductController extends Controller
 
     public function categories()
     {
-        $categories = [];
+        $categories = Category::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id']);
 
-        Product::query()
-            ->select('category', 'subcategory')
-            ->whereNotNull('category')
-            ->get()
-            ->each(function (Product $product) use (&$categories) {
-                $category = $product->category;
-                if (!$category) {
-                    return;
-                }
-
-                if (!isset($categories[$category])) {
-                    $categories[$category] = [];
-                }
-
-                if ($product->subcategory) {
-                    $categories[$category][$product->subcategory] = true;
-                }
-            });
-
-        $result = [];
-        foreach ($categories as $category => $subcategories) {
-            $result[$category] = array_values(array_keys($subcategories));
-        }
-
-        return response()->json($result);
+        return response()->json($categories);
     }
 
-    private function validatedData(Request $request, bool $allowId): array
+    private function validatedData(Request $request, bool $allowStock, ?int $productId = null): array
     {
         $rules = [
-            'barcode' => ['nullable', 'string', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'cost' => ['required', 'numeric', 'min:0'],
-            'cost_price' => ['nullable', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-            'unit' => ['nullable', 'string', 'max:50'],
-            'size' => ['nullable', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:255'],
-            'subcategory' => ['nullable', 'string', 'max:255'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
-            'main_category' => ['nullable', 'string', 'max:255'],
-            'sub_category' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', 'string', 'max:255'],
-            'last_stock_added' => ['nullable', 'integer', 'min:0'],
-            'last_stock_added_at' => ['nullable', 'date'],
-            'expiry_date' => ['nullable', 'date'],
-            'warranty_expiry_date' => ['nullable', 'date'],
-            'storage_location' => ['nullable', 'string', 'max:255'],
-            'sale_location' => ['nullable', 'string', 'max:255'],
-            'reorder_point' => ['nullable', 'integer', 'min:0'],
+            'product_code' => [
+                $productId ? 'sometimes' : 'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'product_code')->ignore($productId),
+            ],
+            'name' => [$productId ? 'sometimes' : 'required', 'string', 'max:255'],
+            'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
+            'unit_id' => ['sometimes', 'nullable', 'integer', 'exists:units,id'],
+            'sale_unit_id' => ['sometimes', 'nullable', 'integer', 'exists:units,id'],
+            'standard_cost' => ['sometimes', 'nullable', 'numeric', 'min:0'],
+            'sale_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ];
 
-        if ($allowId) {
-            $rules['id'] = ['nullable', 'string', 'max:64'];
+        if ($allowStock) {
+            $rules['initial_stock'] = ['nullable', 'numeric', 'min:0'];
+            $rules['stock'] = ['nullable', 'numeric', 'min:0'];
         }
 
         return $request->validate($rules);
-    }
-
-    private function normalizeProductData(array $data): array
-    {
-        $data = $this->syncProductFields($data, 'category', 'main_category');
-        $data = $this->syncProductFields($data, 'subcategory', 'sub_category');
-        $data = $this->syncProductFields($data, 'cost', 'cost_price');
-
-        return $data;
-    }
-
-    private function syncProductFields(array $data, string $primary, string $secondary): array
-    {
-        $primaryValue = $data[$primary] ?? null;
-        $secondaryValue = $data[$secondary] ?? null;
-
-        if ($secondaryValue === null && $primaryValue !== null) {
-            $data[$secondary] = $primaryValue;
-        }
-
-        if ($primaryValue === null && $secondaryValue !== null) {
-            $data[$primary] = $secondaryValue;
-        }
-
-        return $data;
     }
 }

@@ -3,24 +3,17 @@
 namespace App\GraphQL\Queries;
 
 use App\Models\Product;
-use App\Models\StockMovement;
+use App\Services\StockService;
 
 class ProductQuery
 {
     public function products()
     {
-        return Product::all()->map(function ($product) {
+        $products = Product::all();
+        $stockMap = StockService::getStockMap($products->pluck('id')->all());
 
-            $stockIn = StockMovement::where('product_id', $product->id)
-                ->where('type', 'IN')
-                ->sum('qty');
-
-            $stockOut = StockMovement::where('product_id', $product->id)
-                ->where('type', 'OUT')
-                ->sum('qty');
-
-            $product->stock = $stockIn - $stockOut;
-
+        return $products->map(function (Product $product) use ($stockMap) {
+            $product->setAttribute('stock', (float) ($stockMap[$product->id] ?? 0));
             return $product;
         });
     }
