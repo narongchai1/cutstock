@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SyncController;
 use Illuminate\Http\Request;
@@ -19,8 +21,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::post('/presence/heartbeat', [PresenceController::class, 'heartbeat']);
+    Route::get('/presence/{user}', [PresenceController::class, 'status']);
 });
 
 Route::get('/health', function () {
@@ -42,4 +49,8 @@ Route::post('/products', [ProductController::class, 'store']);
 Route::put('/products/{product}', [ProductController::class, 'update']);
 Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 Route::get('/categories', [ProductController::class, 'categories']);
+Route::get('/suppliers', [SupplierController::class, 'index']);
+Route::post('/suppliers', [SupplierController::class, 'store']);
+Route::put('/suppliers/{supplier}', [SupplierController::class, 'update']);
+Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy']);
 Route::post('/sync', [SyncController::class, 'sync']);
