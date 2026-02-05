@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function summary(Request $request)
+    public function summary(Request $request ) 
     {
         return response()->json($this->buildStockStats($request));
     }
