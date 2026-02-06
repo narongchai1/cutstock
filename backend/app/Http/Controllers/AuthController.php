@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -27,6 +26,9 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Issue a Sanctum token so we can protect API routes with auth:sanctum.
+        $token = $user->createToken('api')->plainTextToken;
+
         return response()->json([
             'success' => true,
             'user' => [
@@ -34,7 +36,7 @@ class AuthController extends Controller
                 'username' => $user->username,
                 'role' => $user->role ?? 'staff',
             ],
-            'token' => 'api-token-' . Str::random(32),
+            'token' => $token,
         ]);
     }
 

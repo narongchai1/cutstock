@@ -102,6 +102,7 @@ class DashboardController extends Controller
     {
         $lastStockIn = DB::table('stock_ins')->max('created_at');
         $lastStockOut = DB::table('invoice_items')->max('created_at');
+        $lastSyncAt = DB::table('sync_batches')->max('created_at');
 
         $lastMovementAt = null;
         if ($lastStockIn || $lastStockOut) {
@@ -117,7 +118,7 @@ class DashboardController extends Controller
             'totalProducts' => Product::count(),
             'totalStockMovements' => DB::table('stock_ins')->count() + DB::table('invoice_items')->count(),
             'lastStockMovementAt' => $lastMovementAt,
-            'lastSyncAt' => null,
+            'lastSyncAt' => $lastSyncAt,
         ]);
     }
 
