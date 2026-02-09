@@ -1,5 +1,8 @@
 {
   "backendUrl": "http://127.0.0.1:8000",
   "apiTimeoutMs": 5000,
-  "healthCheckTtlMs": 3000
+  "healthCheckTtlMs": 3000,
+  "internetCheckUrl": "https://1.1.1.1/cdn-cgi/trace",
+  "internetCheckTimeoutMs": 2500,
+  "requireInternetForOnlineStatus": false
 }

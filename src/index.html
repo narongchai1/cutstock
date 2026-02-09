@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบ - ระบบจัดการสต็อก</title>
-    <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .debug-info h4 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -25,13 +41,13 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> ชื่อผู้ใช้</label>
-                    <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required>
+                    <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required value="admin">
                     <small class="form-hint">ใช้: admin หรือ staff</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> รหัสผ่าน</label>
-                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required>
+                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required value="admin123">
                     <small class="form-hint">ใช้: admin123 หรือ staff123</small>
                 </div>
                 
@@ -46,8 +62,17 @@
                 <p><strong>พนักงาน:</strong> staff / staff123</p>
             </div>
             
+            <!-- Debug Section -->
+            <div class="debug-info">
+                <h4><i class="fas fa-bug"></i> ข้อมูล debug:</h4>
+                <p id="debugInfo">กำลังตรวจสอบระบบ...</p>
+                <button onclick="checkSystem()" class="btn btn-sm btn-info">
+                    <i class="fas fa-search"></i> ตรวจสอบระบบ
+                </button>
+            </div>
+            
             <div class="login-footer">
-                <p>© 2023 ระบบจัดการสต็อก | เวอร์ชัน 1.0</p>
+                <p>© 2024 ระบบจัดการสต็อก | เวอร์ชัน 1.0</p>
             </div>
         </div>
         
@@ -57,5 +82,47 @@
     </div>
     
     <script src="js/auth.js"></script>
+    <script>
+        // Debug function
+        async function checkSystem() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+            
+            try {
+                // ตรวจสอบ database
+                const dbResult = await window.electronAPI.checkDatabase();
+                console.log('Database check:', dbResult);
+                
+                // ตรวจสอบหน้า stock.html
+                const pageResult = await window.electronAPI.checkStockPage();
+                console.log('Stock page check:', pageResult);
+                
+                // ตรวจสอบ localStorage
+                const hasUser = localStorage.getItem('user');
+                
+                debugInfo.innerHTML = `
+                    <div>✅ Database: ${dbResult.ready ? 'พร้อม' : 'ไม่พร้อม'}</div>
+                    <div>✅ Stock page: ${pageResult ? 'พบ' : 'ไม่พบ'}</div>
+                    <div>✅ LocalStorage: ${hasUser ? 'มีข้อมูล' : 'ไม่มีข้อมูล'}</div>
+                    <div>✅ API ready: ${window.electronAPI ? 'ใช่' : 'ไม่'}</div>
+                `;
+            } catch (error) {
+                debugInfo.innerHTML = `❌ Error: ${error.message}`;
+                console.error('Debug error:', error);
+            }
+        }
+        
+        // Auto-check system on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkSystem, 1000);
+            
+            // Auto-fill and submit for testing
+            setTimeout(() => {
+                document.getElementById('username').value = 'admin';
+                document.getElementById('password').value = 'admin123';
+                console.log('Auto-filled credentials for testing');
+            }, 1500);
+        });
+    </script>
 </body>
 </html>

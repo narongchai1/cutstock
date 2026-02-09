@@ -1,0 +1,93 @@
+# 1. สร้างโฟลเดอร์ icons ถ้ายังไม่มี
+if (!(Test-Path "src\assets\icons")) {
+    New-Item -ItemType Directory -Path "src\assets\icons" -Force
+    Write-Host "✅ Created icons directory"
+}
+
+# 2. สร้างไฟล์ icon placeholder
+$svgContent = @'
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+    <rect width="256" height="256" fill="#4F46E5"/>
+    <rect x="64" y="64" width="128" height="128" fill="white" stroke="#7C3AED" stroke-width="8"/>
+    <text x="128" y="140" font-family="Arial" font-size="60" font-weight="bold" fill="#4F46E5" text-anchor="middle">S</text>
+</svg>
+'@
+Set-Content -Path "src\assets\icons\app-icon.png" -Value $svgContent
+Write-Host "✅ Created app-icon.png"
+
+# 3. สร้างไฟล์ icon-utils.js ที่ถูกต้อง
+$iconUtilsCode = @'
+// src/js/icon-utils.js
+const fs = require('fs');
+const path = require('path');
+
+class IconUtils {
+    static getAppIconPath() {
+        try {
+            const iconPath = path.join(__dirname, '..', 'assets', 'icons', 'app-icon.png');
+            if (fs.existsSync(iconPath)) {
+                console.log('📁 Found icon at:', iconPath);
+                return iconPath;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error getting app icon path:', error.message);
+        }
+        return null;
+    }
+
+    static getTrayIconPath() {
+        return this.getAppIconPath();
+    }
+
+    static getNotificationIconPath() {
+        return this.getAppIconPath();
+    }
+
+    static async ensureIconsExist() {
+        return new Promise((resolve, reject) => {
+            try {
+                // ใช้ path จาก root directory โดยตรง
+                const iconsDir = path.join(process.cwd(), 'src', 'assets', 'icons');
+                console.log('📁 Icons directory:', iconsDir);
+                
+                // สร้างโฟลเดอร์ถ้ายังไม่มี
+                if (!fs.existsSync(iconsDir)) {
+                    console.log('📁 Creating icons directory...');
+                    fs.mkdirSync(iconsDir, { recursive: true });
+                }
+                
+                const mainIcon = path.join(iconsDir, 'app-icon.png');
+                console.log('📁 Main icon path:', mainIcon);
+                
+                // สร้าง icon ถ้ายังไม่มี
+                if (!fs.existsSync(mainIcon)) {
+                    console.log('📝 Creating placeholder icon...');
+                    const svgIcon = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+    <rect width="256" height="256" fill="#4F46E5"/>
+    <rect x="64" y="64" width="128" height="128" fill="white" stroke="#7C3AED" stroke-width="8"/>
+    <text x="128" y="140" font-family="Arial" font-size="60" font-weight="bold" fill="#4F46E5" text-anchor="middle">S</text>
+</svg>`;
+                    
+                    fs.writeFileSync(mainIcon, svgIcon);
+                    console.log('✅ Created icon at:', mainIcon);
+                } else {
+                    console.log('✅ Icon already exists');
+                }
+                
+                resolve(mainIcon);
+                
+            } catch (error) {
+                console.error('❌ Error in ensureIconsExist:', error);
+                // ไม่ reject แต่ resolve ด้วย null เพื่อให้โปรแกรมทำงานต่อได้
+                resolve(null);
+            }
+        });
+    }
+}
+
+module.exports = IconUtils;
+'@
+Set-Content -Path "src\js\icon-utils.js" -Value $iconUtilsCode
+Write-Host "✅ Created icon-utils.js"

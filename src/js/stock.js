@@ -88,26 +88,6 @@ function displayProducts(products) {
         `;
         return;
     }
-    // ในส่วนของ editProduct function (บรรทัดประมาณ 90-105)
-async function editProduct(productId) {
-    try {
-        const products = await window.electronAPI.getProducts();
-        const product = products.find(p => p.id === productId);
-        
-        if (product) {
-            // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
-            sessionStorage.setItem('editProduct', JSON.stringify(product));
-            
-            // ไปยังหน้าแก้ไขสินค้า
-            window.location.href = 'edit-product.html';
-        } else {
-            showAlert('ไม่พบข้อมูลสินค้าที่ต้องการแก้ไข', 'danger');
-        }
-    } catch (error) {
-        console.error('Error in editProduct:', error);
-        showAlert('เกิดข้อผิดพลาดในการแก้ไขสินค้า', 'danger');
-    }
-}
     
     products.forEach(product => {
         const row = document.createElement('tr');
@@ -150,57 +130,24 @@ async function editProduct(productId) {
     });
 }
 
-// โหลดข้อมูลสินค้า
-async function loadProducts() {
-    try {
-        const products = await window.electronAPI.getProducts();
-        displayProducts(products);
-        
-        // แสดงจำนวนสินค้า
-        document.getElementById('productCount').textContent = products.length;
-        
-        // คำนวณมูลค่าสต็อก
-        const totalValue = products.reduce((sum, product) => {
-            const stock = product.stock || 0;
-            const cost = product.cost || 0;
-            return sum + (stock * cost);
-        }, 0);
-        
-        document.getElementById('stockValue').textContent = formatCurrency(totalValue);
-        
-        // คำนวณสินค้าใกล้หมด (น้อยกว่า 10 ชิ้น)
-        const lowStock = products.filter(p => {
-            const stock = p.stock || 0;
-            return stock > 0 && stock <= 10;
-        }).length;
-        
-        document.getElementById('lowStock').textContent = lowStock;
-        
-        // คำนวณสินค้าหมด
-        const outOfStock = products.filter(p => {
-            const stock = p.stock || 0;
-            return stock === 0;
-        }).length;
-        
-        document.getElementById('outOfStock').textContent = outOfStock;
-        
-    } catch (error) {
-        console.error('Error loading products:', error);
-        showAlert('เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า', 'danger');
-    }
-}
-
 // แก้ไขสินค้า
 async function editProduct(productId) {
-    const products = await window.electronAPI.getProducts();
-    const product = products.find(p => p.id === productId);
-    
-    if (product) {
-        // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
-        sessionStorage.setItem('editProduct', JSON.stringify(product));
+    try {
+        // ใช้ API ใหม่ getProduct แทนการ filter จาก getProducts
+        const product = await window.electronAPI.getProduct(productId);
         
-        // ไปยังหน้าแก้ไขสินค้า
-        window.location.href = 'edit-product.html';
+        if (product) {
+            // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
+            sessionStorage.setItem('editProduct', JSON.stringify(product));
+            
+            // ไปยังหน้าแก้ไขสินค้า
+            window.location.href = 'edit-product.html';
+        } else {
+            showAlert('ไม่พบข้อมูลสินค้าที่ต้องการแก้ไข', 'danger');
+        }
+    } catch (error) {
+        console.error('Error in editProduct:', error);
+        showAlert('เกิดข้อผิดพลาดในการแก้ไขสินค้า', 'danger');
     }
 }
 
@@ -220,6 +167,55 @@ async function deleteProduct(productId) {
             console.error('Error deleting product:', error);
             showAlert('เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
         }
+    }
+}
+
+// โหลดข้อมูลสินค้า
+async function loadProducts(searchTerm = '') {
+    try {
+        const products = await window.electronAPI.getProducts(searchTerm);
+        displayProducts(products);
+        
+        // โหลดสถิติ
+        try {
+            const stats = await window.electronAPI.getStatistics();
+            if (stats) {
+                document.getElementById('productCount').textContent = stats.total_products || products.length;
+                document.getElementById('stockValue').textContent = formatCurrency(stats.total_value || 0);
+                document.getElementById('lowStock').textContent = stats.low_stock || 0;
+                document.getElementById('outOfStock').textContent = stats.out_of_stock || 0;
+            }
+        } catch (statsError) {
+            console.error('Error loading statistics:', statsError);
+            // ถ้าโหลดสถิติไม่ได้ ให้ใช้การคำนวณจาก products array
+            document.getElementById('productCount').textContent = products.length;
+            
+            const totalValue = products.reduce((sum, product) => {
+                const stock = product.stock || 0;
+                const cost = product.cost || 0;
+                return sum + (stock * cost);
+            }, 0);
+            
+            document.getElementById('stockValue').textContent = formatCurrency(totalValue);
+            
+            const lowStock = products.filter(p => {
+                const stock = p.stock || 0;
+                return stock > 0 && stock <= 10;
+            }).length;
+            
+            document.getElementById('lowStock').textContent = lowStock;
+            
+            const outOfStock = products.filter(p => {
+                const stock = p.stock || 0;
+                return stock === 0;
+            }).length;
+            
+            document.getElementById('outOfStock').textContent = outOfStock;
+        }
+        
+    } catch (error) {
+        console.error('Error loading products:', error);
+        showAlert('เกิดข้อผิดพลาดในการโหลดข้อมูลสินค้า', 'danger');
     }
 }
 
@@ -261,6 +257,18 @@ function updateOnlineStatus(isOnline) {
     }
 }
 
+// ค้นหาสินค้า
+function searchProducts() {
+    const searchTerm = document.getElementById('searchInput').value;
+    loadProducts(searchTerm);
+}
+
+// ล้างการค้นหา
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    loadProducts();
+}
+
 // Initialize เมื่อหน้าโหลด
 document.addEventListener('DOMContentLoaded', function() {
     const user = checkAuth();
@@ -282,6 +290,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
         window.electronAPI.onOnlineStatusChange((isOnline) => {
             updateOnlineStatus(isOnline);
+        });
+    }
+    
+    // เพิ่ม event listener สำหรับการค้นหาแบบ real-time
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchProducts();
+            }, 500); // ค้นหาหลังจากพิมพ์หยุด 0.5 วินาที
         });
     }
 });

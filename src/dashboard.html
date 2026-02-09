@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แดชบอร์ด - ระบบจัดการสต็อก</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .dashboard-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .quick-action-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-tachometer-alt"></i> แดชบอร์ด</h1>
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <span id="onlineStatus" class="status-badge offline">
+                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                </span>
+                <button class="btn btn-sm btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav">
+            <button class="nav-btn active" onclick="window.location.href='dashboard.html'">
+                <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
+            </button>
+            <button class="nav-btn" onclick="window.location.href='stock.html'">
+                <i class="fas fa-box"></i> สต็อกสินค้า
+            </button>
+            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
+            <button class="nav-btn" onclick="window.location.href='add-product.html'">
+                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
+            </button>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="dashboard-card">
+            <h2><i class="fas fa-bolt"></i> การดำเนินการด่วน</h2>
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="window.location.href='add-product.html'">
+                    <i class="fas fa-plus-circle fa-2x"></i>
+                    <span>เพิ่มสินค้าใหม่</span>
+                </button>
+                <button class="quick-action-btn" onclick="checkLowStock()">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <span>ตรวจสอบสินค้าใกล้หมด</span>
+                </button>
+                <button class="quick-action-btn" onclick="window.location.href='stock.html'">
+                    <i class="fas fa-search fa-2x"></i>
+                    <span>ค้นหาสินค้า</span>
+                </button>
+                <button class="quick-action-btn" onclick="generateReport()">
+                    <i class="fas fa-file-export fa-2x"></i>
+                    <span>สร้างรายงาน</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h2><i class="fas fa-chart-line"></i> สถิติภาพรวม</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalProducts">0</div>
+                        <div class="stat-label">จำนวนสินค้า</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stockValue">฿0</div>
+                        <div class="stat-label">มูลค่าสต็อก</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lowStock">0</div>
+                        <div class="stat-label">สินค้าใกล้หมด</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="outOfStock">0</div>
+                        <div class="stat-label">สินค้าหมด</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h2><i class="fas fa-history"></i> กิจกรรมล่าสุด</h2>
+                <div id="recentActivity">
+                    <p>กำลังโหลดกิจกรรมล่าสุด...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Low Stock Alert -->
+        <div class="dashboard-card" id="lowStockAlert" style="display: none;">
+            <h2 style="color: #e74c3c;">
+                <i class="fas fa-exclamation-circle"></i> คำเตือนสินค้าใกล้หมด
+            </h2>
+            <div id="lowStockItems">
+                <!-- สินค้าใกล้หมดจะแสดงที่นี่ -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ฟังก์ชันพื้นฐาน
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return JSON.parse(user);
+        }
+        
+        function logout() {
+            if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        async function loadDashboardData() {
+            try {
+                // โหลดสถิติ
+                const stats = await window.electronAPI.getStatistics();
+                if (stats) {
+                    document.getElementById('totalProducts').textContent = stats.total_products || 0;
+                    document.getElementById('stockValue').textContent = formatCurrency(stats.total_value || 0);
+                    document.getElementById('lowStock').textContent = stats.low_stock || 0;
+                    document.getElementById('outOfStock').textContent = stats.out_of_stock || 0;
+                }
+                
+                // ตรวจสอบสินค้าใกล้หมด
+                const products = await window.electronAPI.getProducts();
+                const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 10);
+                
+                if (lowStockProducts.length > 0) {
+                    document.getElementById('lowStockAlert').style.display = 'block';
+                    let html = '<ul>';
+                    lowStockProducts.forEach(product => {
+                        html += `<li><strong>${product.name}</strong> - เหลือ ${product.stock} ชิ้น</li>`;
+                    });
+                    html += '</ul>';
+                    document.getElementById('lowStockItems').innerHTML = html;
+                }
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('th-TH', {
+                style: 'currency',
+                currency: 'THB',
+                minimumFractionDigits: 0
+            }).format(amount || 0);
+        }
+        
+        async function checkLowStock() {
+            try {
+                await window.electronAPI.backgroundService.runTask('checkLowStock');
+                alert('ตรวจสอบสินค้าใกล้หมดเรียบร้อยแล้ว');
+            } catch (error) {
+                console.error('Error checking low stock:', error);
+            }
+        }
+        
+        function generateReport() {
+            alert('ฟีเจอร์นี้กำลังอยู่ในระหว่างการพัฒนา');
+        }
+        
+        // Initialize เมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            // แสดงชื่อผู้ใช้
+            document.getElementById('currentUser').textContent = user.name;
+            
+            // โหลดข้อมูลแดชบอร์ด
+            loadDashboardData();
+            
+            // ตรวจสอบสถานะออนไลน์
+            checkOnlineStatus();
+        });
+        
+        async function checkOnlineStatus() {
+            try {
+                const isOnline = await window.electronAPI.checkOnlineStatus();
+                updateOnlineStatus(isOnline);
+            } catch (error) {
+                console.error('Error checking online status:', error);
+            }
+        }
+        
+        function updateOnlineStatus(isOnline) {
+            const statusElement = document.getElementById('onlineStatus');
+            if (statusElement) {
+                if (isOnline) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+                    statusElement.classList.remove('online');
+                    statusElement.classList.add('offline');
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
