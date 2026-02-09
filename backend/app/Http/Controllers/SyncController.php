@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SyncController extends Controller
 {
+    // จุดรับ request จาก frontend
     public function sync(Request $request)
     {
         $data = $request->validate([
@@ -54,7 +55,7 @@ class SyncController extends Controller
             'invoice_items.*.issued_at' => ['nullable', 'date'],
             'invoice_items.*.user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
-
+         // เช็คว่ามีอะไรให้ sync ไหม
         $hasAny = !empty($data['movements']) || !empty($data['stock_ins']) || !empty($data['invoice_items']);
         if (!$hasAny) {
             return response()->json([
@@ -66,14 +67,14 @@ class SyncController extends Controller
         $syncId = $data['sync_id'] ?? null;
         $user = $request->user();
 
-        // If the client retries the same sync batch, return the stored response.
+        //กัน sync ซ้ำ (SyncBatch)
         if ($syncId) {
             $existing = SyncBatch::query()->where('sync_id', $syncId)->first();
             if ($existing && $existing->response_json) {
                 return response()->json($existing->response_json);
             }
         }
-
+        // normalizeEvents() — รวมข้อมูลให้เป็น “movement เดียวกัน”
         $events = $this->normalizeEvents($data);
         $deviceId = $data['device_id'] ?? null;
 
