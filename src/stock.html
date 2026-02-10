@@ -110,6 +110,169 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .close-modal:hover {
+            color: #e74c3c;
+        }
+        
+        .product-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        
+        .detail-section h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+        }
+        
+        .lot-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .lot-table th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .lot-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .lot-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .expired-soon {
+            background-color: #fff3cd !important;
+        }
+        
+        .expired {
+            background-color: #f8d7da !important;
+        }
+        
+        .supplier-link {
+            color: #3498db;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .supplier-link:hover {
+            color: #2980b9;
+        }
+        
+        /* สไตล์สำหรับตารางหลัก */
+        .product-name-link {
+            color: #3498db;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+        
+        .product-name-link:hover {
+            color: #2980b9;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .product-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -143,7 +306,7 @@
         
         <!-- Search and Actions -->
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ค้นหาสินค้า (รหัส, ชื่อ, บาร์โค้ด)" onkeyup="searchProducts()">
+            <input type="text" id="searchInput" placeholder="ค้นหาสินค้า (รหัส, ชื่อ, บาร์โค้ด, หมวดหมู่)" onkeyup="searchProducts()">
             <button class="btn btn-primary" onclick="clearSearch()">
                 <i class="fas fa-times"></i> ล้าง
             </button>
@@ -181,7 +344,7 @@
                         <th>ต้นทุน</th>
                         <th>จำนวน</th>
                         <th>หมวดหมู่</th>
-                        <th>สถานะสินค้า</th>
+                        <th>สถานะ</th>
                         <th>จัดการ</th>
                     </tr>
                 </thead>
@@ -195,8 +358,294 @@
         </div>
     </div>
     
+    <!-- Modal แสดงรายละเอียดสินค้าและล็อตสินค้า -->
+    <div id="productDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title" id="modalProductName"></h3>
+                    <span id="modalProductCode" style="color: #7f8c8d; font-size: 14px;"></span>
+                </div>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="product-details">
+                <div class="detail-section">
+                    <h4><i class="fas fa-info-circle"></i> ข้อมูลสินค้า</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">รหัสสินค้า:</span>
+                        <span class="detail-value" id="detailCode"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">บาร์โค้ด:</span>
+                        <span class="detail-value" id="detailBarcode"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">ราคาขาย:</span>
+                        <span class="detail-value" id="detailPrice"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">ต้นทุน:</span>
+                        <span class="detail-value" id="detailCost"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">จำนวนทั้งหมด:</span>
+                        <span class="detail-value" id="detailQuantity"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">หมวดหมู่:</span>
+                        <span class="detail-value" id="detailCategory"></span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4><i class="fas fa-chart-line"></i> สถิติสินค้า</h4>
+                    <div class="detail-item">
+                        <span class="detail-label">มูลค่าสต็อก:</span>
+                        <span class="detail-value" id="detailStockValue"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">จำนวนล็อต:</span>
+                        <span class="detail-value" id="detailLotCount"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">วันที่เพิ่ม:</span>
+                        <span class="detail-value" id="detailAddedDate"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">อัพเดตล่าสุด:</span>
+                        <span class="detail-value" id="detailUpdatedDate"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">สถานะ:</span>
+                        <span class="detail-value" id="detailStatus"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h4><i class="fas fa-layer-group"></i> ล็อตสินค้า</h4>
+                <div class="table-container">
+                    <table class="lot-table">
+                        <thead>
+                            <tr>
+                                <th>ล็อตหมายเลข</th>
+                                <th>วันหมดอายุ</th>
+                                <th>หมายเลขผลิตภัณฑ์</th>
+                                <th>ปริมาณที่เหลือ</th>
+                                <th>การรับประกัน</th>
+                                <th>รหัสซัพพลายเออร์</th>
+                                <th>วันที่รับเข้า</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lotTableBody">
+                            <!-- ข้อมูลล็อตสินค้าจะถูกโหลดโดย JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="text-right" style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeModal()">ปิด</button>
+                <button class="btn btn-primary" onclick="editProduct()">
+                    <i class="fas fa-edit"></i> แก้ไขสินค้า
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal แสดงข้อมูลซัพพลายเออร์ -->
+    <div id="supplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="supplierModalTitle">ข้อมูลซัพพลายเออร์</h3>
+                <button class="close-modal" onclick="closeSupplierModal()">&times;</button>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-item">
+                    <span class="detail-label">รหัสซัพพลายเออร์:</span>
+                    <span class="detail-value" id="supplierCode"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ชื่อบริษัท:</span>
+                    <span class="detail-value" id="supplierName"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ผู้ติดต่อ:</span>
+                    <span class="detail-value" id="supplierContact"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">เบอร์โทรศัพท์:</span>
+                    <span class="detail-value" id="supplierPhone"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">อีเมล:</span>
+                    <span class="detail-value" id="supplierEmail"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ที่อยู่:</span>
+                    <span class="detail-value" id="supplierAddress"></span>
+                </div>
+            </div>
+            
+            <div class="text-right" style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="closeSupplierModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="js/stock.js"></script>
     <script>
+        // ข้อมูลตัวอย่าง
+        const sampleProducts = [
+            {
+                id: 1,
+                code: "P-001",
+                barcode: "8901234567890",
+                name: "นมสดยูเอชที รสจืด",
+                price: 25.00,
+                cost: 18.50,
+                quantity: 150,
+                mainCategory: "เครื่องดื่ม",
+                subCategory: "นมและผลิตภัณฑ์นม",
+                status: "ปกติ",
+                addedDate: "2023-10-15",
+                updatedDate: "2024-01-20",
+                lots: [
+                    {
+                        lotNumber: "LOT-001-01",
+                        expiryDate: "2024-06-30",
+                        productNumber: "NP-2023-001",
+                        remainingQuantity: 50,
+                        warranty: "6 เดือน",
+                        supplierCode: "SUP-001",
+                        receivedDate: "2023-10-15"
+                    },
+                    {
+                        lotNumber: "LOT-001-02",
+                        expiryDate: "2024-07-15",
+                        productNumber: "NP-2023-002",
+                        remainingQuantity: 100,
+                        warranty: "6 เดือน",
+                        supplierCode: "SUP-001",
+                        receivedDate: "2024-01-20"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                code: "P-002",
+                barcode: "8901234567891",
+                name: "น้ำปลาแท่ง ซีฟู้ด",
+                price: 45.00,
+                cost: 32.00,
+                quantity: 80,
+                mainCategory: "อาหารแห้ง",
+                subCategory: "เครื่องปรุงรส",
+                status: "ใกล้หมด",
+                addedDate: "2023-11-10",
+                updatedDate: "2024-01-18",
+                lots: [
+                    {
+                        lotNumber: "LOT-002-01",
+                        expiryDate: "2025-12-31",
+                        productNumber: "FP-2023-001",
+                        remainingQuantity: 80,
+                        warranty: "12 เดือน",
+                        supplierCode: "SUP-002",
+                        receivedDate: "2023-11-10"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                code: "P-003",
+                barcode: "8901234567892",
+                name: "ยาสีฟันคอลเกต",
+                price: 89.00,
+                cost: 65.00,
+                quantity: 25,
+                mainCategory: "สุขภาพและความงาม",
+                subCategory: "ผลิตภัณฑ์ทำความสะอาดช่องปาก",
+                status: "ปกติ",
+                addedDate: "2024-01-05",
+                updatedDate: "2024-01-20",
+                lots: [
+                    {
+                        lotNumber: "LOT-003-01",
+                        expiryDate: "2025-08-31",
+                        productNumber: "HP-2024-001",
+                        remainingQuantity: 25,
+                        warranty: "24 เดือน",
+                        supplierCode: "SUP-003",
+                        receivedDate: "2024-01-05"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                code: "P-004",
+                barcode: "8901234567893",
+                name: "แบตเตอรี่อัลคาไลน์ AA",
+                price: 120.00,
+                cost: 85.00,
+                quantity: 0,
+                mainCategory: "อิเล็กทรอนิกส์",
+                subCategory: "แบตเตอรี่และอุปกรณ์ไฟ",
+                status: "หมด",
+                addedDate: "2023-09-22",
+                updatedDate: "2024-01-15",
+                lots: [
+                    {
+                        lotNumber: "LOT-004-01",
+                        expiryDate: "2026-05-31",
+                        productNumber: "EP-2023-001",
+                        remainingQuantity: 0,
+                        warranty: "36 เดือน",
+                        supplierCode: "SUP-004",
+                        receivedDate: "2023-09-22"
+                    }
+                ]
+            }
+        ];
+
+        // ข้อมูลซัพพลายเออร์ตัวอย่าง
+        const sampleSuppliers = [
+            {
+                code: "SUP-001",
+                name: "บริษัท ไทย-เดนมาร์ค จำกัด",
+                contact: "สมชาย ใจดี",
+                phone: "02-123-4567",
+                email: "contact@thai-denmark.com",
+                address: "123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110"
+            },
+            {
+                code: "SUP-002",
+                name: "บริษัท ซีฟู้ด ผลิตภัณฑ์อาหารทะเล จำกัด",
+                contact: "สมหญิง เก่งงาน",
+                phone: "02-234-5678",
+                email: "info@seafood.co.th",
+                address: "456 ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400"
+            },
+            {
+                code: "SUP-003",
+                name: "บริษัท คอลเกต-ปาล์มโอลีฟ จำกัด",
+                contact: "ธนพล ทำงานดี",
+                phone: "02-345-6789",
+                email: "thailand@colgate.com",
+                address: "789 ถนนพระราม 4 แขวงสีลม เขตบางรัก กรุงเทพฯ 10500"
+            },
+            {
+                code: "SUP-004",
+                name: "บริษัท พานาโซนิค ประเทศไทย จำกัด",
+                contact: "วิษณุ เทคโนโลยี",
+                phone: "02-456-7890",
+                email: "support@panasonic.co.th",
+                address: "321 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900"
+            }
+        ];
+
         // ฟังก์ชันออกจากระบบ
         function logout() {
             if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
@@ -205,23 +654,271 @@
                 window.location.href = 'index.html';
             }
         }
-        
+
         // ฟังก์ชันค้นหาสินค้า
         function searchProducts() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const rows = document.querySelectorAll('#productTableBody tr');
             
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                if (row.cells.length > 1) {
+                    const productName = row.cells[2].textContent.toLowerCase();
+                    const productCode = row.cells[0].textContent.toLowerCase();
+                    const barcode = row.cells[1].textContent.toLowerCase();
+                    const category = row.cells[6].textContent.toLowerCase();
+                    
+                    const matches = productName.includes(searchTerm) || 
+                                   productCode.includes(searchTerm) || 
+                                   barcode.includes(searchTerm) ||
+                                   category.includes(searchTerm);
+                    
+                    row.style.display = matches ? '' : 'none';
+                }
             });
         }
-        
+
         // ล้างการค้นหา
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             searchProducts();
         }
+
+        // ฟังก์ชันโหลดข้อมูลสินค้า
+        function loadProducts() {
+            const tableBody = document.getElementById('productTableBody');
+            tableBody.innerHTML = '';
+            
+            let totalValue = 0;
+            let lowStockCount = 0;
+            let outOfStockCount = 0;
+            
+            sampleProducts.forEach(product => {
+                const row = document.createElement('tr');
+                
+                // คำนวณมูลค่าสินค้า
+                const productValue = product.price * product.quantity;
+                totalValue += productValue;
+                
+                // นับสินค้าใกล้หมด (น้อยกว่า 30 ชิ้น)
+                if (product.quantity > 0 && product.quantity < 30) {
+                    lowStockCount++;
+                }
+                
+                // นับสินค้าหมด
+                if (product.quantity === 0) {
+                    outOfStockCount++;
+                }
+                
+                // สร้างแถวตาราง
+                row.innerHTML = `
+                    <td>${product.code}</td>
+                    <td>${product.barcode}</td>
+                    <td>
+                        <span class="product-name-link" onclick="showProductDetail(${product.id})">
+                            ${product.name}
+                        </span>
+                    </td>
+                    <td>฿${product.price.toFixed(2)}</td>
+                    <td>฿${product.cost.toFixed(2)}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.mainCategory} > ${product.subCategory}</td>
+                    <td>
+                        ${getStatusBadge(product.status, product.quantity)}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editProduct(${product.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // อัพเดตข้อมูลสรุป
+            document.getElementById('productCount').textContent = sampleProducts.length;
+            document.getElementById('stockValue').textContent = `฿${totalValue.toFixed(2)}`;
+            document.getElementById('lowStock').textContent = lowStockCount;
+            document.getElementById('outOfStock').textContent = outOfStockCount;
+        }
+
+        // ฟังก์ชันสร้าง badge สถานะ
+        function getStatusBadge(status, quantity) {
+            if (quantity === 0) {
+                return '<span class="badge badge-danger">หมด</span>';
+            } else if (quantity < 30) {
+                return '<span class="badge badge-warning">ใกล้หมด</span>';
+            } else {
+                return '<span class="badge badge-success">ปกติ</span>';
+            }
+        }
+
+        // ฟังก์ชันแสดงรายละเอียดสินค้า
+        function showProductDetail(productId) {
+            const product = sampleProducts.find(p => p.id === productId);
+            if (!product) return;
+            
+            // เติมข้อมูลสินค้าใน modal
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalProductCode').textContent = `รหัส: ${product.code}`;
+            document.getElementById('detailCode').textContent = product.code;
+            document.getElementById('detailBarcode').textContent = product.barcode;
+            document.getElementById('detailPrice').textContent = `฿${product.price.toFixed(2)}`;
+            document.getElementById('detailCost').textContent = `฿${product.cost.toFixed(2)}`;
+            document.getElementById('detailQuantity').textContent = product.quantity;
+            document.getElementById('detailCategory').textContent = `${product.mainCategory} > ${product.subCategory}`;
+            document.getElementById('detailStockValue').textContent = `฿${(product.price * product.quantity).toFixed(2)}`;
+            document.getElementById('detailLotCount').textContent = product.lots.length;
+            document.getElementById('detailAddedDate').textContent = formatDate(product.addedDate);
+            document.getElementById('detailUpdatedDate').textContent = formatDate(product.updatedDate);
+            document.getElementById('detailStatus').innerHTML = getStatusBadge(product.status, product.quantity);
+            
+            // เติมข้อมูลล็อตสินค้า
+            const lotTableBody = document.getElementById('lotTableBody');
+            lotTableBody.innerHTML = '';
+            
+            product.lots.forEach(lot => {
+                const row = document.createElement('tr');
+                
+                // ตรวจสอบวันหมดอายุ
+                const today = new Date();
+                const expiryDate = new Date(lot.expiryDate);
+                const daysToExpiry = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+                
+                // เพิ่มคลาสตามสถานะวันหมดอายุ
+                let rowClass = '';
+                if (daysToExpiry < 0) {
+                    rowClass = 'expired';
+                } else if (daysToExpiry < 30) {
+                    rowClass = 'expired-soon';
+                }
+                
+                row.className = rowClass;
+                row.innerHTML = `
+                    <td>${lot.lotNumber}</td>
+                    <td>${formatDate(lot.expiryDate)} ${getExpiryBadge(daysToExpiry)}</td>
+                    <td>${lot.productNumber}</td>
+                    <td>${lot.remainingQuantity}</td>
+                    <td>${lot.warranty}</td>
+                    <td>
+                        <span class="supplier-link" onclick="showSupplierDetail('${lot.supplierCode}')">
+                            ${lot.supplierCode}
+                        </span>
+                    </td>
+                    <td>${formatDate(lot.receivedDate)}</td>
+                `;
+                lotTableBody.appendChild(row);
+            });
+            
+            // แสดง modal
+            document.getElementById('productDetailModal').style.display = 'block';
+        }
+
+        // ฟังก์ชันแสดงข้อมูลซัพพลายเออร์
+        function showSupplierDetail(supplierCode) {
+            const supplier = sampleSuppliers.find(s => s.code === supplierCode);
+            if (!supplier) return;
+            
+            document.getElementById('supplierModalTitle').textContent = `ข้อมูลซัพพลายเออร์: ${supplierCode}`;
+            document.getElementById('supplierCode').textContent = supplier.code;
+            document.getElementById('supplierName').textContent = supplier.name;
+            document.getElementById('supplierContact').textContent = supplier.contact;
+            document.getElementById('supplierPhone').textContent = supplier.phone;
+            document.getElementById('supplierEmail').textContent = supplier.email;
+            document.getElementById('supplierAddress').textContent = supplier.address;
+            
+            document.getElementById('supplierModal').style.display = 'block';
+        }
+
+        // ฟังก์ชันปิด modal ซัพพลายเออร์
+        function closeSupplierModal() {
+            document.getElementById('supplierModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันปิด modal รายละเอียดสินค้า
+        function closeModal() {
+            document.getElementById('productDetailModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันแก้ไขสินค้า
+        function editProduct(productId) {
+            if (productId) {
+                alert(`แก้ไขสินค้า ID: ${productId}`);
+                // ในแอพจริงควรเปลี่ยนไปยังหน้าแก้ไขสินค้า
+            } else {
+                alert('กรุณาเลือกรายการสินค้าที่ต้องการแก้ไข');
+            }
+        }
+
+        // ฟังก์ชันลบสินค้า
+        function deleteProduct(productId) {
+            if (confirm('คุณแน่ใจว่าต้องการลบสินค้านี้?')) {
+                alert(`ลบสินค้า ID: ${productId}`);
+                // ในแอพจริงควรส่งคำขอลบไปยังเซิร์ฟเวอร์
+                loadProducts(); // โหลดข้อมูลใหม่
+            }
+        }
+
+        // ฟังก์ชันจัดรูปแบบวันที่
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // ฟังก์ชันสร้าง badge วันหมดอายุ
+        function getExpiryBadge(daysToExpiry) {
+            if (daysToExpiry < 0) {
+                return '<span class="badge badge-danger">หมดอายุ</span>';
+            } else if (daysToExpiry < 30) {
+                return '<span class="badge badge-warning">ใกล้หมดอายุ</span>';
+            } else {
+                return '<span class="badge badge-success">ปกติ</span>';
+            }
+        }
+
+        // โหลดข้อมูลสินค้าเมื่อหน้าเว็บโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            
+            // ตั้งชื่อผู้ใช้จาก localStorage
+            const user = localStorage.getItem('user') || 'ผู้ใช้งาน';
+            document.getElementById('currentUser').textContent = `ยินดีต้อนรับ, ${user}`;
+            
+            // ตั้งค่า online status
+            const isOnline = navigator.onLine;
+            const onlineStatus = document.getElementById('onlineStatus');
+            if (isOnline) {
+                onlineStatus.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                onlineStatus.classList.remove('offline');
+                onlineStatus.classList.add('online');
+                
+                // แสดงปุ่มที่ต้องการให้ใช้งานเฉพาะออนไลน์
+                document.querySelectorAll('.online-only').forEach(el => {
+                    el.style.display = 'inline-block';
+                });
+            }
+        });
+
+        // ปิด modal เมื่อคลิกนอก modal
+        window.addEventListener('click', function(event) {
+            const productModal = document.getElementById('productDetailModal');
+            const supplierModal = document.getElementById('supplierModal');
+            
+            if (event.target === productModal) {
+                closeModal();
+            }
+            
+            if (event.target === supplierModal) {
+                closeSupplierModal();
+            }
+        });
     </script>
 </body>
 </html>

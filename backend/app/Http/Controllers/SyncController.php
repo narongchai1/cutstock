@@ -21,6 +21,8 @@ class SyncController extends Controller
         $data = $request->validate([
             'sync_id' => ['nullable', 'uuid'],
             'device_id' => ['nullable', 'string', 'max:255'],
+            'include_stock' => ['sometimes', 'boolean'],
+            'stock_key' => ['sometimes', 'in:id,barcode,name'],
 
             'movements' => ['sometimes', 'array'],
             'movements.*.type' => ['required_with:movements', 'in:IN,OUT'],
@@ -66,6 +68,8 @@ class SyncController extends Controller
 
         $syncId = $data['sync_id'] ?? null;
         $user = $request->user();
+        $includeStock = (bool) ($data['include_stock'] ?? false);
+        $stockKey = (string) ($data['stock_key'] ?? 'id');
 
         //กัน sync ซ้ำ (SyncBatch)
         if ($syncId) {
@@ -78,7 +82,7 @@ class SyncController extends Controller
         $events = $this->normalizeEvents($data);
         $deviceId = $data['device_id'] ?? null;
 
-        $response = DB::transaction(function () use ($events, $syncId, $deviceId, $user) {
+        $response = DB::transaction(function () use ($events, $syncId, $deviceId, $user, $includeStock, $stockKey) {
             $stockInIds = [];
             $invoiceIds = [];
             $invoiceItemIds = [];
@@ -137,6 +141,10 @@ class SyncController extends Controller
                 'errors' => $errors,
             ];
 
+            if ($includeStock) {
+                $payload['stock'] = $this->buildStockSnapshot($events, $stockKey);
+            }
+
             if ($syncId) {
                 SyncBatch::query()->create([
                     'sync_id' => $syncId,
@@ -152,6 +160,54 @@ class SyncController extends Controller
         });
 
         return response()->json($response);
+    }
+
+    private function buildStockSnapshot(array $events, string $stockKey): array
+    {
+        $productIds = [];
+        foreach ($events as $event) {
+            if (isset($event['product_id'])) {
+                $productIds[] = (int) $event['product_id'];
+            }
+        }
+
+        $productIds = array_values(array_unique(array_filter($productIds, fn ($id) => $id > 0)));
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->get(['id', 'name', 'product_code', 'created_at', 'updated_at']);
+
+        $stockMap = StockService::getStockMap($productIds);
+
+        $result = [];
+        foreach ($products as $product) {
+            $key = (string) $product->id;
+            if ($stockKey === 'barcode' && !empty($product->product_code)) {
+                $key = (string) $product->product_code;
+            } elseif ($stockKey === 'name' && !empty($product->name)) {
+                $key = (string) $product->name;
+            }
+
+            if (array_key_exists($key, $result)) {
+                $key = $key . '#' . (string) $product->id;
+            }
+
+            $result[$key] = [
+                'id' => (int) $product->id,
+                'name' => $product->name,
+                'product_code' => $product->product_code,
+                'barcode' => $product->product_code,
+                'created_at' => $product->created_at?->toIso8601String(),
+                'create_at' => $product->created_at?->toIso8601String(),
+                'updated_at' => $product->updated_at?->toIso8601String(),
+                'quantity' => (float) ($stockMap[$product->id] ?? 0),
+            ];
+        }
+
+        return $result;
     }
 
     private function normalizeEvents(array $data): array

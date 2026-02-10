@@ -1,98 +1,228 @@
-const fs = require('fs');
+// database.js - Fixed SQLite Version
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 class Database {
     constructor() {
         this.dataDir = path.join(__dirname, '../../data');
         this.productsFile = path.join(this.dataDir, 'products.json');
         this.usersFile = path.join(this.dataDir, 'users.json');
-        this.pendingDeletesFile = path.join(this.dataDir, 'pending_deletes.json');
         
         this.initDatabase();
     }
     
     initDatabase() {
-        // สร้างโฟลเดอร์ data ถ้ายังไม่มี
-        if (!fs.existsSync(this.dataDir)) {
-            fs.mkdirSync(this.dataDir, { recursive: true });
-        }
-        
-        // สร้างไฟล์ products.json ถ้ายังไม่มี
-        if (!fs.existsSync(this.productsFile)) {
-            const initialProducts = [
-                {
-                    id: 'P001',
-                    barcode: '8901234567890',
-                    name: 'เมาส์เกมมิ่ง',
-                    price: 599,
-                    cost: 350,
-                    stock: 25,
-                    category: 'อิเล็กทรอนิกส์',
-                    subcategory: 'อุปกรณ์คอมพิวเตอร์',
-                    status: 'มีสินค้า',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 'P002',
-                    barcode: '8901234567891',
-                    name: 'คีย์บอร์ดล้ำ',
-                    price: 1299,
-                    cost: 800,
-                    stock: 15,
-                    category: 'อิเล็กทรอนิกส์',
-                    subcategory: 'อุปกรณ์คอมพิวเตอร์',
-                    status: 'มีสินค้า',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 'P003',
-                    barcode: '8901234567892',
-                    name: 'จอมอนิเตอร์ 24 นิ้ว',
-                    price: 4500,
-                    cost: 3200,
-                    stock: 8,
-                    category: 'อิเล็กทรอนิกส์',
-                    subcategory: 'จอคอมพิวเตอร์',
-                    status: 'สินค้าจำกัด',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 'P004',
-                    barcode: '8901234567893',
-                    name: 'ฮาร์ดดิสก์ 1TB',
-                    price: 1890,
-                    cost: 1400,
-                    stock: 0,
-                    category: 'อิเล็กทรอนิกส์',
-                    subcategory: 'อุปกรณ์เก็บข้อมูล',
-                    status: 'สินค้าหมด',
-                    created: new Date().toISOString()
+        return new Promise((resolve, reject) => {
+            this.db = new sqlite3.Database(this.dbPath, (err) => {
+                if (err) {
+                    console.error('Error connecting to database:', err);
+                    reject(err);
+                    return;
                 }
-            ];
-            this.saveProducts(initialProducts);
-        }
-        
-        // สร้างไฟล์ users.json ถ้ายังไม่มี
-        if (!fs.existsSync(this.usersFile)) {
-            const initialUsers = [
-                {
-                    id: 1,
+                console.log('Connected to SQLite database at:', this.dbPath);
+                
+                // ตั้งค่า database
+                this.db.serialize(() => {
+                    this.db.run('PRAGMA journal_mode = WAL');
+                    this.db.run('PRAGMA foreign_keys = ON');
+                    this.db.run('PRAGMA busy_timeout = 5000');
+                    
+                    this.createTables()
+                        .then(() => {
+                            console.log('Tables created successfully');
+                            this.ready = true;
+                            resolve();
+                        })
+                        .catch(err => {
+                            console.error('Error creating tables:', err);
+                            reject(err);
+                        });
+                });
+            });
+        });
+    }
+    
+    async createTables() {
+        return new Promise((resolve, reject) => {
+            try {
+                // ตาราง suppliers
+                const createSuppliersTable = `
+                    CREATE TABLE IF NOT EXISTS suppliers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        supplier_code TEXT UNIQUE NOT NULL,
+                        name TEXT NOT NULL,
+                        contact_person TEXT,
+                        phone TEXT,
+                        email TEXT,
+                        address TEXT,
+                        tax_id TEXT,
+                        status TEXT DEFAULT 'active',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                `;
+                
+                // ตาราง products
+                const createProductsTable = `
+                    CREATE TABLE IF NOT EXISTS products (
+                        id TEXT PRIMARY KEY,
+                        barcode TEXT UNIQUE,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        price REAL NOT NULL DEFAULT 0,
+                        cost REAL NOT NULL DEFAULT 0,
+                        min_stock INTEGER DEFAULT 10,
+                        max_stock INTEGER DEFAULT 100,
+                        unit TEXT DEFAULT 'ชิ้น',
+                        category TEXT,
+                        subcategory TEXT,
+                        status TEXT DEFAULT 'active',
+                        supplier_id INTEGER,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
+                    )
+                `;
+                
+                // ตาราง product_lots
+                const createProductLotsTable = `
+                    CREATE TABLE IF NOT EXISTS product_lots (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        lot_number TEXT UNIQUE NOT NULL,
+                        product_id TEXT NOT NULL,
+                        manufacturing_date DATE,
+                        expiration_date DATE NOT NULL,
+                        batch_number TEXT,
+                        quantity INTEGER NOT NULL DEFAULT 0,
+                        remaining_quantity INTEGER NOT NULL DEFAULT 0,
+                        warranty_period INTEGER,
+                        warranty_info TEXT,
+                        supplier_id INTEGER NOT NULL,
+                        purchase_price REAL,
+                        received_date DATE DEFAULT CURRENT_DATE,
+                        storage_location TEXT,
+                        notes TEXT,
+                        status TEXT DEFAULT 'in_stock',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (product_id) REFERENCES products (id),
+                        FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
+                    )
+                `;
+                
+                // ตาราง users
+                const createUsersTable = `
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        name TEXT NOT NULL,
+                        role TEXT NOT NULL DEFAULT 'staff',
+                        email TEXT,
+                        phone TEXT,
+                        status TEXT DEFAULT 'active',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                `;
+                
+                // รันคำสั่งสร้างตารางทั้งหมด
+                this.db.serialize(() => {
+                    this.db.run(createSuppliersTable);
+                    this.db.run(createProductsTable);
+                    this.db.run(createProductLotsTable);
+                    this.db.run(createUsersTable, (err) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        
+                        // เพิ่มข้อมูลเริ่มต้น
+                        this.initializeDefaultData()
+                            .then(() => resolve())
+                            .catch(err => {
+                                console.error('Error initializing default data:', err);
+                                resolve(); // ยัง resolve เพราะตารางถูกสร้างแล้ว
+                            });
+                    });
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
+    async initializeDefaultData() {
+        try {
+            await this.ensureReady();
+            
+            // ตรวจสอบว่ามีผู้ใช้ admin หรือยัง
+            let adminExists;
+            try {
+                adminExists = await this.getUserByUsername('admin');
+            } catch (error) {
+                adminExists = null;
+            }
+            
+            if (!adminExists) {
+                await this.createUser({
                     username: 'admin',
                     password: 'admin123',
                     name: 'ผู้ดูแลระบบ',
                     role: 'admin',
-                    created: new Date().toISOString()
-                },
-                {
-                    id: 2,
+                    email: 'admin@example.com',
+                    phone: '0812345678'
+                });
+                console.log('Created admin user');
+            }
+            
+            // ตรวจสอบว่ามีผู้ใช้ staff หรือยัง
+            let staffExists;
+            try {
+                staffExists = await this.getUserByUsername('staff');
+            } catch (error) {
+                staffExists = null;
+            }
+            
+            if (!staffExists) {
+                await this.createUser({
                     username: 'staff',
                     password: 'staff123',
                     name: 'พนักงาน',
                     role: 'staff',
-                    created: new Date().toISOString()
-                }
-            ];
-            this.saveUsers(initialUsers);
+                    email: 'staff@example.com',
+                    phone: '0898765432'
+                });
+                console.log('Created staff user');
+            }
+            
+            // ตรวจสอบว่ามีซัพพลายเออร์ตัวอย่างหรือยัง
+            let supplierCount;
+            try {
+                supplierCount = await this.getSupplierCount();
+            } catch (error) {
+                supplierCount = 0;
+            }
+            
+            if (supplierCount === 0) {
+                await this.initializeSampleSuppliers();
+                console.log('Created sample suppliers');
+            }
+            
+            // ตรวจสอบว่ามีสินค้าตัวอย่างหรือยัง
+            let productCount;
+            try {
+                productCount = await this.getProductCount();
+            } catch (error) {
+                productCount = 0;
+            }
+            
+            if (productCount === 0) {
+                await this.initializeSampleProducts();
+                console.log('Created sample products');
+            }
+        } catch (error) {
+            console.error('Error in initializeDefaultData:', error);
         }
 
         if (!fs.existsSync(this.pendingDeletesFile)) {
@@ -111,57 +241,215 @@ class Database {
         return normalized;
     }
     
-    // ฟังก์ชันอ่านข้อมูลสินค้า
-    getProducts() {
-        try {
-            const data = fs.readFileSync(this.productsFile, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            console.error('Error reading products:', error);
-            return [];
+    async initializeSampleSuppliers() {
+        const sampleSuppliers = [
+            {
+                supplier_code: 'SUP001',
+                name: 'บริษัท เทคโนโลยี จำกัด',
+                contact_person: 'คุณสมชาย ใจดี',
+                phone: '02-123-4567',
+                email: 'contact@techcompany.com',
+                address: '123 ถนนรัชดา กรุงเทพ 10310',
+                tax_id: '0123456789012',
+                status: 'active'
+            }
+        ];
+        
+        for (const supplier of sampleSuppliers) {
+            try {
+                await this.createSupplier(supplier);
+            } catch (error) {
+                console.error('Error creating sample supplier:', error);
+            }
         }
     }
     
-    // ฟังก์ชันบันทึกข้อมูลสินค้า
-    saveProducts(products) {
+    async initializeSampleProducts() {
+        const sampleProducts = [
+            {
+                id: 'P001',
+                barcode: '8901234567890',
+                name: 'เมาส์เกมมิ่ง RGB',
+                description: 'เมาส์เกมมิ่งที่มีไฟ RGB พร้อมปุ่มโปรแกรมได้',
+                price: 599,
+                cost: 350,
+                min_stock: 5,
+                max_stock: 50,
+                unit: 'ชิ้น',
+                category: 'คอมพิวเตอร์',
+                subcategory: 'อุปกรณ์ต่อพ่วง',
+                supplier_id: 1
+            },
+            {
+                id: 'P002',
+                barcode: '8901234567891',
+                name: 'คีย์บอร์ด Mechanical',
+                description: 'คีย์บอร์ด Mechanical Switch',
+                price: 1299,
+                cost: 800,
+                min_stock: 3,
+                max_stock: 30,
+                unit: 'ชิ้น',
+                category: 'คอมพิวเตอร์',
+                subcategory: 'อุปกรณ์ต่อพ่วง',
+                supplier_id: 1
+            }
+        ];
+        
+        for (const product of sampleProducts) {
+            try {
+                await this.saveProduct(product);
+            } catch (error) {
+                console.error('Error creating sample product:', error);
+            }
+        }
+    }
+    
+    // === UTILITY METHODS ===
+    
+    async executeQuery(sql, params = []) {
+        await this.ensureReady();
+        
+        return new Promise((resolve, reject) => {
+            this.db.run(sql, params, function(err) {
+                if (err) {
+                    console.error('Query error:', err);
+                    console.error('SQL:', sql);
+                    console.error('Params:', params);
+                    reject(err);
+                } else {
+                    resolve({
+                        lastID: this.lastID,
+                        changes: this.changes
+                    });
+                }
+            });
+        });
+    }
+    
+    async fetchQuery(sql, params = []) {
+        await this.ensureReady();
+        
+        return new Promise((resolve, reject) => {
+            this.db.all(sql, params, (err, rows) => {
+                if (err) {
+                    console.error('Fetch error:', err);
+                    console.error('SQL:', sql);
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    }
+    
+    async fetchOne(sql, params = []) {
+        await this.ensureReady();
+        
+        return new Promise((resolve, reject) => {
+            this.db.get(sql, params, (err, row) => {
+                if (err) {
+                    console.error('Fetch one error:', err);
+                    console.error('SQL:', sql);
+                    reject(err);
+                } else {
+                    resolve(row);
+                }
+            });
+        });
+    }
+    
+    // === USER METHODS ===
+    
+    async createUser(userData) {
+        await this.ensureReady();
+        
+        const sql = `INSERT INTO users (username, password, name, role, email, phone) VALUES (?, ?, ?, ?, ?, ?)`;
+        const params = [
+            userData.username,
+            userData.password,
+            userData.name,
+            userData.role || 'staff',
+            userData.email || null,
+            userData.phone || null
+        ];
+        
         try {
-            fs.writeFileSync(this.productsFile, JSON.stringify(products, null, 2));
-            return true;
+            const result = await this.executeQuery(sql, params);
+            return {
+                id: result.lastID,
+                ...userData,
+                password: undefined // ไม่ส่ง password กลับ
+            };
         } catch (error) {
-            console.error('Error saving products:', error);
-            return false;
+            console.error('Error creating user:', error);
+            throw error;
+        }
+    }
+    
+    async getUserByUsername(username) {
+        await this.ensureReady();
+        
+        const sql = `SELECT * FROM users WHERE username = ?`;
+        return this.fetchOne(sql, [username]);
+    }
+    
+    async authenticate(username, password) {
+        try {
+            await this.ensureReady();
+            
+            const user = await this.getUserByUsername(username);
+            
+            if (!user) {
+                return { success: false, message: 'ไม่พบชื่อผู้ใช้' };
+            }
+            
+            if (user.password !== password) {
+                return { success: false, message: 'รหัสผ่านไม่ถูกต้อง' };
+            }
+            
+            // ไม่ส่ง password กลับ
+            const { password: _, ...userWithoutPassword } = user;
+            return {
+                success: true,
+                user: userWithoutPassword,
+                token: 'local-token-' + Date.now()
+            };
+        } catch (error) {
+            console.error('Authentication error:', error);
+            return { success: false, message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' };
         }
     }
     
     // ฟังก์ชันเพิ่ม/อัพเดทสินค้า
-    async saveProduct(product, options = {}) {
+    async saveProduct(product) {
         const products = this.getProducts();
-        const normalized = this.normalizeProduct(product);
-        const existingIndex = products.findIndex(p => p.id === normalized.id);
-        const now = new Date().toISOString();
-
+        
+        // ตรวจสอบว่ามีสินค้านี้อยู่แล้วหรือไม่ (อัพเดท)
+        const existingIndex = products.findIndex(p => p.id === product.id);
+        
         if (existingIndex >= 0) {
+            // อัพเดทสินค้าที่มีอยู่
             products[existingIndex] = {
                 ...products[existingIndex],
-                ...normalized,
-                updated: now,
+                ...product,
+                updated: new Date().toISOString()
             };
-            products[existingIndex].synced_at = options.markSynced ? now : null;
         } else {
+            // เพิ่มสินค้าใหม่
             const newProduct = {
-                ...normalized,
-                id: normalized.id || this.generateProductId(),
-                created: normalized.created || now,
-                updated: now,
-                synced_at: options.markSynced ? now : null,
+                ...product,
+                id: product.id || this.generateProductId(),
+                created: new Date().toISOString()
             };
             products.push(newProduct);
         }
-
+        
+        // บันทึกข้อมูล
         const success = this.saveProducts(products);
-        return {
-            success,
-            product: existingIndex >= 0 ? products[existingIndex] : products[products.length - 1],
+        return { 
+            success, 
+            product: existingIndex >= 0 ? products[existingIndex] : products[products.length - 1] 
         };
     }
     
@@ -197,30 +485,97 @@ class Database {
             const data = fs.readFileSync(this.usersFile, 'utf8');
             return JSON.parse(data);
         } catch (error) {
-            console.error('Error reading users:', error);
-            return [];
+            console.error('Error inserting product:', error);
+            throw error;
         }
     }
     
-    // ฟังก์ชันบันทึกข้อมูลผู้ใช้
-    saveUsers(users) {
-        try {
-            fs.writeFileSync(this.usersFile, JSON.stringify(users, null, 2));
-            return true;
-        } catch (error) {
-            console.error('Error saving users:', error);
-            return false;
-        }
-    }
-    
-    // ฟังก์ชันตรวจสอบผู้ใช้
-    authenticate(username, password) {
-        const users = this.getUsers();
-        const user = users.find(u => u.username === username && u.password === password);
+    async updateProduct(product) {
+        await this.ensureReady();
         
-        if (user) {
-            // ไม่ส่ง password กลับ
-            const { password, ...userWithoutPassword } = user;
+        const sql = `
+            UPDATE products 
+            SET barcode = ?, name = ?, description = ?, price = ?, cost = ?, 
+                min_stock = ?, max_stock = ?, unit = ?, category = ?, subcategory = ?,
+                supplier_id = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `;
+        
+        const params = [
+            product.barcode || null,
+            product.name,
+            product.description || null,
+            product.price || 0,
+            product.cost || 0,
+            product.min_stock || 10,
+            product.max_stock || 100,
+            product.unit || 'ชิ้น',
+            product.category || null,
+            product.subcategory || null,
+            product.supplier_id || null,
+            product.id
+        ];
+        
+        try {
+            const result = await this.executeQuery(sql, params);
+            console.log(`Product updated: ${product.id}, changes: ${result.changes}`);
+            
+            return {
+                success: true,
+                action: 'update',
+                product: product,
+                changes: result.changes
+            };
+        } catch (error) {
+            console.error('Error updating product:', error);
+            throw error;
+        }
+    }
+    
+    async getProducts(searchTerm = '', category = '') {
+        await this.ensureReady();
+        
+        let sql = `SELECT * FROM products`;
+        let params = [];
+        
+        if (searchTerm || category) {
+            const conditions = [];
+            
+            if (searchTerm) {
+                conditions.push(`(id LIKE ? OR barcode LIKE ? OR name LIKE ?)`);
+                const searchParam = `%${searchTerm}%`;
+                params.push(searchParam, searchParam, searchParam);
+            }
+            
+            if (category) {
+                conditions.push(`category = ?`);
+                params.push(category);
+            }
+            
+            if (conditions.length > 0) {
+                sql += ` WHERE ` + conditions.join(' AND ');
+            }
+        }
+        
+        sql += ` ORDER BY created_at DESC`;
+        
+        return this.fetchQuery(sql, params);
+    }
+    
+    async getProductById(id) {
+        await this.ensureReady();
+        
+        const sql = `SELECT * FROM products WHERE id = ?`;
+        return this.fetchOne(sql, [id]);
+    }
+    
+    async deleteProduct(id) {
+        await this.ensureReady();
+        
+        const sql = `DELETE FROM products WHERE id = ?`;
+        
+        try {
+            const result = await this.executeQuery(sql, [id]);
             return {
                 success: true,
                 user: userWithoutPassword,
@@ -229,77 +584,6 @@ class Database {
         }
         
         return { success: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
-    }
-
-    getPendingDeletes() {
-        try {
-            const data = fs.readFileSync(this.pendingDeletesFile, 'utf8');
-            const parsed = JSON.parse(data);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
-            console.error('Error reading pending deletes:', error);
-            return [];
-        }
-    }
-
-    setPendingDeletes(ids) {
-        try {
-            fs.writeFileSync(this.pendingDeletesFile, JSON.stringify(ids, null, 2));
-            return true;
-        } catch (error) {
-            console.error('Error saving pending deletes:', error);
-            return false;
-        }
-    }
-
-    queueDelete(id) {
-        const pending = this.getPendingDeletes();
-        if (!pending.includes(id)) {
-            pending.push(id);
-            this.setPendingDeletes(pending);
-        }
-    }
-
-    removePendingDeletes(ids) {
-        const pending = this.getPendingDeletes();
-        const idSet = new Set(ids);
-        const next = pending.filter(id => !idSet.has(id));
-        this.setPendingDeletes(next);
-    }
-
-    getUnsyncedProducts() {
-        const products = this.getProducts();
-        return products.filter(product => {
-            if (!product.synced_at) {
-                return true;
-            }
-
-            const updatedAt = product.updated || product.created;
-            if (!updatedAt) {
-                return true;
-            }
-
-            return new Date(updatedAt) > new Date(product.synced_at);
-        });
-    }
-
-    setProducts(products, options = {}) {
-        const now = new Date().toISOString();
-        const normalized = (products || []).map(product => {
-            const mapped = this.normalizeProduct(product);
-            if (!mapped.created) {
-                mapped.created = now;
-            }
-            if (!mapped.updated) {
-                mapped.updated = now;
-            }
-            if (options.markSynced) {
-                mapped.synced_at = now;
-            }
-            return mapped;
-        });
-
-        return this.saveProducts(normalized);
     }
     
     // ฟังก์ชันดึงหมวดหมู่ทั้งหมด
