@@ -1,0 +1,282 @@
+# =====================
+# SCALARS
+# =====================
+
+"A datetime string with format `Y-m-d H:i:s`"
+scalar DateTime
+  @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+
+"""
+=====================
+ TYPES
+=====================
+"""
+
+type User {
+  id: ID!
+  username: String!
+  role: String
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  parent_id: ID
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Unit {
+  id: ID!
+  name: String!
+  base_unit_id: ID
+  conversion_rate: Float
+  is_base_unit: Boolean!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Supplier {
+  id: ID!
+  name: String!
+  contact_info: String
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Product {
+  id: ID!
+  product_code: String!
+  name: String!
+  category_id: ID
+  unit_id: ID
+  sale_unit_id: ID
+  standard_cost: Float!
+  sale_price: Float!
+  stock: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Lot {
+  id: ID!
+  product_id: ID!
+  expiry_date: String
+  remaining_qty: Float!
+  supplier_id: ID
+  warranty: String
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type StockIn {
+  id: ID!
+  product_id: ID!
+  lot_id: ID
+  quantity: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Invoice {
+  id: ID!
+  issued_at: DateTime
+  user_id: ID
+  total_amount: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type InvoiceItem {
+  id: ID!
+  invoice_id: ID!
+  product_id: ID!
+  quantity: Float!
+  unit_price: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type DashboardSummary {
+  totalProducts: Int!
+  totalValue: Float!
+  potentialProfit: Float!
+  outOfStock: Int!
+}
+
+type DashboardStockStatus {
+  inStock: Int!
+  limitedStock: Int!
+  outOfStock: Int!
+}
+
+type DashboardCategoryStat {
+  name: String!
+  count: Int!
+  value: Float!
+  cost: Float!
+  profit: Float!
+}
+
+type DashboardLowStockItem {
+  id: ID!
+  name: String!
+  stock: Float!
+}
+
+type DashboardHighValueItem {
+  id: ID!
+  name: String!
+  stock: Float!
+  value: Float!
+}
+
+type DashboardThresholds {
+  lowStock: Int!
+  limitedStock: Int!
+  highValue: Int!
+}
+
+type DashboardStockStats {
+  summary: DashboardSummary!
+  stockStatus: DashboardStockStatus!
+  categories: [DashboardCategoryStat!]!
+  lowStockItems: [DashboardLowStockItem!]!
+  highValueItems: [DashboardHighValueItem!]!
+  thresholds: DashboardThresholds!
+}
+
+type DashboardSalesSummary {
+  date: String!
+  totalSales: Float!
+  totalCost: Float!
+  dailyExpense: Float!
+  netProfit: Float!
+}
+
+type NearExpireItem {
+  lot_id: ID!
+  product_id: ID!
+  name: String!
+  stock: Float!
+  expiry_date: String
+  warranty: String
+}
+
+type NearExpireResult {
+  asOf: String!
+  days: Int!
+  cutoff: String!
+  items: [NearExpireItem!]!
+}
+
+type DashboardSystemStatus {
+  serverTime: String!
+  totalProducts: Int!
+  totalStockMovements: Int!
+  lastStockMovementAt: DateTime
+  lastSyncAt: DateTime
+}
+
+type StockInPayload {
+  success: Boolean!
+  product: Product
+  stock_in: StockIn
+  lot: Lot
+}
+
+type StockOutPayload {
+  success: Boolean!
+  product: Product
+  invoice: Invoice
+  invoice_item: InvoiceItem
+}
+
+
+"""
+=====================
+ QUERIES
+=====================
+"""
+type Query {
+  products: [Product!]!
+    @field(resolver: "App\\GraphQL\\Queries\\ProductQuery@products")
+
+  categories: [Category!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@categories")
+
+  units: [Unit!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@units")
+
+  suppliers: [Supplier!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@suppliers")
+
+  lots(product_id: ID): [Lot!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@lots")
+
+  stockIns(product_id: ID!): [StockIn!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@stockIns")
+
+  invoiceItems(product_id: ID!): [InvoiceItem!]!
+    @field(resolver: "App\\GraphQL\\Queries\\LookupQuery@invoiceItems")
+
+  dashboardStockStats(
+    low_stock_threshold: Int
+    limited_stock_threshold: Int
+    high_value_threshold: Int
+  ): DashboardStockStats!
+    @field(resolver: "App\\GraphQL\\Queries\\DashboardQuery@stockStats")
+
+  dashboardSalesSummary(date: String): DashboardSalesSummary!
+    @field(resolver: "App\\GraphQL\\Queries\\DashboardQuery@salesSummary")
+
+  dashboardNearExpire(days: Int): NearExpireResult!
+    @field(resolver: "App\\GraphQL\\Queries\\DashboardQuery@nearExpire")
+
+  dashboardSystemStatus: DashboardSystemStatus!
+    @field(resolver: "App\\GraphQL\\Queries\\DashboardQuery@systemStatus")
+}
+
+
+"""
+=====================
+ MUTATIONS
+=====================
+"""
+type Mutation {
+  createProduct(
+    product_code: String!
+    name: String!
+    category_id: ID
+    unit_id: ID
+    sale_unit_id: ID
+    standard_cost: Float
+    sale_price: Float
+    initial_stock: Float
+  ): Product
+    @field(resolver: "App\\GraphQL\\Mutations\\CreateProduct")
+
+  stockIn(
+    product_id: ID!
+    quantity: Float!
+    lot_id: ID
+    expiry_date: String
+    supplier_id: ID
+    warranty: String
+  ): StockInPayload!
+    @field(resolver: "App\\GraphQL\\Mutations\\StockIn")
+
+  stockOut(
+    product_id: ID!
+    quantity: Float!
+    unit_price: Float
+    lot_id: ID
+    invoice_id: ID
+    issued_at: String
+    user_id: ID
+  ): StockOutPayload!
+    @field(resolver: "App\\GraphQL\\Mutations\\StockOut")
+}

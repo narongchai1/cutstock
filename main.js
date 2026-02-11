@@ -170,6 +170,27 @@ async function isBackendOnline() {
     return lastHealthStatus;
 }
 
+function getRealtimeWsUrl() {
+    if (process.env.REALTIME_WS_URL) {
+        return String(process.env.REALTIME_WS_URL);
+    }
+
+    if (appConfig.realtimeWsUrl) {
+        return String(appConfig.realtimeWsUrl);
+    }
+
+    const realtimePort = Number(appConfig.realtimeWsPort || process.env.REALTIME_WS_PORT || 8090);
+    const base = process.env.BACKEND_URL || appConfig.backendUrl || 'http://127.0.0.1:8000';
+    const backend = String(base).replace(/\/+$/, '');
+
+    try {
+        const u = new URL(backend);
+        return `ws://${u.hostname}:${realtimePort}/ws`;
+    } catch (_error) {
+        return `ws://127.0.0.1:${realtimePort}/ws`;
+    }
+}
+
 // ============ WINDOW MANAGEMENT ============
 
 function createWindow() {
@@ -314,20 +335,12 @@ ipcMain.handle('check-online-status', async () => {
     return await isBackendOnline();
 });
 
+ipcMain.handle('get-realtime-ws-url', async () => {
+    return getRealtimeWsUrl();
+});
+
 // Product Handlers
 ipcMain.handle('save-product', async (event, product) => {
-    const isOnline = await isBackendOnline();
-    if (isOnline) {
-        const result = await apiRequest('/api/products', {
-            method: 'POST',
-            body: JSON.stringify(product),
-        });
-        if (result.ok && result.data && result.data.success) {
-            await database.saveProduct(result.data.product || product);
-            return result.data;
-        }
-    }
-
     return await database.saveProduct(product);
 });
 
@@ -356,17 +369,6 @@ ipcMain.handle('get-product', async (event, id) => {
 });
 
 ipcMain.handle('delete-product', async (event, id) => {
-    const isOnline = await isBackendOnline();
-    if (isOnline) {
-        const result = await apiRequest(`/api/products/${encodeURIComponent(id)}`, {
-            method: 'DELETE',
-        });
-        if (result.ok && result.data && result.data.success) {
-            await database.deleteProduct(id);
-            return result.data;
-        }
-    }
-
     return await database.deleteProduct(id);
 });
 

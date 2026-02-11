@@ -883,6 +883,61 @@
             }
         }
 
+        let realtimeStockSocket = null;
+        let realtimeRefreshTimer = null;
+        let realtimeReconnectTimer = null;
+
+        async function setupRealtimeStock() {
+            try {
+                if (!window.electronAPI || !window.electronAPI.getRealtimeWsUrl) {
+                    return;
+                }
+
+                const wsUrl = await window.electronAPI.getRealtimeWsUrl();
+                if (!wsUrl) {
+                    return;
+                }
+
+                if (realtimeReconnectTimer) {
+                    clearTimeout(realtimeReconnectTimer);
+                    realtimeReconnectTimer = null;
+                }
+
+                if (realtimeStockSocket) {
+                    try { realtimeStockSocket.close(); } catch (_e) {}
+                    realtimeStockSocket = null;
+                }
+
+                realtimeStockSocket = new WebSocket(wsUrl);
+
+                realtimeStockSocket.onmessage = (evt) => {
+                    try {
+                        const msg = JSON.parse(evt.data);
+                        if (msg && msg.event === 'stock.changed') {
+                            if (realtimeRefreshTimer) {
+                                clearTimeout(realtimeRefreshTimer);
+                            }
+                            realtimeRefreshTimer = setTimeout(() => {
+                                loadProducts();
+                            }, 300);
+                        }
+                    } catch (_e) {
+                        // ignore invalid payloads
+                    }
+                };
+
+                realtimeStockSocket.onclose = () => {
+                    realtimeReconnectTimer = setTimeout(setupRealtimeStock, 1500);
+                };
+
+                realtimeStockSocket.onerror = () => {
+                    try { realtimeStockSocket.close(); } catch (_e) {}
+                };
+            } catch (error) {
+                console.error('Realtime WS error:', error);
+            }
+        }
+
         // โหลดข้อมูลสินค้าเมื่อหน้าเว็บโหลดเสร็จ
         document.addEventListener('DOMContentLoaded', function() {
             loadProducts();
@@ -904,6 +959,8 @@
                     el.style.display = 'inline-block';
                 });
             }
+
+            setupRealtimeStock();
         });
 
         // ปิด modal เมื่อคลิกนอก modal

@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Config API
     getConfig: () => ipcRenderer.invoke('get-config'),
     updateConfig: (config) => ipcRenderer.invoke('update-config', config),
+    getRealtimeWsUrl: () => ipcRenderer.invoke('get-realtime-ws-url'),
     
     // Backup API
     getBackupFiles: () => ipcRenderer.invoke('get-backup-files'),
