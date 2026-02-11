@@ -8,6 +8,7 @@ use App\Models\Lot;
 use App\Models\Product;
 use App\Models\StockIn;
 use App\Models\SyncBatch;
+use App\Services\RealtimePublisher;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -70,6 +71,7 @@ class SyncController extends Controller
         $user = $request->user();
         $includeStock = (bool) ($data['include_stock'] ?? false);
         $stockKey = (string) ($data['stock_key'] ?? 'id');
+        $userId = $user?->id;
 
         //กัน sync ซ้ำ (SyncBatch)
         if ($syncId) {
@@ -145,10 +147,25 @@ class SyncController extends Controller
                 $payload['stock'] = $this->buildStockSnapshot($events, $stockKey);
             }
 
+            $productIdsForRealtime = array_values(array_unique(array_filter(array_map(
+                fn ($event) => isset($event['product_id']) ? (int) $event['product_id'] : 0,
+                $events
+            ), fn ($id) => $id > 0)));
+            if (!empty($productIdsForRealtime)) {
+                DB::afterCommit(function () use ($productIdsForRealtime, $syncId, $deviceId, $userId) {
+                    app(RealtimePublisher::class)->stockChanged($productIdsForRealtime, [
+                        'sync_id' => $syncId,
+                        'device_id' => $deviceId,
+                        'user_id' => $userId,
+                        'source' => 'sync',
+                    ]);
+                });
+            }
+
             if ($syncId) {
                 SyncBatch::query()->create([
                     'sync_id' => $syncId,
-                    'user_id' => $user?->id,
+                    'user_id' => $userId,
                     'device_id' => $deviceId,
                     'status' => empty($errors) ? 'applied' : 'applied_with_errors',
                     'request_json' => $events,

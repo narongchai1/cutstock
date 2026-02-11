@@ -170,6 +170,27 @@ async function isBackendOnline() {
     return lastHealthStatus;
 }
 
+function getRealtimeWsUrl() {
+    if (process.env.REALTIME_WS_URL) {
+        return String(process.env.REALTIME_WS_URL);
+    }
+
+    if (appConfig.realtimeWsUrl) {
+        return String(appConfig.realtimeWsUrl);
+    }
+
+    const realtimePort = Number(appConfig.realtimeWsPort || process.env.REALTIME_WS_PORT || 8090);
+    const base = process.env.BACKEND_URL || appConfig.backendUrl || 'http://127.0.0.1:8000';
+    const backend = String(base).replace(/\/+$/, '');
+
+    try {
+        const u = new URL(backend);
+        return `ws://${u.hostname}:${realtimePort}/ws`;
+    } catch (_error) {
+        return `ws://127.0.0.1:${realtimePort}/ws`;
+    }
+}
+
 // ============ WINDOW MANAGEMENT ============
 
 function createWindow() {
@@ -307,8 +328,6 @@ app.on('before-quit', (event) => {
     }
 });
 
-ipcMain.handle('check-online-status', () => {
-    return require('electron').net.isOnline();
 // ============ IPC HANDLERS ============
 
 // Network Handlers
@@ -316,13 +335,15 @@ ipcMain.handle('check-online-status', async () => {
     return await isBackendOnline();
 });
 
+ipcMain.handle('get-realtime-ws-url', async () => {
+    return getRealtimeWsUrl();
+});
+
 // Product Handlers
 ipcMain.handle('save-product', async (event, product) => {
     return await database.saveProduct(product);
 });
 
-ipcMain.handle('get-products', async () => {
-    return await database.getProducts();
 ipcMain.handle('get-products', async (event, searchTerm = '') => {
     const isOnline = await isBackendOnline();
     if (isOnline) {

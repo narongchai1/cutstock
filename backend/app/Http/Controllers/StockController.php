@@ -7,6 +7,7 @@ use App\Models\InvoiceItem;
 use App\Models\Lot;
 use App\Models\Product;
 use App\Models\StockIn;
+use App\Services\RealtimePublisher;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ class StockController extends Controller
 {
     public function stockIn(Request $request)
     {
+        $userId = $request->user()?->id;
         $data = $request->validate([
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'quantity' => ['required', 'numeric', 'min:0.01'],
@@ -24,7 +26,7 @@ class StockController extends Controller
             'warranty' => ['nullable', 'string', 'max:255'],
         ]);
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $userId) {
             $product = Product::query()->lockForUpdate()->findOrFail($data['product_id']);
 
             $lotId = $data['lot_id'] ?? null;
@@ -60,6 +62,13 @@ class StockController extends Controller
 
             $product->setAttribute('stock', (float) StockService::getStock($product->id));
 
+            DB::afterCommit(function () use ($product, $userId) {
+                app(RealtimePublisher::class)->stockChanged([$product->id], [
+                    'user_id' => $userId,
+                    'source' => 'stock_in',
+                ]);
+            });
+
             return response()->json([
                 'success' => true,
                 'product' => $product,
@@ -71,6 +80,7 @@ class StockController extends Controller
 
     public function stockOut(Request $request)
     {
+        $userId = $request->user()?->id;
         $data = $request->validate([
             'product_id' => ['required', 'integer', 'exists:products,id'],
             'quantity' => ['required', 'numeric', 'min:0.01'],
@@ -81,7 +91,7 @@ class StockController extends Controller
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $userId) {
             $product = Product::query()->lockForUpdate()->findOrFail($data['product_id']);
             $currentStock = (float) StockService::getStock($product->id);
 
@@ -137,6 +147,13 @@ class StockController extends Controller
             $invoice->save();
 
             $product->setAttribute('stock', (float) StockService::getStock($product->id));
+
+            DB::afterCommit(function () use ($product, $userId) {
+                app(RealtimePublisher::class)->stockChanged([$product->id], [
+                    'user_id' => $userId,
+                    'source' => 'stock_out',
+                ]);
+            });
 
             return response()->json([
                 'success' => true,
