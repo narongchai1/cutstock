@@ -22,6 +22,55 @@
             margin-bottom: 10px;
             font-size: 14px;
         }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        .role-admin {
+            background: #3498db;
+            color: white;
+        }
+        .role-staff {
+            background: #2ecc71;
+            color: white;
+        }
+        .demo-users {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .demo-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+        .demo-user-item:last-child {
+            border-bottom: none;
+        }
+        .demo-user-item:hover {
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        .demo-username {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .demo-password {
+            color: #7f8c8d;
+            font-family: monospace;
+        }
+        .demo-role {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -42,13 +91,11 @@
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> ชื่อผู้ใช้</label>
                     <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required value="admin">
-                    <small class="form-hint">ใช้: admin หรือ staff</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> รหัสผ่าน</label>
                     <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required value="admin123">
-                    <small class="form-hint">ใช้: admin123 หรือ staff123</small>
                 </div>
                 
                 <button type="submit" class="btn-login">
@@ -57,9 +104,57 @@
             </form>
             
             <div class="demo-credentials">
-                <h4><i class="fas fa-key"></i> ข้อมูลทดสอบ:</h4>
-                <p><strong>ผู้ดูแลระบบ:</strong> admin / admin123</p>
-                <p><strong>พนักงาน:</strong> staff / staff123</p>
+                <h4><i class="fas fa-key"></i> บัญชีผู้ใช้ทั้งหมด:</h4>
+                
+                <div class="demo-users">
+                    <div class="demo-user-item" onclick="fillCredentials('admin', 'admin123')">
+                        <div>
+                            <span class="demo-username">admin</span>
+                            <span class="role-badge role-admin">ผู้ดูแลระบบ</span>
+                        </div>
+                        <div>
+                            <span class="demo-password">admin123</span>
+                            <i class="fas fa-copy" style="margin-left: 8px; color: #3498db; cursor: pointer;" onclick="copyCredentials('admin', 'admin123', event)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-user-item" onclick="fillCredentials('manager', 'manager123')">
+                        <div>
+                            <span class="demo-username">manager</span>
+                            <span class="role-badge role-admin">ผู้จัดการ</span>
+                        </div>
+                        <div>
+                            <span class="demo-password">manager123</span>
+                            <i class="fas fa-copy" style="margin-left: 8px; color: #3498db; cursor: pointer;" onclick="copyCredentials('manager', 'manager123', event)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-user-item" onclick="fillCredentials('staff1', 'staff123')">
+                        <div>
+                            <span class="demo-username">staff1</span>
+                            <span class="role-badge role-staff">พนักงานขาย</span>
+                        </div>
+                        <div>
+                            <span class="demo-password">staff123</span>
+                            <i class="fas fa-copy" style="margin-left: 8px; color: #2ecc71; cursor: pointer;" onclick="copyCredentials('staff1', 'staff123', event)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-user-item" onclick="fillCredentials('staff2', 'staff456')">
+                        <div>
+                            <span class="demo-username">staff2</span>
+                            <span class="role-badge role-staff">พนักงานขาย</span>
+                        </div>
+                        <div>
+                            <span class="demo-password">staff456</span>
+                            <i class="fas fa-copy" style="margin-left: 8px; color: #2ecc71; cursor: pointer;" onclick="copyCredentials('staff2', 'staff456', event)"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
+                    <i class="fas fa-info-circle"></i> พนักงานสามารถเข้าถึงได้เฉพาะหน้าขายสินค้าเท่านั้น
+                </p>
             </div>
             
             <!-- Debug Section -->
@@ -83,6 +178,33 @@
     
     <script src="js/auth.js"></script>
     <script>
+        // ฟังก์ชันเติมข้อมูล
+        function fillCredentials(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            
+            // ไฮไลท์ input
+            document.getElementById('username').style.borderColor = '#3498db';
+            document.getElementById('password').style.borderColor = '#3498db';
+            
+            setTimeout(() => {
+                document.getElementById('username').style.borderColor = '';
+                document.getElementById('password').style.borderColor = '';
+            }, 1000);
+        }
+        
+        // ฟังก์ชันคัดลอก
+        function copyCredentials(username, password, event) {
+            event.stopPropagation();
+            
+            const text = `Username: ${username}\nPassword: ${password}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('คัดลอกข้อมูลเข้าสู่ระบบแล้ว');
+            }).catch(() => {
+                alert('ไม่สามารถคัดลอกได้');
+            });
+        }
+        
         // Debug function
         async function checkSystem() {
             const debugInfo = document.getElementById('debugInfo');
@@ -115,13 +237,6 @@
         // Auto-check system on load
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(checkSystem, 1000);
-            
-            // Auto-fill and submit for testing
-            setTimeout(() => {
-                document.getElementById('username').value = 'admin';
-                document.getElementById('password').value = 'admin123';
-                console.log('Auto-filled credentials for testing');
-            }, 1500);
         });
     </script>
 </body>

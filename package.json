@@ -1,27 +1,110 @@
 {
-  "name": "stock-management-system",
-  "version": "1.0.0",
-  "description": "ระบบตัดสต็อกแบบออฟไลน์/ออนไลน์",
+  "name": "cutstock",
+  "version": "2.0.0",
+  "description": "ระบบจัดการสต็อกสินค้าแบบครบวงจร รองรับการทำงานออฟไลน์",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "start-debug": "electron . --enable-logging --v=1",
-    "test": "node test-sqlite.js",
-    "reset-db": "rm -rf data/ && electron ."
+    "start-dev": "electron . --debug",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64",
+    "build:win32": "electron-builder --win --ia32",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps",
+    "reset": "rm -rf data/ && npm start",
+    "backup": "node scripts/backup.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "stock",
     "inventory",
+    "management",
     "electron",
-    "offline"
+    "sqlite",
+    "pos",
+    "offline-first"
   ],
-  "author": "Your Name",
+  "author": "CutStock Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cutstock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/cutstock/issues"
+  },
+  "homepage": "https://github.com/yourusername/cutstock#readme",
   "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.0.0"
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
   },
   "dependencies": {
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "electron-log": "^5.0.1",
+    "electron-updater": "^6.1.7"
+  },
+  "build": {
+    "appId": "com.cutstock.app",
+    "productName": "CutStock - ระบบจัดการสต็อก",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "**/*",
+      "!data/*.db",
+      "!data/*.log",
+      "!scripts/",
+      "!release/",
+      "!node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!node_modules/*.d.ts",
+      "!node_modules/.bin"
+    ],
+    "extraResources": [
+      {
+        "from": "src/assets/",
+        "to": "assets",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "src/assets/icons/app-icon.ico",
+      "publisherName": "CutStock",
+      "certificateFile": "",
+      "certificatePassword": ""
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CutStock",
+      "installerIcon": "src/assets/icons/app-icon.ico",
+      "uninstallerIcon": "src/assets/icons/app-icon.ico",
+      "installerHeader": "src/assets/icons/header.bmp",
+      "license": "LICENSE.txt"
+    },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "src/assets/icons/app-icon.icns",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": ["AppImage", "deb", "rpm"],
+      "icon": "src/assets/icons/app-icon.png",
+      "category": "Office"
+    },
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
+    }
   }
 }

@@ -1,8 +1,70 @@
 {
-  "backendUrl": "http://127.0.0.1:8000",
-  "apiTimeoutMs": 5000,
-  "healthCheckTtlMs": 3000,
-  "internetCheckUrl": "https://1.1.1.1/cdn-cgi/trace",
-  "internetCheckTimeoutMs": 2500,
-  "requireInternetForOnlineStatus": false
+  "appName": "CutStock",
+  "version": "2.0.0",
+  "company": "CutStock Co., Ltd.",
+  "database": {
+    "type": "sqlite",
+    "backupInterval": 86400000,
+    "maxBackupFiles": 10
+  },
+  "network": {
+    "backendUrl": "http://127.0.0.1:8000",
+    "apiTimeoutMs": 5000,
+    "healthCheckTtlMs": 3000,
+    "internetCheckUrl": "https://1.1.1.1/cdn-cgi/trace",
+    "internetCheckTimeoutMs": 2500,
+    "requireInternetForOnlineStatus": false,
+    "syncIntervalMs": 300000
+  },
+  "pos": {
+    "vatRate": 7,
+    "defaultPaymentMethod": "cash",
+    "printReceipt": true,
+    "receiptFooter": "ขอบคุณที่ใช้บริการ",
+    "currency": "THB",
+    "dateFormat": "dd/MM/yyyy",
+    "timeFormat": "HH:mm:ss"
+  },
+  "stock": {
+    "defaultMinStock": 10,
+    "defaultMaxStock": 100,
+    "lowStockAlert": true,
+    "expiryAlert": 30,
+    "autoGenerateBarcode": true
+  },
+  "security": {
+    "sessionTimeout": 480,
+    "maxLoginAttempts": 5,
+    "lockoutDuration": 15,
+    "passwordMinLength": 6,
+    "requireSpecialChar": false
+  },
+  "backup": {
+    "autoBackup": true,
+    "backupPath": "backups",
+    "backupOnExit": true,
+    "maxBackupAge": 30
+  },
+  "logging": {
+    "level": "info",
+    "maxFiles": 10,
+    "maxSize": 10485760
+  },
+  "features": {
+    "enableOfflineMode": true,
+    "enableCloudSync": false,
+    "enableMultiUser": true,
+    "enableShiftManagement": true,
+    "enableBarcodeScanning": true,
+    "enableLotTracking": true,
+    "enableExpiryTracking": true,
+    "enableReports": true,
+    "enableDashboard": true
+  },
+  "ui": {
+    "theme": "light",
+    "language": "th",
+    "itemsPerPage": 50,
+    "showWelcomeScreen": true
+  }
 }

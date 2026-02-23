@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มสินค้า - ระบบจัดการสต็อก</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .form-container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-            justify-content: center;
         }
         
         .form-section {
@@ -37,197 +30,245 @@
             gap: 10px;
         }
         
-        .barcode-preview {
-            text-align: center;
-            padding: 20px;
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            margin-top: 10px;
-            background: #f9f9f9;
-            font-family: 'Courier New', monospace;
+        .form-group {
+            margin-bottom: 20px;
         }
         
-        .auto-generate {
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+        
+        .form-row {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 20px;
+            margin-bottom: 0;
         }
         
-        .auto-generate input {
+        .form-row .form-group {
             flex: 1;
         }
         
-        .status-options {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+        .form-hint {
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
         }
         
-        .status-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .status-option input[type="radio"] {
-            margin: 0;
-        }
-        
-        .category-selectors {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        /* สไตล์สำหรับล็อตสินค้า */
         .lot-section {
             background: #f8f9fa;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
+            margin-bottom: 15px;
+            position: relative;
         }
         
         .lot-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .lot-title {
-            font-weight: 600;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
         }
         
         .lot-number {
-            background: #3498db;
-            color: white;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
+            font-weight: bold;
+            color: #3498db;
+            font-size: 16px;
         }
         
-        .remove-lot {
-            background: #e74c3c;
-            color: white;
+        .btn-remove-lot {
+            background: none;
             border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
+            color: #e74c3c;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 18px;
+            padding: 5px 10px;
+            transition: color 0.3s;
         }
         
-        .lot-form-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
+        .btn-remove-lot:hover {
+            color: #c0392b;
         }
         
         .supplier-info {
             background: #e8f4fd;
             border-radius: 6px;
-            padding: 15px;
-            margin-top: 15px;
-            border: 1px solid #d1ecf1;
-        }
-        
-        .supplier-details {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            padding: 12px;
             margin-top: 10px;
+            display: none;
         }
         
-        .supplier-detail-item {
+        .supplier-info h5 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .supplier-info p {
+            margin: 3px 0;
             font-size: 13px;
         }
         
-        .supplier-detail-label {
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .add-lot-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            background: #2ecc71;
-            color: white;
-            border: none;
+        .total-lots {
+            background: #e8f4fd;
+            padding: 10px 15px;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
         
-        .lot-counter {
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .barcode-preview {
+            background: #f8f9fa;
+            border: 1px dashed #3498db;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
         }
         
-        .total-lots {
-            background: #3498db;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 14px;
+        .modal-title {
+            font-size: 20px;
             font-weight: 600;
+            color: #2c3e50;
         }
         
-        .lot-container {
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            background: #fafafa;
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
         }
         
-        @media (max-width: 992px) {
-            .lot-form-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .supplier-details {
-                grid-template-columns: 1fr;
-            }
+        .close-modal:hover {
+            color: #e74c3c;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
-            .category-selectors {
-                grid-template-columns: 1fr;
-            }
-            
-            .lot-form-row {
-                grid-template-columns: 1fr;
+            .form-row {
+                flex-direction: column;
             }
             
             .form-actions {
                 flex-direction: column;
             }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 15px; color: #3498db;">กำลังบันทึกข้อมูล...</p>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่</h1>
             <div class="user-info">
-                <span id="currentUser" style="font-weight: 600;"></span>
+                <span id="currentUser"></span>
                 <span id="onlineStatus" class="status-badge offline">
                     <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
                 </span>
@@ -239,159 +280,188 @@
         
         <!-- Navigation -->
         <div class="nav">
+            <button class="nav-btn" onclick="window.location.href='sales.html'">
+                <i class="fas fa-cash-register"></i> ขายสินค้า
+            </button>
             <button class="nav-btn" onclick="window.location.href='stock.html'">
                 <i class="fas fa-box"></i> สต็อกสินค้า
-            </button>
-            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
-                <i class="fas fa-chart-bar"></i> รายงาน
             </button>
             <button class="nav-btn active" onclick="window.location.href='add-product.html'">
                 <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
             </button>
+            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
+                <i class="fas fa-chart-bar"></i> รายงาน
+            </button>
         </div>
         
-        <!-- Form Container -->
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+        
+        <!-- Form -->
         <div class="form-container">
-            <div id="alertContainer"></div>
-            
             <form id="productForm">
-                <!-- ข้อมูลพื้นฐานสินค้า -->
+                <!-- Basic Info -->
                 <div class="form-section">
-                    <h3><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐานสินค้า</h3>
+                    <h3><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน</h3>
                     
                     <div class="form-group">
-                        <label for="productId"><i class="fas fa-barcode"></i> รหัสสินค้า *</label>
-                        <div class="auto-generate">
-                            <input type="text" id="productId" class="form-control" placeholder="P001" required>
-                            <button type="button" class="btn btn-info" onclick="generateProductId()">
-                                <i class="fas fa-sync-alt"></i> สร้างอัตโนมัติ
-                            </button>
-                        </div>
-                        <small class="form-hint">รูปแบบ: P001, P002, P003, ...</small>
+                        <label for="productId"><i class="fas fa-barcode"></i> รหัสสินค้า</label>
+                        <input type="text" id="productId" class="form-control" readonly>
+                        <small class="form-hint">ระบบสร้างให้อัตโนมัติ</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="barcode"><i class="fas fa-qrcode"></i> บาร์โค้ด (ไม่บังคับ)</label>
-                        <input type="text" id="barcode" class="form-control" placeholder="8901234567890">
-                        <div class="barcode-preview" id="barcodePreview">
-                            <div>ตัวอย่างบาร์โค้ด</div>
-                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
-                            <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
-                        </div>
+                        <input type="text" id="barcode" class="form-control" placeholder="8901234567890" maxlength="13">
+                        <small class="form-hint">บาร์โค้ด 13 หลัก</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="productName"><i class="fas fa-tag"></i> ชื่อสินค้า *</label>
                         <input type="text" id="productName" class="form-control" placeholder="ชื่อสินค้า" required>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-align-left"></i> รายละเอียดสินค้า</label>
+                        <textarea id="description" class="form-control" placeholder="รายละเอียดเพิ่มเติม..." rows="3"></textarea>
+                    </div>
+                    
+                    <div id="barcodePreview" class="barcode-preview">
+                        <div>ตัวอย่างบาร์โค้ด</div>
+                        <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
+                        <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
+                    </div>
                 </div>
                 
-                <!-- ข้อมูลราคาและสต็อก -->
+                <!-- Price Info -->
                 <div class="form-section">
-                    <h3><i class="fas fa-money-bill-wave"></i> ข้อมูลราคาและสต็อก</h3>
+                    <h3><i class="fas fa-money-bill-wave"></i> ข้อมูลราคา</h3>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="price"><i class="fas fa-tags"></i> ราคาขาย (บาท) *</label>
+                            <label for="price">ราคาขาย (บาท) *</label>
                             <input type="number" id="price" class="form-control" placeholder="0.00" min="0" step="0.01" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="cost"><i class="fas fa-money-bill"></i> ต้นทุน (บาท) *</label>
+                            <label for="cost">ต้นทุน (บาท) *</label>
                             <input type="number" id="cost" class="form-control" placeholder="0.00" min="0" step="0.01" required>
                         </div>
                     </div>
                     
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="minStock">สต็อกขั้นต่ำ</label>
+                            <input type="number" id="minStock" class="form-control" placeholder="10" min="0" value="10">
+                            <small class="form-hint">เมื่อสินค้าต่ำกว่าค่านี้จะแจ้งเตือน</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="maxStock">สต็อกสูงสุด</label>
+                            <input type="number" id="maxStock" class="form-control" placeholder="100" min="0" value="100">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="stock"><i class="fas fa-boxes"></i> จำนวนสต็อก *</label>
-                        <input type="number" id="stock" class="form-control" placeholder="0" min="0" required readonly>
-                        <small class="form-hint">จำนวนสต็อกจะคำนวณอัตโนมัติจากล็อตสินค้าทั้งหมด</small>
+                        <label for="unit">หน่วยนับ</label>
+                        <select id="unit" class="form-control">
+                            <option value="ชิ้น">ชิ้น</option>
+                            <option value="กล่อง">กล่อง</option>
+                            <option value="ขวด">ขวด</option>
+                            <option value="หลอด">หลอด</option>
+                            <option value="กิโลกรัม">กิโลกรัม</option>
+                            <option value="ลิตร">ลิตร</option>
+                            <option value="แพ็ค">แพ็ค</option>
+                            <option value="โหล">โหล</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stock">จำนวนสต็อกทั้งหมด</label>
+                        <input type="number" id="stock" class="form-control" readonly>
+                        <small class="form-hint">คำนวณอัตโนมัติจากจำนวนล็อตสินค้า</small>
                     </div>
                 </div>
                 
-                <!-- หมวดหมู่ -->
+                <!-- Category -->
                 <div class="form-section">
-                    <h3><i class="fas fa-tags"></i> หมวดหมู่สินค้า</h3>
+                    <h3><i class="fas fa-tags"></i> หมวดหมู่</h3>
                     
-                    <div class="category-selectors">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="mainCategory"><i class="fas fa-folder"></i> หมวดหมู่หลัก *</label>
-                            <select id="mainCategory" class="form-control" required>
-                                <option value="">เลือกหมวดหมู่หลัก</option>
+                            <label for="mainCategory">หมวดหมู่หลัก</label>
+                            <select id="mainCategory" class="form-control">
+                                <option value="">เลือกหมวดหมู่</option>
                                 <option value="เครื่องดื่ม">เครื่องดื่ม</option>
-                                <option value="อาหาร">อาหาร</option>
                                 <option value="อาหารแห้ง">อาหารแห้ง</option>
-                                <option value="สุขภาพและความงาม">สุขภาพและความงาม</option>
+                                <option value="อาหารสด">อาหารสด</option>
+                                <option value="สุขภาพ">สุขภาพ</option>
+                                <option value="ความงาม">ความงาม</option>
                                 <option value="อิเล็กทรอนิกส์">อิเล็กทรอนิกส์</option>
-                                <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
                                 <option value="เครื่องเขียน">เครื่องเขียน</option>
-                                <option value="ของใช้ในครัว">ของใช้ในครัว</option>
-                                <option value="เสื้อผ้า">เสื้อผ้า</option>
+                                <option value="ของใช้">ของใช้</option>
                                 <option value="อื่นๆ">อื่นๆ</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="subCategory"><i class="fas fa-folder-open"></i> หมวดหมู่ย่อย (ไม่บังคับ)</label>
+                            <label for="subCategory">หมวดหมู่ย่อย</label>
                             <input type="text" id="subCategory" class="form-control" placeholder="หมวดหมู่ย่อย">
                         </div>
                     </div>
                 </div>
                 
-                <!-- ล็อตสินค้า -->
+                <!-- Lots -->
                 <div class="form-section">
                     <h3><i class="fas fa-layer-group"></i> ล็อตสินค้า</h3>
                     
-                    <div class="lot-counter">
-                        <span>จำนวนล็อตสินค้า:</span>
-                        <span id="totalLots" class="total-lots">0 ล็อต</span>
+                    <div class="total-lots">
+                        <i class="fas fa-cubes"></i> จำนวนล็อต: <span id="totalLots">0 ล็อต</span>
                     </div>
                     
-                    <div class="lot-container" id="lotsContainer">
-                        <!-- ล็อตสินค้าจะถูกเพิ่มที่นี่ -->
+                    <button type="button" class="btn btn-success" onclick="addLot()" style="margin-bottom: 15px;">
+                        <i class="fas fa-plus"></i> เพิ่มล็อตสินค้า
+                    </button>
+                    
+                    <div id="lotsContainer">
                         <div class="text-center" style="color: #7f8c8d; padding: 40px;">
                             <i class="fas fa-box-open fa-3x" style="margin-bottom: 15px; opacity: 0.5;"></i><br>
                             ยังไม่มีล็อตสินค้า<br>
                             <small>คลิกปุ่ม "เพิ่มล็อตสินค้า" เพื่อเริ่มต้น</small>
                         </div>
                     </div>
-                    
-                    <button type="button" class="add-lot-btn" onclick="addLot()">
-                        <i class="fas fa-plus"></i> เพิ่มล็อตสินค้า
-                    </button>
                 </div>
                 
-                <!-- สถานะสินค้า -->
+                <!-- Status -->
                 <div class="form-section">
                     <h3><i class="fas fa-check-circle"></i> สถานะสินค้า</h3>
                     
-                    <div class="status-options">
-                        <label class="status-option">
-                            <input type="radio" name="status" value="ปกติ" checked>
-                            <span class="badge badge-success">ปกติ</span>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="status" value="มีสินค้า" checked>
+                            <span class="badge badge-success">มีสินค้า</span>
                         </label>
                         
-                        <label class="status-option">
-                            <input type="radio" name="status" value="ใกล้หมด">
-                            <span class="badge badge-warning">ใกล้หมด</span>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="status" value="สินค้าจำกัด">
+                            <span class="badge badge-warning">สินค้าจำกัด</span>
                         </label>
                         
-                        <label class="status-option">
-                            <input type="radio" name="status" value="หมด">
-                            <span class="badge badge-danger">หมด</span>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="radio" name="status" value="สินค้าหมด">
+                            <span class="badge badge-danger">สินค้าหมด</span>
                         </label>
                     </div>
-                    <small class="form-hint">สถานะจะปรับอัตโนมัติตามจำนวนสต็อกทั้งหมด</small>
                 </div>
                 
-                <!-- ปุ่มดำเนินการ -->
+                <!-- Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success btn-lg">
                         <i class="fas fa-save"></i> บันทึกสินค้า
                     </button>
                     
                     <button type="button" class="btn btn-warning btn-lg" onclick="clearForm()">
-                        <i class="fas fa-eraser"></i> ล้างแบบฟอร์ม
+                        <i class="fas fa-undo"></i> ล้างฟอร์ม
                     </button>
                     
                     <button type="button" class="btn btn-danger btn-lg" onclick="cancelForm()">
@@ -402,20 +472,17 @@
         </div>
     </div>
     
-    <!-- Template สำหรับล็อตสินค้า -->
+    <!-- Lot Template -->
     <template id="lotTemplate">
-        <div class="lot-section" data-lot-index="">
+        <div class="lot-section">
             <div class="lot-header">
-                <div class="lot-title">
-                    <i class="fas fa-box"></i> ล็อตสินค้า
-                    <span class="lot-number"></span>
-                </div>
-                <button type="button" class="remove-lot" onclick="removeLot(this)">
-                    <i class="fas fa-trash"></i> ลบ
+                <span class="lot-number"><i class="fas fa-cube"></i> ล็อต #</span>
+                <button type="button" class="btn-remove-lot" onclick="removeLot(this)">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
             
-            <div class="lot-form-row">
+            <div class="form-row">
                 <div class="form-group">
                     <label>วันหมดอายุ *</label>
                     <input type="date" class="form-control expiry-date" required>
@@ -423,86 +490,157 @@
                 
                 <div class="form-group">
                     <label>หมายเลขผลิตภัณฑ์ *</label>
-                    <input type="text" class="form-control product-number" placeholder="NP-2024-001" required>
+                    <input type="text" class="form-control product-number" placeholder="เช่น BATCH001" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>จำนวนคงเหลือ *</label>
+                    <input type="number" class="form-control remaining-quantity" min="0" value="0" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>ปริมาณที่เหลือ *</label>
-                    <input type="number" class="form-control remaining-quantity" placeholder="0" min="0" required>
+                    <label>วันที่รับเข้า</label>
+                    <input type="date" class="form-control received-date">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ระยะเวลารับประกัน</label>
+                    <input type="text" class="form-control warranty" placeholder="เช่น 1 ปี">
                 </div>
                 
                 <div class="form-group">
-                    <label>การรับประกันสินค้า</label>
-                    <input type="text" class="form-control warranty" placeholder="12 เดือน, 2 ปี, ...">
+                    <label>ราคาทุนล็อตนี้</label>
+                    <input type="number" class="form-control lot-cost" placeholder="0.00" min="0" step="0.01">
+                    <small class="form-hint">ถ้าไม่ระบุจะใช้ราคาทุนหลัก</small>
                 </div>
             </div>
             
             <div class="form-group">
                 <label>รหัสซัพพลายเออร์</label>
-                <select class="form-control supplier-code" onchange="loadSupplierInfo(this)">
-                    <option value="">เลือกซัพพลายเออร์</option>
-                    <option value="SUP-001">SUP-001</option>
-                    <option value="SUP-002">SUP-002</option>
-                    <option value="SUP-003">SUP-003</option>
-                    <option value="SUP-004">SUP-004</option>
+                <select class="form-control supplier-code">
+                    <option value="">เลือกรหัสซัพพลายเออร์</option>
+                    <option value="SUP-001">SUP-001 (ไทย-เดนมาร์ค)</option>
+                    <option value="SUP-002">SUP-002 (ซีฟู้ด)</option>
+                    <option value="SUP-003">SUP-003 (คอลเกต)</option>
+                    <option value="SUP-004">SUP-004 (พานาโซนิค)</option>
                     <option value="new">+ เพิ่มซัพพลายเออร์ใหม่</option>
                 </select>
-                
-                <div class="supplier-info" style="display: none;">
-                    <div><strong>ข้อมูลซัพพลายเออร์:</strong></div>
-                    <div class="supplier-details">
-                        <div class="supplier-detail-item">
-                            <span class="supplier-detail-label">ชื่อ:</span>
-                            <span class="supplier-name"></span>
-                        </div>
-                        <div class="supplier-detail-item">
-                            <span class="supplier-detail-label">ติดต่อ:</span>
-                            <span class="supplier-contact"></span>
-                        </div>
-                        <div class="supplier-detail-item">
-                            <span class="supplier-detail-label">ที่อยู่:</span>
-                            <span class="supplier-address"></span>
-                        </div>
-                    </div>
-                </div>
+            </div>
+            
+            <div class="supplier-info">
+                <h5><i class="fas fa-building"></i> ข้อมูลซัพพลายเออร์</h5>
+                <p><strong>ชื่อบริษัท:</strong> <span class="supplier-name"></span></p>
+                <p><strong>ผู้ติดต่อ:</strong> <span class="supplier-contact"></span></p>
+                <p><strong>ที่อยู่:</strong> <span class="supplier-address"></span></p>
             </div>
         </div>
     </template>
-
+    
+    <!-- Add Supplier Modal -->
+    <div class="modal" id="addSupplierModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">เพิ่มซัพพลายเออร์ใหม่</h3>
+                <button class="close-modal" onclick="closeSupplierModal()">&times;</button>
+            </div>
+            
+            <form id="addSupplierForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label>รหัสซัพพลายเออร์ *</label>
+                    <input type="text" id="newSupplierCode" class="form-control" placeholder="SUP-005" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>ชื่อบริษัท *</label>
+                    <input type="text" id="newSupplierName" class="form-control" placeholder="ชื่อบริษัท" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>ผู้ติดต่อ</label>
+                    <input type="text" id="newSupplierContact" class="form-control" placeholder="ชื่อผู้ติดต่อ">
+                </div>
+                
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์</label>
+                    <input type="text" id="newSupplierPhone" class="form-control" placeholder="02-xxx-xxxx">
+                </div>
+                
+                <div class="form-group">
+                    <label>อีเมล</label>
+                    <input type="email" id="newSupplierEmail" class="form-control" placeholder="email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>ที่อยู่</label>
+                    <textarea id="newSupplierAddress" class="form-control" rows="2" placeholder="ที่อยู่"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeSupplierModal()" style="flex: 1;">ยกเลิก</button>
+                    <button type="button" class="btn btn-success" onclick="saveNewSupplier()" style="flex: 1;">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
-        // ข้อมูลซัพพลายเออร์ตัวอย่าง
-        const sampleSuppliers = [
-            {
-                code: "SUP-001",
-                name: "บริษัท ไทย-เดนมาร์ค จำกัด",
-                contact: "สมชาย ใจดี (02-123-4567)",
-                address: "123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110"
-            },
-            {
-                code: "SUP-002",
-                name: "บริษัท ซีฟู้ด ผลิตภัณฑ์อาหารทะเล จำกัด",
-                contact: "สมหญิง เก่งงาน (02-234-5678)",
-                address: "456 ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400"
-            },
-            {
-                code: "SUP-003",
-                name: "บริษัท คอลเกต-ปาล์มโอลีฟ จำกัด",
-                contact: "ธนพล ทำงานดี (02-345-6789)",
-                address: "789 ถนนพระราม 4 แขวงสีลม เขตบางรัก กรุงเทพฯ 10500"
-            },
-            {
-                code: "SUP-004",
-                name: "บริษัท พานาโซนิค ประเทศไทย จำกัด",
-                contact: "วิษณุ เทคโนโลยี (02-456-7890)",
-                address: "321 ถนนลาดพร้าว แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900"
-            }
-        ];
-
-        // ตัวแปรเก็บล็อตสินค้า
+        // ==================== GLOBAL VARIABLES ====================
         let lotCounter = 0;
-        let lotData = [];
+        let currentUser = null;
+        let allProducts = [];
+        let allSuppliers = [];
+        let currentSupplierSelect = null;
 
-        // ตรวจสอบสถานะการเข้าสู่ระบบ
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            currentUser = user;
+            document.getElementById('currentUser').textContent = user.name;
+            
+            await loadExistingData();
+            await generateProductId();
+            await checkOnlineStatus();
+            
+            setupEventListeners();
+        });
+
+        // ==================== LOAD EXISTING DATA ====================
+        async function loadExistingData() {
+            try {
+                if (window.electronAPI) {
+                    allProducts = await window.electronAPI.getProducts() || [];
+                    allSuppliers = await window.electronAPI.getAllSuppliers() || [];
+                } else {
+                    // Load from localStorage for demo
+                    const savedProducts = localStorage.getItem('demo_products');
+                    allProducts = savedProducts ? JSON.parse(savedProducts) : [];
+                    
+                    const savedSuppliers = localStorage.getItem('demo_suppliers');
+                    if (savedSuppliers) {
+                        allSuppliers = JSON.parse(savedSuppliers);
+                    } else {
+                        allSuppliers = [
+                            { code: 'SUP-001', name: 'บริษัท ไทย-เดนมาร์ค จำกัด', contact_person: 'สมชาย ใจดี', phone: '02-123-4567', address: '123 ถนนสุขุมวิท กรุงเทพฯ' },
+                            { code: 'SUP-002', name: 'บริษัท ซีฟู้ด จำกัด', contact_person: 'สมหญิง เก่งงาน', phone: '02-234-5678', address: '456 ถนนรัชดาภิเษก กรุงเทพฯ' },
+                            { code: 'SUP-003', name: 'บริษัท คอลเกต จำกัด', contact_person: 'ธนพล ทำงานดี', phone: '02-345-6789', address: '789 ถนนพระราม 4 กรุงเทพฯ' },
+                            { code: 'SUP-004', name: 'บริษัท พานาโซนิค จำกัด', contact_person: 'วิษณุ เทคโนโลยี', phone: '02-456-7890', address: '321 ถนนลาดพร้าว กรุงเทพฯ' }
+                        ];
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading existing data:', error);
+                allProducts = [];
+                allSuppliers = [];
+            }
+        }
+
+        // ==================== AUTHENTICATION ====================
         function checkAuth() {
             const user = localStorage.getItem('user');
             if (!user) {
@@ -512,7 +650,6 @@
             return JSON.parse(user);
         }
 
-        // ฟังก์ชันออกจากระบบ
         function logout() {
             if (confirm('คุณแน่ใจว่าต้องการออกจากระบบ?')) {
                 localStorage.removeItem('user');
@@ -521,42 +658,7 @@
             }
         }
 
-        // สร้างรหัสสินค้าอัตโนมัติ
-        async function generateProductId() {
-            try {
-                const response = await fetch('/api/products/last-id');
-                const data = await response.json();
-                
-                let maxNumber = 0;
-                if (data.lastId) {
-                    const match = data.lastId.match(/^P(\d+)$/i);
-                    if (match) {
-                        maxNumber = parseInt(match[1]);
-                    }
-                }
-                
-                const newId = `P${(maxNumber + 1).toString().padStart(3, '0')}`;
-                document.getElementById('productId').value = newId;
-                
-            } catch (error) {
-                console.error('Error generating product ID:', error);
-                // ถ้า API ไม่ทำงาน ให้ใช้วิธี local
-                const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
-                let maxNumber = 0;
-                
-                storedProducts.forEach(product => {
-                    if (product.product_id && product.product_id.match(/^P(\d+)$/i)) {
-                        const num = parseInt(product.product_id.substring(1));
-                        if (num > maxNumber) maxNumber = num;
-                    }
-                });
-                
-                const newId = `P${(maxNumber + 1).toString().padStart(3, '0')}`;
-                document.getElementById('productId').value = newId;
-            }
-        }
-
-        // แสดงข้อความแจ้งเตือน
+        // ==================== ALERT ====================
         function showAlert(message, type = 'info') {
             let alertContainer = document.getElementById('alertContainer');
             if (!alertContainer) {
@@ -584,7 +686,6 @@
             
             alertContainer.appendChild(alertElement);
             
-            // ลบ alert อัตโนมัติหลังจาก 5 วินาที
             setTimeout(() => {
                 if (document.getElementById(alertId)) {
                     document.getElementById(alertId).remove();
@@ -592,7 +693,124 @@
             }, 5000);
         }
 
-        // ล้างแบบฟอร์ม
+        // ==================== ONLINE STATUS ====================
+        function updateOnlineStatus(isOnline) {
+            const statusElement = document.getElementById('onlineStatus');
+            if (statusElement) {
+                if (isOnline) {
+                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
+                    statusElement.classList.remove('online');
+                    statusElement.classList.add('offline');
+                    document.querySelectorAll('.online-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+            }
+        }
+
+        async function checkOnlineStatus() {
+            try {
+                const isOnline = await window.electronAPI?.checkOnlineStatus() ?? navigator.onLine;
+                updateOnlineStatus(isOnline);
+                return isOnline;
+            } catch (error) {
+                console.error('Error checking online status:', error);
+                return navigator.onLine;
+            }
+        }
+
+        // ==================== SETUP EVENT LISTENERS ====================
+        function setupEventListeners() {
+            window.addEventListener('online', () => updateOnlineStatus(true));
+            window.addEventListener('offline', () => updateOnlineStatus(false));
+            
+            document.getElementById('barcode').addEventListener('input', updateBarcodePreview);
+            
+            const priceInput = document.getElementById('price');
+            const costInput = document.getElementById('cost');
+            
+            priceInput.addEventListener('input', validateCostVsPrice);
+            costInput.addEventListener('input', validateCostVsPrice);
+            
+            document.getElementById('minStock').addEventListener('input', calculateTotalStock);
+            document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
+        }
+
+        // ==================== BARCODE ====================
+        function updateBarcodePreview() {
+            const preview = document.getElementById('barcodePreview');
+            const barcode = this.value.trim();
+            
+            if (barcode) {
+                checkDuplicateBarcode(barcode);
+                
+                preview.innerHTML = `
+                    <div>บาร์โค้ดที่ป้อน</div>
+                    <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">${barcode}</div>
+                    <div style="color: #7f8c8d; font-size: 12px;">สามารถสแกนได้</div>
+                `;
+            } else {
+                preview.innerHTML = `
+                    <div>ตัวอย่างบาร์โค้ด</div>
+                    <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
+                    <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
+                `;
+            }
+        }
+
+        function checkDuplicateBarcode(barcode) {
+            if (!barcode || barcode.length < 3) return;
+            
+            const existing = allProducts.find(p => p.barcode === barcode);
+            if (existing) {
+                showAlert(`มีสินค้า "${existing.name}" ใช้บาร์โค้ดนี้อยู่แล้ว`, 'warning');
+                document.getElementById('barcode').style.borderColor = '#e74c3c';
+            } else {
+                document.getElementById('barcode').style.borderColor = '';
+            }
+        }
+
+        // ==================== PRICE VALIDATION ====================
+        function validateCostVsPrice() {
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+            
+            if (cost > price && price > 0) {
+                document.getElementById('cost').style.borderColor = '#e74c3c';
+                showAlert('ต้นทุนต้องไม่สูงกว่าราคาขาย', 'warning');
+            } else {
+                document.getElementById('cost').style.borderColor = '';
+            }
+        }
+
+        // ==================== PRODUCT ID ====================
+        async function generateProductId() {
+            try {
+                let maxNumber = 0;
+                
+                allProducts.forEach(product => {
+                    if (product.id && product.id.match(/^P(\d+)$/i)) {
+                        const num = parseInt(product.id.substring(1));
+                        if (num > maxNumber) maxNumber = num;
+                    }
+                });
+                
+                const newId = `P${(maxNumber + 1).toString().padStart(3, '0')}`;
+                document.getElementById('productId').value = newId;
+            } catch (error) {
+                console.error('Error generating product ID:', error);
+                document.getElementById('productId').value = 'P' + Date.now().toString().slice(-6);
+            }
+        }
+
+        // ==================== FORM FUNCTIONS ====================
         function clearForm() {
             if (confirm('คุณแน่ใจว่าต้องการล้างข้อมูลทั้งหมดในแบบฟอร์ม?')) {
                 document.getElementById('productForm').reset();
@@ -604,68 +822,46 @@
                     </div>
                 `;
                 lotCounter = 0;
-                lotData = [];
                 updateTotalLots();
                 document.getElementById('stock').value = '0';
                 generateProductId();
             }
         }
 
-        // ยกเลิกและกลับไปหน้าสต็อก
         function cancelForm() {
             if (confirm('คุณแน่ใจว่าต้องการยกเลิกการเพิ่มสินค้า?')) {
                 window.location.href = 'stock.html';
             }
         }
 
-        // ตรวจสอบรหัสสินค้าซ้ำ
-        async function checkDuplicateProductId(productId) {
-            try {
-                const response = await fetch(`/api/products/${productId}`);
-                const data = await response.json();
-                return data.exists;
-            } catch (error) {
-                console.error('Error checking duplicate product ID:', error);
-                // ตรวจสอบจาก localStorage ถ้า API ไม่ทำงาน
-                const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
-                return storedProducts.some(product => product.product_id === productId);
-            }
-        }
-
-        // อัพเดทจำนวนล็อต
+        // ==================== LOT FUNCTIONS ====================
         function updateTotalLots() {
             const lotCount = document.querySelectorAll('.lot-section').length;
             document.getElementById('totalLots').textContent = `${lotCount} ล็อต`;
         }
 
-        // คำนวณจำนวนสต็อกรวม
         function calculateTotalStock() {
             let total = 0;
-            const quantityInputs = document.querySelectorAll('.remaining-quantity');
-            
-            quantityInputs.forEach(input => {
-                const value = parseInt(input.value) || 0;
-                total += value;
+            document.querySelectorAll('.remaining-quantity').forEach(input => {
+                total += parseInt(input.value) || 0;
             });
-            
             document.getElementById('stock').value = total;
             updateProductStatus(total);
         }
 
-        // อัพเดทสถานะสินค้าตามจำนวนสต็อก
         function updateProductStatus(totalStock) {
             const statusRadios = document.getElementsByName('status');
+            const minStock = parseInt(document.getElementById('minStock').value) || 10;
             
             if (totalStock === 0) {
                 statusRadios[2].checked = true; // สินค้าหมด
-            } else if (totalStock > 0 && totalStock <= 10) {
-                statusRadios[1].checked = true; // สินค้าใกล้หมด
-            } else if (totalStock > 10) {
-                statusRadios[0].checked = true; // ปกติ
+            } else if (totalStock <= minStock) {
+                statusRadios[1].checked = true; // สินค้าจำกัด
+            } else {
+                statusRadios[0].checked = true; // มีสินค้า
             }
         }
 
-        // เพิ่มล็อตสินค้าใหม่
         function addLot() {
             const template = document.getElementById('lotTemplate');
             const clone = template.content.cloneNode(true);
@@ -673,43 +869,44 @@
             
             lotCounter++;
             lotElement.dataset.lotIndex = lotCounter;
-            lotElement.querySelector('.lot-number').textContent = `#${lotCounter}`;
+            lotElement.querySelector('.lot-number').innerHTML = `<i class="fas fa-cube"></i> ล็อต #${lotCounter}`;
             
-            // ตั้งค่าวันหมดอายุเริ่มต้น (30 วันจากนี้)
             const today = new Date();
-            const nextMonth = new Date(today);
-            nextMonth.setDate(today.getDate() + 30);
-            const formattedDate = nextMonth.toISOString().split('T')[0];
-            lotElement.querySelector('.expiry-date').value = formattedDate;
+            const nextYear = new Date(today);
+            nextYear.setFullYear(today.getFullYear() + 1);
+            lotElement.querySelector('.expiry-date').value = nextYear.toISOString().split('T')[0];
+            lotElement.querySelector('.received-date').value = today.toISOString().split('T')[0];
             
-            // เพิ่ม event listener สำหรับปริมาณที่เหลือ
+            // Add event listeners
             const quantityInput = lotElement.querySelector('.remaining-quantity');
             quantityInput.addEventListener('input', calculateTotalStock);
+            quantityInput.addEventListener('change', function() {
+                if (this.value < 0) this.value = 0;
+            });
             
-            // เพิ่มลงใน container
+            const supplierSelect = lotElement.querySelector('.supplier-code');
+            supplierSelect.addEventListener('change', function() {
+                if (this.value === 'new') {
+                    showAddSupplierModal(this);
+                } else {
+                    loadSupplierInfo(this);
+                }
+            });
+            
             const lotsContainer = document.getElementById('lotsContainer');
-            
-            // ถ้ายังไม่มีล็อต ให้ล้างข้อความเริ่มต้น
-            if (lotsContainer.querySelector('.text-center')) {
-                lotsContainer.innerHTML = '';
-            }
-            
+            if (lotsContainer.querySelector('.text-center')) lotsContainer.innerHTML = '';
             lotsContainer.appendChild(lotElement);
             
-            // อัพเดทจำนวนล็อต
             updateTotalLots();
             calculateTotalStock();
         }
 
-        // ลบล็อตสินค้า
         function removeLot(button) {
-            const lotSection = button.closest('.lot-section');
             if (confirm('คุณแน่ใจว่าต้องการลบล็อตสินค้านี้?')) {
-                lotSection.remove();
+                button.closest('.lot-section').remove();
                 updateTotalLots();
                 calculateTotalStock();
                 
-                // ถ้าไม่มีล็อตเหลือ ให้แสดงข้อความ
                 const lotsContainer = document.getElementById('lotsContainer');
                 if (lotsContainer.children.length === 0) {
                     lotsContainer.innerHTML = `
@@ -723,309 +920,282 @@
             }
         }
 
-        // โหลดข้อมูลซัพพลายเออร์
+        // ==================== SUPPLIER FUNCTIONS ====================
         function loadSupplierInfo(selectElement) {
             const supplierCode = selectElement.value;
             const lotSection = selectElement.closest('.lot-section');
             const supplierInfo = lotSection.querySelector('.supplier-info');
             
-            if (supplierCode === '' || supplierCode === 'new') {
+            if (!supplierCode || supplierCode === '') {
                 supplierInfo.style.display = 'none';
                 return;
             }
             
-            // ค้นหาข้อมูลซัพพลายเออร์
-            const supplier = sampleSuppliers.find(s => s.code === supplierCode);
+            const supplier = allSuppliers.find(s => s.code === supplierCode);
+            
             if (supplier) {
                 lotSection.querySelector('.supplier-name').textContent = supplier.name;
-                lotSection.querySelector('.supplier-contact').textContent = supplier.contact;
-                lotSection.querySelector('.supplier-address').textContent = supplier.address;
+                lotSection.querySelector('.supplier-contact').textContent = supplier.contact_person || '-';
+                lotSection.querySelector('.supplier-address').textContent = supplier.address || '-';
                 supplierInfo.style.display = 'block';
             } else {
                 supplierInfo.style.display = 'none';
-                showAlert('ไม่พบข้อมูลซัพพลายเออร์ที่เลือก', 'warning');
             }
         }
 
-        // รวบรวมข้อมูลจากฟอร์ม
-        function collectFormData() {
-            const productData = {
-                product_id: document.getElementById('productId').value.trim().toUpperCase(),
-                barcode: document.getElementById('barcode').value.trim() || null,
-                product_name: document.getElementById('productName').value.trim(),
-                price: parseFloat(document.getElementById('price').value) || 0,
-                cost: parseFloat(document.getElementById('cost').value) || 0,
-                stock_quantity: parseInt(document.getElementById('stock').value) || 0,
-                main_category: document.getElementById('mainCategory').value,
-                sub_category: document.getElementById('subCategory').value.trim() || null,
-                status: document.querySelector('input[name="status"]:checked').value,
-                lots: []
-            };
-            
-            // รวบรวมข้อมูลล็อตสินค้า
-            const lotSections = document.querySelectorAll('.lot-section');
-            lotSections.forEach((section, index) => {
-                const lotData = {
-                    lot_number: `LOT-${(index + 1).toString().padStart(3, '0')}`,
-                    expiry_date: section.querySelector('.expiry-date').value,
-                    product_batch: section.querySelector('.product-number').value.trim(),
-                    remaining_quantity: parseInt(section.querySelector('.remaining-quantity').value) || 0,
-                    warranty_period: section.querySelector('.warranty').value.trim() || null,
-                    supplier_code: section.querySelector('.supplier-code').value || null,
-                    supplier_name: section.querySelector('.supplier-name').textContent || null,
-                    supplier_contact: section.querySelector('.supplier-contact').textContent || null,
-                    supplier_address: section.querySelector('.supplier-address').textContent || null
-                };
-                
-                productData.lots.push(lotData);
-            });
-            
-            return productData;
+        function showAddSupplierModal(selectElement) {
+            currentSupplierSelect = selectElement;
+            document.getElementById('addSupplierModal').style.display = 'flex';
+            document.getElementById('addSupplierForm').reset();
         }
 
-        // Validate form data
-        function validateFormData(productData) {
-            // ตรวจสอบรหัสสินค้า
-            if (!productData.product_id || !productData.product_id.match(/^P\d{3}$/i)) {
-                showAlert('รหัสสินค้าต้องอยู่ในรูปแบบ P001, P002, ...', 'danger');
+        function closeSupplierModal() {
+            document.getElementById('addSupplierModal').style.display = 'none';
+            if (currentSupplierSelect) {
+                currentSupplierSelect.value = '';
+                currentSupplierSelect = null;
+            }
+        }
+
+        async function saveNewSupplier() {
+            const supplierData = {
+                code: document.getElementById('newSupplierCode').value.trim().toUpperCase(),
+                name: document.getElementById('newSupplierName').value.trim(),
+                contact_person: document.getElementById('newSupplierContact').value.trim(),
+                phone: document.getElementById('newSupplierPhone').value.trim(),
+                email: document.getElementById('newSupplierEmail').value.trim(),
+                address: document.getElementById('newSupplierAddress').value.trim()
+            };
+            
+            if (!supplierData.code || !supplierData.name) {
+                showAlert('กรุณากรอกรหัสซัพพลายเออร์และชื่อบริษัท', 'danger');
+                return;
+            }
+            
+            if (allSuppliers.some(s => s.code === supplierData.code)) {
+                showAlert('รหัสซัพพลายเออร์นี้มีอยู่แล้ว', 'danger');
+                return;
+            }
+            
+            try {
+                if (window.electronAPI) {
+                    await window.electronAPI.createSupplier(supplierData);
+                } else {
+                    allSuppliers.push(supplierData);
+                    localStorage.setItem('demo_suppliers', JSON.stringify(allSuppliers));
+                }
+                
+                // Add option to select
+                if (currentSupplierSelect) {
+                    const option = document.createElement('option');
+                    option.value = supplierData.code;
+                    option.textContent = `${supplierData.code} (${supplierData.name})`;
+                    
+                    const newOption = currentSupplierSelect.querySelector('option[value="new"]');
+                    currentSupplierSelect.insertBefore(option, newOption);
+                    currentSupplierSelect.value = supplierData.code;
+                    
+                    loadSupplierInfo(currentSupplierSelect);
+                }
+                
+                showAlert('เพิ่มซัพพลายเออร์เรียบร้อย', 'success');
+                closeSupplierModal();
+                
+            } catch (error) {
+                console.error('Error saving supplier:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
+            }
+        }
+
+        // ==================== FORM DATA COLLECTION ====================
+        function collectFormData() {
+            const lots = [];
+            document.querySelectorAll('.lot-section').forEach((section, index) => {
+                const quantity = parseInt(section.querySelector('.remaining-quantity').value) || 0;
+                const lotNumber = section.querySelector('.product-number').value.trim();
+                const expiryDate = section.querySelector('.expiry-date').value;
+                
+                // Only include lots with valid data
+                if (lotNumber && expiryDate && quantity > 0) {
+                    lots.push({
+                        lot_number: lotNumber,
+                        expiry_date: expiryDate,
+                        quantity: quantity,
+                        supplier_code: section.querySelector('.supplier-code').value || null,
+                        received_date: section.querySelector('.received-date').value || new Date().toISOString().split('T')[0],
+                        warranty: section.querySelector('.warranty').value.trim() || null,
+                        cost: parseFloat(section.querySelector('.lot-cost').value) || null
+                    });
+                }
+            });
+            
+            return {
+                id: document.getElementById('productId').value.trim().toUpperCase(),
+                barcode: document.getElementById('barcode').value.trim() || null,
+                name: document.getElementById('productName').value.trim(),
+                description: document.getElementById('description').value.trim() || null,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                cost: parseFloat(document.getElementById('cost').value) || 0,
+                stock: parseInt(document.getElementById('stock').value) || 0,
+                min_stock: parseInt(document.getElementById('minStock').value) || 10,
+                max_stock: parseInt(document.getElementById('maxStock').value) || 100,
+                unit: document.getElementById('unit').value,
+                category: document.getElementById('mainCategory').value,
+                subcategory: document.getElementById('subCategory').value.trim() || null,
+                status: getStatusFromValue(document.querySelector('input[name="status"]:checked')?.value || 'มีสินค้า'),
+                lots: lots
+            };
+        }
+
+        function getStatusFromValue(statusValue) {
+            switch(statusValue) {
+                case 'มีสินค้า': return 'active';
+                case 'สินค้าจำกัด': return 'low';
+                case 'สินค้าหมด': return 'out';
+                default: return 'active';
+            }
+        }
+
+        // ==================== VALIDATION ====================
+        function validateFormData(data) {
+            if (!data.id.match(/^P\d{3,}$/i)) {
+                showAlert('รหัสสินค้าต้องขึ้นต้นด้วย P ตามด้วยตัวเลข 3 หลักขึ้นไป (เช่น P001)', 'danger');
                 return false;
             }
             
-            // ตรวจสอบชื่อสินค้า
-            if (!productData.product_name || productData.product_name.trim().length < 2) {
+            if (allProducts.some(p => p.id === data.id)) {
+                showAlert('รหัสสินค้านี้มีอยู่แล้วในระบบ', 'danger');
+                return false;
+            }
+            
+            if (data.barcode && allProducts.some(p => p.barcode === data.barcode)) {
+                showAlert('บาร์โค้ดนี้มีอยู่แล้วในระบบ', 'danger');
+                return false;
+            }
+            
+            if (!data.name || data.name.length < 2) {
                 showAlert('กรุณากรอกชื่อสินค้าที่มีความยาวอย่างน้อย 2 ตัวอักษร', 'danger');
                 return false;
             }
             
-            // ตรวจสอบราคาและต้นทุน
-            if (productData.price <= 0) {
+            if (data.price <= 0) {
                 showAlert('ราคาขายต้องมากกว่า 0', 'danger');
                 return false;
             }
             
-            if (productData.cost <= 0) {
+            if (data.cost <= 0) {
                 showAlert('ต้นทุนต้องมากกว่า 0', 'danger');
                 return false;
             }
             
-            if (productData.cost > productData.price) {
+            if (data.cost > data.price) {
                 showAlert('ต้นทุนต้องไม่สูงกว่าราคาขาย', 'danger');
                 return false;
             }
             
-            // ตรวจสอบหมวดหมู่หลัก
-            if (!productData.main_category) {
+            if (!data.category) {
                 showAlert('กรุณาเลือกหมวดหมู่หลัก', 'danger');
                 return false;
             }
             
-            // ตรวจสอบล็อตสินค้า
-            if (productData.lots.length === 0) {
+            if (data.lots.length === 0) {
                 showAlert('กรุณาเพิ่มล็อตสินค้าอย่างน้อย 1 ล็อต', 'danger');
                 return false;
-            }
-            
-            // ตรวจสอบข้อมูลในแต่ละล็อต
-            for (let i = 0; i < productData.lots.length; i++) {
-                const lot = productData.lots[i];
-                
-                if (!lot.expiry_date) {
-                    showAlert(`ล็อตที่ ${i + 1}: กรุณาระบุวันหมดอายุ`, 'danger');
-                    return false;
-                }
-                
-                if (!lot.product_batch) {
-                    showAlert(`ล็อตที่ ${i + 1}: กรุณาระบุหมายเลขผลิตภัณฑ์`, 'danger');
-                    return false;
-                }
-                
-                if (lot.remaining_quantity < 0) {
-                    showAlert(`ล็อตที่ ${i + 1}: ปริมาณที่เหลือต้องไม่น้อยกว่า 0`, 'danger');
-                    return false;
-                }
             }
             
             return true;
         }
 
-        // Initialize เมื่อหน้าโหลด
-        document.addEventListener('DOMContentLoaded', async function() {
-            const user = checkAuth();
-            if (!user) return;
+        // ==================== SAVE TO DATABASE ====================
+        async function saveProductToDatabase(productData) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
             
-            // แสดงชื่อผู้ใช้
-            const userElement = document.getElementById('currentUser');
-            if (userElement) {
-                userElement.textContent = user.name || 'ผู้ใช้งาน';
-            }
-            
-            // สร้างรหัสสินค้าอัตโนมัติ
-            await generateProductId();
-            
-            // ตรวจสอบสถานะออนไลน์
-            await checkOnlineStatus();
-            
-            // จัดการฟอร์ม
-            const productForm = document.getElementById('productForm');
-            if (productForm) {
-                productForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    
-                    // รวบรวมข้อมูลจากฟอร์ม
-                    const productData = collectFormData();
-                    
-                    // ตรวจสอบข้อมูล
-                    if (!validateFormData(productData)) {
-                        return;
-                    }
-                    
-                    // ตรวจสอบรหัสสินค้าซ้ำ
-                    const isDuplicate = await checkDuplicateProductId(productData.product_id);
-                    if (isDuplicate) {
-                        showAlert(`รหัสสินค้า ${productData.product_id} มีอยู่ในระบบแล้ว`, 'danger');
-                        return;
-                    }
-                    
-                    // ปุ่มบันทึกเปลี่ยนเป็นกำลังโหลด
-                    const submitBtn = productForm.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
-                    submitBtn.disabled = true;
-                    
-                    try {
-                        // บันทึกสินค้า (ส่งข้อมูลไปยัง API)
-                        const response = await fetch('/api/products', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(productData)
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            showAlert('บันทึกสินค้าและล็อตเรียบร้อยแล้ว!', 'success');
-                            
-                            // รีเซ็ตฟอร์มหลังจากบันทึกสำเร็จ
-                            setTimeout(() => {
-                                clearForm();
-                                window.location.href = 'stock.html';
-                            }, 1500);
-                        } else {
-                            showAlert(result.message || 'เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
-                        }
-                    } catch (error) {
-                        console.error('Error saving product:', error);
-                        showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า: ' + error.message, 'danger');
-                        
-                        // ถ้า API ไม่ทำงาน ให้บันทึกลง localStorage
-                        try {
-                            const storedProducts = JSON.parse(localStorage.getItem('products') || '[]');
-                            storedProducts.push(productData);
-                            localStorage.setItem('products', JSON.stringify(storedProducts));
-                            showAlert('บันทึกสินค้าในโหมดออฟไลน์เรียบร้อยแล้ว!', 'success');
-                            
-                            setTimeout(() => {
-                                clearForm();
-                                window.location.href = 'stock.html';
-                            }, 1500);
-                        } catch (localError) {
-                            console.error('Local storage error:', localError);
-                        }
-                    } finally {
-                        // คืนสถานะปุ่ม
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                });
-            }
-            
-            // อัพเดทบาร์โค้ดตัวอย่าง
-            const barcodeInput = document.getElementById('barcode');
-            const barcodePreview = document.getElementById('barcodePreview');
-            
-            if (barcodeInput && barcodePreview) {
-                barcodeInput.addEventListener('input', function() {
-                    const value = this.value.trim();
-                    if (value) {
-                        barcodePreview.innerHTML = `
-                            <div>บาร์โค้ดที่ป้อน</div>
-                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">${value}</div>
-                            <div style="color: #7f8c8d; font-size: 12px;">สามารถสแกนได้</div>
-                        `;
-                    } else {
-                        barcodePreview.innerHTML = `
-                            <div>ตัวอย่างบาร์โค้ด</div>
-                            <div style="font-size: 24px; letter-spacing: 2px; margin: 10px 0;">123456789012</div>
-                            <div style="color: #7f8c8d; font-size: 12px;">สแกนบาร์โค้ดหรือป้อนมือ</div>
-                        `;
-                    }
-                });
-            }
-            
-            // Auto-format product ID
-            const productIdInput = document.getElementById('productId');
-            if (productIdInput) {
-                productIdInput.addEventListener('input', function() {
-                    this.value = this.value.toUpperCase();
-                });
-                
-                // ตรวจสอบรหัสสินค้าที่ป้อน
-                productIdInput.addEventListener('blur', async function() {
-                    const productId = this.value.trim().toUpperCase();
-                    if (productId && productId.match(/^P\d{3}$/)) {
-                        const isDuplicate = await checkDuplicateProductId(productId);
-                        if (isDuplicate) {
-                            showAlert(`รหัสสินค้า ${productId} มีอยู่ในระบบแล้ว`, 'warning');
-                        }
-                    }
-                });
-            }
-        });
-
-        // ฟังก์ชันตรวจสอบสถานะออนไลน์
-        async function checkOnlineStatus() {
             try {
-                // ตรวจสอบสถานะออนไลน์
-                const isOnline = navigator.onLine;
-                updateOnlineStatus(isOnline);
-                return isOnline;
-            } catch (error) {
-                console.error('Error checking online status:', error);
-                return false;
-            }
-        }
-
-        // อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
-        function updateOnlineStatus(isOnline) {
-            const statusElement = document.getElementById('onlineStatus');
-            if (statusElement) {
-                if (isOnline) {
-                    statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
-                    statusElement.classList.remove('offline');
-                    statusElement.classList.add('online');
+                if (window.electronAPI) {
+                    // Save product
+                    const result = await window.electronAPI.saveProduct(productData);
                     
-                    // แสดงเมนูออนไลน์
-                    document.querySelectorAll('.online-only').forEach(el => {
-                        el.style.display = 'block';
-                    });
+                    if (!result || !result.success) {
+                        throw new Error(result?.message || 'ไม่สามารถบันทึกสินค้าได้');
+                    }
+                    
+                    // Save lots
+                    if (productData.lots && productData.lots.length > 0) {
+                        for (const lot of productData.lots) {
+                            const lotData = {
+                                product_id: productData.id,
+                                lot_number: lot.lot_number,
+                                expiry_date: lot.expiry_date,
+                                quantity: lot.quantity,
+                                supplier_code: lot.supplier_code,
+                                received_date: lot.received_date,
+                                warranty: lot.warranty,
+                                cost: lot.cost || productData.cost
+                            };
+                            
+                            const lotResult = await window.electronAPI.addProductLot(lotData);
+                            if (!lotResult || !lotResult.success) {
+                                console.warn('Warning: Failed to save lot', lot.lot_number);
+                            }
+                        }
+                    }
+                    
+                    return { success: true };
+                    
                 } else {
-                    statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
-                    statusElement.classList.remove('online');
-                    statusElement.classList.add('offline');
+                    // Demo mode
+                    console.log('Product saved (demo):', productData);
                     
-                    // ซ่อนเมนูออนไลน์
-                    document.querySelectorAll('.online-only').forEach(el => {
-                        el.style.display = 'none';
-                    });
+                    const savedProducts = JSON.parse(localStorage.getItem('demo_products') || '[]');
+                    savedProducts.push(productData);
+                    localStorage.setItem('demo_products', JSON.stringify(savedProducts));
+                    
+                    return { success: true };
                 }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                throw error;
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
 
-        // ฟังการเปลี่ยนสถานะเครือข่าย
-        window.addEventListener('online', () => updateOnlineStatus(true));
-        window.addEventListener('offline', () => updateOnlineStatus(false));
+        // ==================== FORM SUBMIT ====================
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const data = collectFormData();
+            
+            if (!validateFormData(data)) {
+                return;
+            }
+            
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            submitBtn.disabled = true;
+            
+            try {
+                const result = await saveProductToDatabase(data);
+                
+                if (result && result.success) {
+                    showAlert('บันทึกสินค้าเรียบร้อยแล้ว!', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'stock.html';
+                    }, 1500);
+                } else {
+                    showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>

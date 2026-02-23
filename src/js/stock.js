@@ -1,16 +1,23 @@
-// ตรวจสอบสถานะการเข้าสู่ระบบ
+// stock.js - ใช้ Electron API จริง
 function checkAuth() {
     const user = localStorage.getItem('user');
     if (!user) {
         window.location.href = 'index.html';
         return false;
     }
-    return JSON.parse(user);
+    
+    const userData = JSON.parse(user);
+    
+    // ถ้าเป็น staff ให้ redirect ไปหน้า sales
+    if (userData.role === 'staff') {
+        window.location.href = 'sales.html';
+        return false;
+    }
+    
+    return userData;
 }
 
-// แสดง Alert
 function showAlert(message, type = 'info') {
-    // สร้าง element alert ถ้ายังไม่มี
     let alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) {
         alertContainer = document.createElement('div');
@@ -37,7 +44,6 @@ function showAlert(message, type = 'info') {
     
     alertContainer.appendChild(alertElement);
     
-    // ลบ alert อัตโนมัติหลังจาก 5 วินาที
     setTimeout(() => {
         if (document.getElementById(alertId)) {
             document.getElementById(alertId).remove();
@@ -45,35 +51,28 @@ function showAlert(message, type = 'info') {
     }, 5000);
 }
 
-// จัดรูปแบบเงิน
 function formatCurrency(amount) {
     return new Intl.NumberFormat('th-TH', {
         style: 'currency',
         currency: 'THB',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 2
     }).format(amount || 0);
 }
 
-// แสดงสถานะสินค้า
-function getStatusBadge(status, stock) {
-    let badgeClass = 'badge-secondary';
-    let badgeText = status;
-    
-    if (status === 'มีสินค้า' || (stock > 0 && !status)) {
-        badgeClass = 'badge-success';
-        badgeText = 'มีสินค้า';
-    } else if (status === 'สินค้าหมด' || (stock === 0 && !status)) {
-        badgeClass = 'badge-danger';
-        badgeText = 'สินค้าหมด';
-    } else if (status === 'สินค้าจำกัด' || (stock > 0 && stock <= 10 && !status)) {
-        badgeClass = 'badge-warning';
-        badgeText = 'สินค้าจำกัด';
-    }
-    
-    return `<span class="badge ${badgeClass}">${badgeText}</span>`;
+function formatNumber(num) {
+    return Number(num).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-// แสดงข้อมูลสินค้าในตาราง
+function getStatusBadge(status, stock, minStock = 10) {
+    if (stock === 0) {
+        return '<span class="badge badge-danger">สินค้าหมด</span>';
+    } else if (stock <= minStock) {
+        return '<span class="badge badge-warning">สินค้าจำกัด</span>';
+    } else {
+        return '<span class="badge badge-success">มีสินค้า</span>';
+    }
+}
+
 function displayProducts(products) {
     const tbody = document.getElementById('productTableBody');
     if (!tbody) return;
@@ -96,11 +95,11 @@ function displayProducts(products) {
             <td>${product.id}</td>
             <td>${product.barcode || '-'}</td>
             <td>${product.name}</td>
-            <td class="text-right">${formatCurrency(product.price)}</td>
-            <td class="text-right">${formatCurrency(product.cost)}</td>
-            <td class="text-right">${product.stock || 0}</td>
+            <td class="text-right">฿${formatNumber(product.price)}</td>
+            <td class="text-right">฿${formatNumber(product.cost)}</td>
+            <td class="text-right">${product.stock || 0} ${product.unit || 'ชิ้น'}</td>
             <td>${product.category || '-'} ${product.subcategory ? '> ' + product.subcategory : ''}</td>
-            <td>${getStatusBadge(product.status, product.stock)}</td>
+            <td>${getStatusBadge(product.status, product.stock, product.min_stock)}</td>
             <td>
                 <button class="btn btn-sm btn-warning btn-edit" data-id="${product.id}">
                     <i class="fas fa-edit"></i> แก้ไข
@@ -114,7 +113,6 @@ function displayProducts(products) {
         tbody.appendChild(row);
     });
     
-    // เพิ่ม event listener ให้ปุ่มแก้ไขและลบ
     document.querySelectorAll('.btn-edit').forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.getAttribute('data-id');
@@ -130,17 +128,12 @@ function displayProducts(products) {
     });
 }
 
-// แก้ไขสินค้า
 async function editProduct(productId) {
     try {
-        // ใช้ API ใหม่ getProduct แทนการ filter จาก getProducts
         const product = await window.electronAPI.getProduct(productId);
         
         if (product) {
-            // บันทึกสินค้าที่จะแก้ไขใน sessionStorage
             sessionStorage.setItem('editProduct', JSON.stringify(product));
-            
-            // ไปยังหน้าแก้ไขสินค้า
             window.location.href = 'edit-product.html';
         } else {
             showAlert('ไม่พบข้อมูลสินค้าที่ต้องการแก้ไข', 'danger');
@@ -151,7 +144,6 @@ async function editProduct(productId) {
     }
 }
 
-// ลบสินค้า
 async function deleteProduct(productId) {
     if (confirm('คุณแน่ใจว่าต้องการลบสินค้านี้?')) {
         try {
@@ -159,7 +151,7 @@ async function deleteProduct(productId) {
             
             if (result.success) {
                 showAlert('ลบสินค้าเรียบร้อยแล้ว', 'success');
-                loadProducts(); // โหลดข้อมูลใหม่
+                loadProducts();
             } else {
                 showAlert('เกิดข้อผิดพลาดในการลบสินค้า', 'danger');
             }
@@ -170,13 +162,11 @@ async function deleteProduct(productId) {
     }
 }
 
-// โหลดข้อมูลสินค้า
 async function loadProducts(searchTerm = '') {
     try {
         const products = await window.electronAPI.getProducts(searchTerm);
         displayProducts(products);
         
-        // โหลดสถิติ
         try {
             const stats = await window.electronAPI.getStatistics();
             if (stats) {
@@ -187,20 +177,17 @@ async function loadProducts(searchTerm = '') {
             }
         } catch (statsError) {
             console.error('Error loading statistics:', statsError);
-            // ถ้าโหลดสถิติไม่ได้ ให้ใช้การคำนวณจาก products array
             document.getElementById('productCount').textContent = products.length;
             
             const totalValue = products.reduce((sum, product) => {
-                const stock = product.stock || 0;
-                const cost = product.cost || 0;
-                return sum + (stock * cost);
+                return sum + ((product.stock || 0) * (product.cost || 0));
             }, 0);
             
             document.getElementById('stockValue').textContent = formatCurrency(totalValue);
             
             const lowStock = products.filter(p => {
                 const stock = p.stock || 0;
-                return stock > 0 && stock <= 10;
+                return stock > 0 && stock <= (p.min_stock || 10);
             }).length;
             
             document.getElementById('lowStock').textContent = lowStock;
@@ -219,7 +206,6 @@ async function loadProducts(searchTerm = '') {
     }
 }
 
-// ตรวจสอบสถานะออนไลน์
 async function checkOnlineStatus() {
     try {
         const isOnline = await window.electronAPI.checkOnlineStatus();
@@ -231,7 +217,6 @@ async function checkOnlineStatus() {
     }
 }
 
-// อัพเดทแสดงสถานะออนไลน์/ออฟไลน์
 function updateOnlineStatus(isOnline) {
     const statusElement = document.getElementById('onlineStatus');
     if (statusElement) {
@@ -239,8 +224,6 @@ function updateOnlineStatus(isOnline) {
             statusElement.innerHTML = '<i class="fas fa-wifi"></i> โหมดออนไลน์';
             statusElement.classList.remove('offline');
             statusElement.classList.add('online');
-            
-            // แสดงเมนูออนไลน์
             document.querySelectorAll('.online-only').forEach(el => {
                 el.style.display = 'block';
             });
@@ -248,8 +231,6 @@ function updateOnlineStatus(isOnline) {
             statusElement.innerHTML = '<i class="fas fa-wifi-slash"></i> โหมดออฟไลน์';
             statusElement.classList.remove('online');
             statusElement.classList.add('offline');
-            
-            // ซ่อนเมนูออนไลน์
             document.querySelectorAll('.online-only').forEach(el => {
                 el.style.display = 'none';
             });
@@ -257,43 +238,41 @@ function updateOnlineStatus(isOnline) {
     }
 }
 
-// ค้นหาสินค้า
 function searchProducts() {
     const searchTerm = document.getElementById('searchInput').value;
     loadProducts(searchTerm);
 }
 
-// ล้างการค้นหา
 function clearSearch() {
     document.getElementById('searchInput').value = '';
     loadProducts();
 }
 
-// Initialize เมื่อหน้าโหลด
 document.addEventListener('DOMContentLoaded', function() {
     const user = checkAuth();
     if (!user) return;
     
-    // แสดงชื่อผู้ใช้
     const userElement = document.getElementById('currentUser');
     if (userElement) {
         userElement.textContent = user.name;
     }
     
-    // โหลดข้อมูลสินค้า
-    loadProducts();
+    // แสดง role
+    const roleElement = document.getElementById('currentRole');
+    if (roleElement) {
+        roleElement.textContent = user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+        roleElement.className = user.role === 'admin' ? 'badge badge-primary' : 'badge badge-success';
+    }
     
-    // ตรวจสอบสถานะออนไลน์
+    loadProducts();
     checkOnlineStatus();
     
-    // ฟังการเปลี่ยนสถานะเครือข่าย
     if (window.electronAPI && window.electronAPI.onOnlineStatusChange) {
         window.electronAPI.onOnlineStatusChange((isOnline) => {
             updateOnlineStatus(isOnline);
         });
     }
     
-    // เพิ่ม event listener สำหรับการค้นหาแบบ real-time
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         let searchTimeout;
@@ -301,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 searchProducts();
-            }, 500); // ค้นหาหลังจากพิมพ์หยุด 0.5 วินาที
+            }, 500);
         });
     }
 });

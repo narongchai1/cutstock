@@ -80,7 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // ใช้ระบบ authentication แบบออฟไลน์โดยตรง
                 const offlineUsers = [
                     { username: 'admin', password: 'admin123', name: 'ผู้ดูแลระบบ', role: 'admin', email: 'admin@example.com', phone: '0812345678' },
-                    { username: 'staff', password: 'staff123', name: 'พนักงาน', role: 'staff', email: 'staff@example.com', phone: '0898765432' }
+                    { username: 'manager', password: 'manager123', name: 'ผู้จัดการ', role: 'admin', email: 'manager@example.com', phone: '0823456789' },
+                    { username: 'staff1', password: 'staff123', name: 'พนักงานขาย 1', role: 'staff', email: 'staff1@example.com', phone: '0834567890' },
+                    { username: 'staff2', password: 'staff456', name: 'พนักงานขาย 2', role: 'staff', email: 'staff2@example.com', phone: '0845678901' }
                 ];
                 
                 const user = offlineUsers.find(u => 
@@ -92,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // บันทึกข้อมูลผู้ใช้
                     localStorage.setItem('user', JSON.stringify({
+                        id: user.id || Date.now(),
                         username: user.username,
                         name: user.name,
                         role: user.role,
@@ -100,9 +103,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     }));
                     localStorage.setItem('token', 'offline-token-' + Date.now());
                     
-                    // ไปยังหน้า Stock ทันที
+                    // ตรวจสอบ role เพื่อ redirect
                     setTimeout(() => {
-                        window.location.href = 'stock.html';
+                        if (user.role === 'admin') {
+                            // Admin ไปหน้า stock
+                            window.location.href = 'stock.html';
+                        } else {
+                            // Staff ไปหน้า sales เท่านั้น
+                            window.location.href = 'sales.html';
+                        }
                     }, 500);
                 } else {
                     console.log('❌ Login failed for:', username);
