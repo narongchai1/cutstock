@@ -3,10 +3,10 @@
 
 /* Container - แก้ไขให้เต็มจอ */
 .container {
-    max-width: 100%;  /* เปลี่ยนจาก 1400px เป็น 100% */
+    max-width: 100%;
     width: 100%;
     margin: 0;
-    padding: 20px 30px;  /* ปรับ padding ให้เท่ากันซ้าย-ขวา */
+    padding: 20px 30px;
     box-sizing: border-box;
 }
 
@@ -14,7 +14,7 @@
 .header {
     background: linear-gradient(135deg, #3498db, #2c3e50);
     color: white;
-    padding: 20px 30px;  /* เพิ่ม padding แนวนอน */
+    padding: 20px 30px;
     border-radius: 10px;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -23,7 +23,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 15px;
-    width: 100%;  /* ให้กว้างเต็ม container */
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -76,11 +76,11 @@
     gap: 10px;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    width: 100%;  /* ให้กว้างเต็ม container */
+    width: 100%;
 }
 
 .nav-btn {
-    padding: 12px 25px;  /* เพิ่มขนาดเล็กน้อย */
+    padding: 12px 25px;
     background-color: white;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -90,7 +90,7 @@
     gap: 8px;
     transition: all 0.3s;
     font-weight: 500;
-    font-size: 15px;  /* เพิ่มขนาดฟอนต์เล็กน้อย */
+    font-size: 15px;
 }
 
 .nav-btn:hover {
@@ -271,7 +271,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow-x: auto;
-    width: 100%;  /* ให้กว้างเต็ม container */
+    width: 100%;
     box-sizing: border-box;
 }
 

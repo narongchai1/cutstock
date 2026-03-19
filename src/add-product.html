@@ -1,3 +1,5 @@
+<!-- add-product.html - ฉบับแก้ไข (เอาล็อตสินค้า, สต็อกสูงสุด, สถานะสินค้าออก) -->
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -7,6 +9,7 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* CSS เดิมทั้งหมดคงไว้ */
         .form-container {
             max-width: 900px;
             margin: 0 auto;
@@ -78,71 +81,6 @@
             font-size: 12px;
             margin-top: 5px;
             display: block;
-        }
-        
-        .lot-section {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        .lot-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .lot-number {
-            font-weight: bold;
-            color: #3498db;
-            font-size: 16px;
-        }
-        
-        .btn-remove-lot {
-            background: none;
-            border: none;
-            color: #e74c3c;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px 10px;
-            transition: color 0.3s;
-        }
-        
-        .btn-remove-lot:hover {
-            color: #c0392b;
-        }
-        
-        .supplier-info {
-            background: #e8f4fd;
-            border-radius: 6px;
-            padding: 12px;
-            margin-top: 10px;
-            display: none;
-        }
-        
-        .supplier-info h5 {
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .supplier-info p {
-            margin: 3px 0;
-            font-size: 13px;
-        }
-        
-        .total-lots {
-            background: #e8f4fd;
-            padding: 10px 15px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 15px;
         }
         
         .form-actions {
@@ -239,6 +177,257 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* ปุ่ม settings */
+        .settings-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        /* Settings Modal Styles */
+        .settings-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .settings-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .settings-menu-item:hover {
+            border-color: #3498db;
+            background: #ebf5fb;
+            transform: translateX(5px);
+        }
+        
+        .settings-menu-item i {
+            font-size: 24px;
+            color: #3498db;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .settings-menu-item .item-info {
+            flex: 1;
+        }
+        
+        .settings-menu-item .item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+        
+        .settings-menu-item .item-desc {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .settings-menu-item.logout-item {
+            border-color: #e74c3c;
+            background: #fee;
+        }
+        
+        .settings-menu-item.logout-item i {
+            color: #e74c3c;
+        }
+        
+        .settings-menu-item.logout-item:hover {
+            background: #fdd;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        /* Bank Account Management */
+        .bank-accounts-list {
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .bank-account-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .bank-account-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+        
+        .bank-account-card.selected {
+            border-color: #2ecc71;
+            background: #f0fff4;
+        }
+        
+        .bank-account-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #2ecc71;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .bank-account-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .bank-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .bank-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .account-number {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 5px 0;
+        }
+        
+        .account-name {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .add-bank-btn {
+            width: 100%;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            color: #3498db;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .add-bank-btn:hover {
+            background: #e8f4fd;
+            border-color: #2980b9;
+        }
+        
+        .bank-form {
+            margin-top: 20px;
+        }
+        
+        .bank-form .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .bank-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .bank-form input, .bank-form select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .bank-form input:focus, .bank-form select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .bank-form .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .bank-form .form-actions button {
+            flex: 1;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
@@ -262,18 +451,20 @@
             <p style="margin-top: 15px; color: #3498db;">กำลังบันทึกข้อมูล...</p>
         </div>
     </div>
-
+    
     <div class="container">
         <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-plus-circle"></i> เพิ่มสินค้าใหม่</h1>
             <div class="user-info">
                 <span id="currentUser"></span>
-                <span id="onlineStatus" class="status-badge offline">
-                    <i class="fas fa-wifi-slash"></i> โหมดออฟไลน์
+                <span id="currentRole" class="badge badge-primary"></span>
+                <span id="onlineStatus" class="status-badge online">
+                    <i class="fas fa-wifi"></i> โหมดออนไลน์
                 </span>
-                <button class="btn btn-sm btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                <!-- ปุ่ม Settings -->
+                <button class="settings-btn" onclick="openSettingsModal()">
+                    <i class="fas fa-cog"></i>
                 </button>
             </div>
         </div>
@@ -288,9 +479,6 @@
             </button>
             <button class="nav-btn active" onclick="window.location.href='add-product.html'">
                 <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
-            </button>
-            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
-                <i class="fas fa-chart-bar"></i> รายงาน
             </button>
         </div>
         
@@ -349,37 +537,22 @@
                         </div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="minStock">สต็อกขั้นต่ำ</label>
-                            <input type="number" id="minStock" class="form-control" placeholder="10" min="0" value="10">
-                            <small class="form-hint">เมื่อสินค้าต่ำกว่าค่านี้จะแจ้งเตือน</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="maxStock">สต็อกสูงสุด</label>
-                            <input type="number" id="maxStock" class="form-control" placeholder="100" min="0" value="100">
-                        </div>
+                    <div class="form-group">
+                        <label for="minStock">สต็อกขั้นต่ำ</label>
+                        <input type="number" id="minStock" class="form-control" placeholder="10" min="0" value="10">
+                        <small class="form-hint">เมื่อสินค้าต่ำกว่าค่านี้จะแจ้งเตือน</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="unit">หน่วยนับ</label>
-                        <select id="unit" class="form-control">
-                            <option value="ชิ้น">ชิ้น</option>
-                            <option value="กล่อง">กล่อง</option>
-                            <option value="ขวด">ขวด</option>
-                            <option value="หลอด">หลอด</option>
-                            <option value="กิโลกรัม">กิโลกรัม</option>
-                            <option value="ลิตร">ลิตร</option>
-                            <option value="แพ็ค">แพ็ค</option>
-                            <option value="โหล">โหล</option>
-                        </select>
+                        <input type="text" id="unit" class="form-control" placeholder="พิมพ์หน่วยนับ เช่น ชิ้น, กล่อง, ขวด" value="ชิ้น">
+                        <small class="form-hint">สามารถพิมพ์หน่วยนับใหม่ได้ตามต้องการ</small>
                     </div>
                     
                     <div class="form-group">
-                        <label for="stock">จำนวนสต็อกทั้งหมด</label>
-                        <input type="number" id="stock" class="form-control" readonly>
-                        <small class="form-hint">คำนวณอัตโนมัติจากจำนวนล็อตสินค้า</small>
+                        <label for="stock">จำนวนสต็อก</label>
+                        <input type="number" id="stock" class="form-control" placeholder="0" min="0" value="0" required>
+                        <small class="form-hint">กรอกจำนวนสินค้าคงเหลือ</small>
                     </div>
                 </div>
                 
@@ -390,67 +563,13 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="mainCategory">หมวดหมู่หลัก</label>
-                            <select id="mainCategory" class="form-control">
-                                <option value="">เลือกหมวดหมู่</option>
-                                <option value="เครื่องดื่ม">เครื่องดื่ม</option>
-                                <option value="อาหารแห้ง">อาหารแห้ง</option>
-                                <option value="อาหารสด">อาหารสด</option>
-                                <option value="สุขภาพ">สุขภาพ</option>
-                                <option value="ความงาม">ความงาม</option>
-                                <option value="อิเล็กทรอนิกส์">อิเล็กทรอนิกส์</option>
-                                <option value="เครื่องเขียน">เครื่องเขียน</option>
-                                <option value="ของใช้">ของใช้</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
-                            </select>
+                            <input type="text" id="mainCategory" class="form-control" placeholder="พิมพ์หมวดหมู่สินค้า" value="">
                         </div>
                         
                         <div class="form-group">
                             <label for="subCategory">หมวดหมู่ย่อย</label>
                             <input type="text" id="subCategory" class="form-control" placeholder="หมวดหมู่ย่อย">
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Lots -->
-                <div class="form-section">
-                    <h3><i class="fas fa-layer-group"></i> ล็อตสินค้า</h3>
-                    
-                    <div class="total-lots">
-                        <i class="fas fa-cubes"></i> จำนวนล็อต: <span id="totalLots">0 ล็อต</span>
-                    </div>
-                    
-                    <button type="button" class="btn btn-success" onclick="addLot()" style="margin-bottom: 15px;">
-                        <i class="fas fa-plus"></i> เพิ่มล็อตสินค้า
-                    </button>
-                    
-                    <div id="lotsContainer">
-                        <div class="text-center" style="color: #7f8c8d; padding: 40px;">
-                            <i class="fas fa-box-open fa-3x" style="margin-bottom: 15px; opacity: 0.5;"></i><br>
-                            ยังไม่มีล็อตสินค้า<br>
-                            <small>คลิกปุ่ม "เพิ่มล็อตสินค้า" เพื่อเริ่มต้น</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Status -->
-                <div class="form-section">
-                    <h3><i class="fas fa-check-circle"></i> สถานะสินค้า</h3>
-                    
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="status" value="มีสินค้า" checked>
-                            <span class="badge badge-success">มีสินค้า</span>
-                        </label>
-                        
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="status" value="สินค้าจำกัด">
-                            <span class="badge badge-warning">สินค้าจำกัด</span>
-                        </label>
-                        
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" name="status" value="สินค้าหมด">
-                            <span class="badge badge-danger">สินค้าหมด</span>
-                        </label>
                     </div>
                 </div>
                 
@@ -472,75 +591,136 @@
         </div>
     </div>
     
-    <!-- Lot Template -->
-    <template id="lotTemplate">
-        <div class="lot-section">
-            <div class="lot-header">
-                <span class="lot-number"><i class="fas fa-cube"></i> ล็อต #</span>
-                <button type="button" class="btn-remove-lot" onclick="removeLot(this)">
-                    <i class="fas fa-trash-alt"></i>
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> ตั้งค่าระบบ</h2>
+                <button class="btn-close" onclick="closeModal('settingsModal')">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label>วันหมดอายุ *</label>
-                    <input type="date" class="form-control expiry-date" required>
+            <div class="settings-menu">
+                <!-- เมนูจัดการพนักงาน -->
+                <div class="settings-menu-item" onclick="window.location.href='staff-management.html'">
+                    <i class="fas fa-users"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการพนักงาน</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข/ลบ บัญชีพนักงาน</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <!-- เมนูเพิ่มสินค้า -->
+                <div class="settings-menu-item" onclick="window.location.href='add-product.html'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="item-info">
+                        <div class="item-title">เพิ่มสินค้า</div>
+                        <div class="item-desc">เพิ่มสินค้าใหม่เข้าสู่ระบบ</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <!-- เมนูจัดการล็อต -->
+                <div class="settings-menu-item" onclick="window.location.href='lots.html'">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการล็อต</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข ล็อตสินค้า</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+
+                <!-- เมนูจัดการซัพพลายเออร์ -->
+                <div class="settings-menu-item" onclick="window.location.href='suppliers.html'">
+                    <i class="fas fa-truck"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการซัพพลายเออร์</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข ข้อมูลซัพพลายเออร์</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
                 </div>
                 
-                <div class="form-group">
-                    <label>หมายเลขผลิตภัณฑ์ *</label>
-                    <input type="text" class="form-control product-number" placeholder="เช่น BATCH001" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>จำนวนคงเหลือ *</label>
-                    <input type="number" class="form-control remaining-quantity" min="0" value="0" required>
+                <!-- เมนูจัดการ QR Payment -->
+                <div class="settings-menu-item" onclick="openQRPaymentSettings()">
+                    <i class="fas fa-qrcode"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการบัญชีพร้อมเพย์</div>
+                        <div class="item-desc">เพิ่ม/แก้ไขบัญชีธนาคารสำหรับรับชำระผ่าน QR Code</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
                 </div>
                 
-                <div class="form-group">
-                    <label>วันที่รับเข้า</label>
-                    <input type="date" class="form-control received-date">
+                <!-- เมนูออกจากระบบ -->
+                <div class="settings-menu-item logout-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <div class="item-info">
+                        <div class="item-title">ออกจากระบบ</div>
+                        <div class="item-desc">ออกจากระบบและกลับไปหน้า Login</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
                 </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>ระยะเวลารับประกัน</label>
-                    <input type="text" class="form-control warranty" placeholder="เช่น 1 ปี">
-                </div>
-                
-                <div class="form-group">
-                    <label>ราคาทุนล็อตนี้</label>
-                    <input type="number" class="form-control lot-cost" placeholder="0.00" min="0" step="0.01">
-                    <small class="form-hint">ถ้าไม่ระบุจะใช้ราคาทุนหลัก</small>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>รหัสซัพพลายเออร์</label>
-                <select class="form-control supplier-code">
-                    <option value="">เลือกรหัสซัพพลายเออร์</option>
-                    <option value="SUP-001">SUP-001 (ไทย-เดนมาร์ค)</option>
-                    <option value="SUP-002">SUP-002 (ซีฟู้ด)</option>
-                    <option value="SUP-003">SUP-003 (คอลเกต)</option>
-                    <option value="SUP-004">SUP-004 (พานาโซนิค)</option>
-                    <option value="new">+ เพิ่มซัพพลายเออร์ใหม่</option>
-                </select>
-            </div>
-            
-            <div class="supplier-info">
-                <h5><i class="fas fa-building"></i> ข้อมูลซัพพลายเออร์</h5>
-                <p><strong>ชื่อบริษัท:</strong> <span class="supplier-name"></span></p>
-                <p><strong>ผู้ติดต่อ:</strong> <span class="supplier-contact"></span></p>
-                <p><strong>ที่อยู่:</strong> <span class="supplier-address"></span></p>
             </div>
         </div>
-    </template>
+    </div>
     
-    <!-- Add Supplier Modal -->
+    <!-- QR Payment Settings Modal -->
+    <div class="modal" id="qrSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-qrcode"></i> จัดการบัญชีพร้อมเพย์</h2>
+                <button class="btn-close" onclick="closeModal('qrSettingsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="bankAccountsList" class="bank-accounts-list">
+                <!-- รายการบัญชีธนาคารจะแสดงที่นี่ -->
+            </div>
+            
+            <div class="add-bank-btn" onclick="showAddBankForm()">
+                <i class="fas fa-plus-circle"></i> เพิ่มบัญชีธนาคาร
+            </div>
+            
+            <div id="addBankForm" class="bank-form" style="display: none;">
+                <h3 style="margin-bottom: 15px;">เพิ่มบัญชีธนาคาร</h3>
+                
+                <div class="form-group">
+                    <label>เลือกธนาคาร</label>
+                    <select id="bankSelect">
+                        <option value="SCB">ธนาคารไทยพาณิชย์</option>
+                        <option value="KBANK">ธนาคารกสิกรไทย</option>
+                        <option value="BBL">ธนาคารกรุงเทพ</option>
+                        <option value="KTB">ธนาคารกรุงไทย</option>
+                        <option value="TTB">ธนาคารทหารไทยธนชาต</option>
+                        <option value="BAY">ธนาคารกรุงศรีอยุธยา</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>เลขที่บัญชี / เบอร์พร้อมเพย์</label>
+                    <input type="text" id="accountNumber" placeholder="0812345678" maxlength="10">
+                </div>
+                
+                <div class="form-group">
+                    <label>ชื่อบัญชี</label>
+                    <input type="text" id="accountName" placeholder="นาย สมชาย ใจดี">
+                </div>
+                
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="cancelAddBank()">ยกเลิก</button>
+                    <button class="btn btn-success" onclick="saveBankAccount()">บันทึก</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-primary" onclick="closeModal('qrSettingsModal')">ปิด</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Supplier Modal (อาจจะยังคงไว้เผื่อใช้) -->
     <div class="modal" id="addSupplierModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -589,56 +769,14 @@
     
     <script>
         // ==================== GLOBAL VARIABLES ====================
-        let lotCounter = 0;
         let currentUser = null;
         let allProducts = [];
         let allSuppliers = [];
         let currentSupplierSelect = null;
-
-        // ==================== INITIALIZATION ====================
-        document.addEventListener('DOMContentLoaded', async function() {
-            const user = checkAuth();
-            if (!user) return;
-            
-            currentUser = user;
-            document.getElementById('currentUser').textContent = user.name;
-            
-            await loadExistingData();
-            await generateProductId();
-            await checkOnlineStatus();
-            
-            setupEventListeners();
-        });
-
-        // ==================== LOAD EXISTING DATA ====================
-        async function loadExistingData() {
-            try {
-                if (window.electronAPI) {
-                    allProducts = await window.electronAPI.getProducts() || [];
-                    allSuppliers = await window.electronAPI.getAllSuppliers() || [];
-                } else {
-                    // Load from localStorage for demo
-                    const savedProducts = localStorage.getItem('demo_products');
-                    allProducts = savedProducts ? JSON.parse(savedProducts) : [];
-                    
-                    const savedSuppliers = localStorage.getItem('demo_suppliers');
-                    if (savedSuppliers) {
-                        allSuppliers = JSON.parse(savedSuppliers);
-                    } else {
-                        allSuppliers = [
-                            { code: 'SUP-001', name: 'บริษัท ไทย-เดนมาร์ค จำกัด', contact_person: 'สมชาย ใจดี', phone: '02-123-4567', address: '123 ถนนสุขุมวิท กรุงเทพฯ' },
-                            { code: 'SUP-002', name: 'บริษัท ซีฟู้ด จำกัด', contact_person: 'สมหญิง เก่งงาน', phone: '02-234-5678', address: '456 ถนนรัชดาภิเษก กรุงเทพฯ' },
-                            { code: 'SUP-003', name: 'บริษัท คอลเกต จำกัด', contact_person: 'ธนพล ทำงานดี', phone: '02-345-6789', address: '789 ถนนพระราม 4 กรุงเทพฯ' },
-                            { code: 'SUP-004', name: 'บริษัท พานาโซนิค จำกัด', contact_person: 'วิษณุ เทคโนโลยี', phone: '02-456-7890', address: '321 ถนนลาดพร้าว กรุงเทพฯ' }
-                        ];
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading existing data:', error);
-                allProducts = [];
-                allSuppliers = [];
-            }
-        }
+        
+        // ตัวแปรสำหรับจัดการบัญชีธนาคาร
+        let bankAccounts = [];
+        let selectedBankId = null;
 
         // ==================== AUTHENTICATION ====================
         function checkAuth() {
@@ -647,7 +785,37 @@
                 window.location.href = 'index.html';
                 return false;
             }
-            return JSON.parse(user);
+            
+            try {
+                const userData = JSON.parse(user);
+                
+                // ถ้าเป็น staff ให้ redirect ไปหน้า sales
+                if (userData.role === 'staff') {
+                    window.location.href = 'sales.html';
+                    return false;
+                }
+                
+                currentUser = userData;
+                
+                // แสดงชื่อผู้ใช้
+                const userElement = document.getElementById('currentUser');
+                if (userElement) {
+                    userElement.textContent = userData.name || userData.username || 'ผู้ใช้';
+                }
+                
+                // แสดง role
+                const roleElement = document.getElementById('currentRole');
+                if (roleElement) {
+                    roleElement.textContent = userData.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+                    roleElement.className = userData.role === 'admin' ? 'badge badge-primary' : 'badge badge-success';
+                }
+                
+                return userData;
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                window.location.href = 'index.html';
+                return false;
+            }
         }
 
         function logout() {
@@ -655,6 +823,216 @@
                 localStorage.removeItem('user');
                 localStorage.removeItem('token');
                 window.location.href = 'index.html';
+            }
+        }
+
+        // ==================== SETTINGS FUNCTIONS ====================
+        function openSettingsModal() {
+            loadBankAccounts();
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function openQRPaymentSettings() {
+            closeModal('settingsModal');
+            document.getElementById('qrSettingsModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // ==================== BANK ACCOUNT FUNCTIONS ====================
+        function loadBankAccounts() {
+            const saved = localStorage.getItem('bankAccounts');
+            if (saved) {
+                bankAccounts = JSON.parse(saved);
+            } else {
+                // ข้อมูลตัวอย่าง
+                bankAccounts = [
+                    {
+                        id: '1',
+                        bank: 'SCB',
+                        bankName: 'ธนาคารไทยพาณิชย์',
+                        accountNumber: '0812345678',
+                        accountName: 'หจก. ร้านค้าสมใจ',
+                        isPromptPay: true
+                    },
+                    {
+                        id: '2',
+                        bank: 'KBANK',
+                        bankName: 'ธนาคารกสิกรไทย',
+                        accountNumber: '0898765432',
+                        accountName: 'นาง สมหญิง ใจงาม',
+                        isPromptPay: true
+                    }
+                ];
+                saveBankAccounts();
+            }
+            updateBankAccountsDisplay();
+        }
+
+        function saveBankAccounts() {
+            localStorage.setItem('bankAccounts', JSON.stringify(bankAccounts));
+        }
+
+        function updateBankAccountsDisplay() {
+            const container = document.getElementById('bankAccountsList');
+            if (!container) return;
+            
+            if (bankAccounts.length === 0) {
+                container.innerHTML = '<div class="text-center" style="padding: 20px; color: #7f8c8d;">ยังไม่มีบัญชีธนาคาร กรุณาเพิ่มบัญชี</div>';
+                return;
+            }
+            
+            let html = '';
+            bankAccounts.forEach(account => {
+                const isSelected = account.id === selectedBankId;
+                html += `
+                    <div class="bank-account-card ${isSelected ? 'selected' : ''}" onclick="selectBankAccount('${account.id}')">
+                        <div class="bank-account-header">
+                            <div class="bank-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="bank-name">${account.bankName}</div>
+                        </div>
+                        <div class="account-number">${formatPhoneNumber(account.accountNumber)}</div>
+                        <div class="account-name">${account.accountName}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function selectBankAccount(id) {
+            selectedBankId = id;
+            updateBankAccountsDisplay();
+        }
+
+        function showAddBankForm() {
+            document.getElementById('addBankForm').style.display = 'block';
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('accountName').value = '';
+        }
+
+        function cancelAddBank() {
+            document.getElementById('addBankForm').style.display = 'none';
+        }
+
+        function saveBankAccount() {
+            const bank = document.getElementById('bankSelect').value;
+            const accountNumber = document.getElementById('accountNumber').value.trim().replace(/\D/g, '');
+            const accountName = document.getElementById('accountName').value.trim();
+            
+            // ตรวจสอบความถูกต้อง
+            if (!accountNumber || accountNumber.length < 9 || accountNumber.length > 10) {
+                showAlert('กรุณากรอกเบอร์โทรศัพท์ 9-10 หลัก', 'warning');
+                return;
+            }
+            
+            if (!accountName) {
+                showAlert('กรุณากรอกชื่อบัญชี', 'warning');
+                return;
+            }
+            
+            const bankNames = {
+                'SCB': 'ธนาคารไทยพาณิชย์',
+                'KBANK': 'ธนาคารกสิกรไทย',
+                'BBL': 'ธนาคารกรุงเทพ',
+                'KTB': 'ธนาคารกรุงไทย',
+                'TTB': 'ธนาคารทหารไทยธนชาต',
+                'BAY': 'ธนาคารกรุงศรีอยุธยา'
+            };
+            
+            const newAccount = {
+                id: Date.now().toString(),
+                bank: bank,
+                bankName: bankNames[bank],
+                accountNumber: accountNumber,
+                accountName: accountName,
+                isPromptPay: true
+            };
+            
+            bankAccounts.push(newAccount);
+            saveBankAccounts();
+            
+            // เลือกบัญชีที่เพิ่มใหม่
+            selectedBankId = newAccount.id;
+            
+            updateBankAccountsDisplay();
+            cancelAddBank();
+            
+            showAlert('เพิ่มบัญชีธนาคารเรียบร้อย', 'success');
+        }
+
+        function formatPhoneNumber(number) {
+            const cleaned = ('' + number).replace(/\D/g, '');
+            const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+            if (match) {
+                return match[1] + '-' + match[2] + '-' + match[3];
+            }
+            return number;
+        }
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = checkAuth();
+            if (!user) return;
+            
+            currentUser = user;
+            
+            await loadExistingData();
+            await loadSuppliers();
+            await generateProductId();
+            await checkOnlineStatus();
+            
+            setupEventListeners();
+            
+            // ฟัง event จากหน้าซัพพลายเออร์
+            window.addEventListener('supplierUpdated', () => {
+                console.log('📋 supplierUpdated event received');
+                loadSuppliers();
+            });
+        });
+
+        // ==================== LOAD EXISTING DATA ====================
+        async function loadExistingData() {
+            try {
+                if (window.electronAPI) {
+                    allProducts = await window.electronAPI.getProducts() || [];
+                } else {
+                    // Load from localStorage for demo
+                    const savedProducts = localStorage.getItem('demo_products');
+                    allProducts = savedProducts ? JSON.parse(savedProducts) : [];
+                }
+            } catch (error) {
+                console.error('Error loading existing data:', error);
+                allProducts = [];
+            }
+        }
+
+        // ==================== LOAD SUPPLIERS ====================
+        async function loadSuppliers() {
+            try {
+                if (window.electronAPI) {
+                    allSuppliers = await window.electronAPI.getAllSuppliers() || [];
+                } else {
+                    const storedSuppliers = localStorage.getItem('demo_suppliers');
+                    if (storedSuppliers) {
+                        allSuppliers = JSON.parse(storedSuppliers);
+                    } else {
+                        // Sample data
+                        allSuppliers = [
+                            { code: 'SUP-001', name: 'บริษัท ไทย-เดนมาร์ค จำกัด', contact_person: 'สมชาย ใจดี', phone: '02-123-4567', address: '123 ถนนสุขุมวิท กรุงเทพฯ' },
+                            { code: 'SUP-002', name: 'บริษัท ซีฟู้ด จำกัด', contact_person: 'สมหญิง เก่งงาน', phone: '02-234-5678', address: '456 ถนนรัชดาภิเษก กรุงเทพฯ' },
+                            { code: 'SUP-003', name: 'บริษัท คอลเกต จำกัด', contact_person: 'ธนพล ทำงานดี', phone: '02-345-6789', address: '789 ถนนพระราม 4 กรุงเทพฯ' },
+                            { code: 'SUP-004', name: 'บริษัท พานาโซนิค จำกัด', contact_person: 'วิษณุ เทคโนโลยี', phone: '02-456-7890', address: '321 ถนนลาดพร้าว กรุงเทพฯ' }
+                        ];
+                        localStorage.setItem('demo_suppliers', JSON.stringify(allSuppliers));
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading suppliers:', error);
             }
         }
 
@@ -739,7 +1117,6 @@
             priceInput.addEventListener('input', validateCostVsPrice);
             costInput.addEventListener('input', validateCostVsPrice);
             
-            document.getElementById('minStock').addEventListener('input', calculateTotalStock);
             document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
         }
 
@@ -814,17 +1191,10 @@
         function clearForm() {
             if (confirm('คุณแน่ใจว่าต้องการล้างข้อมูลทั้งหมดในแบบฟอร์ม?')) {
                 document.getElementById('productForm').reset();
-                document.getElementById('lotsContainer').innerHTML = `
-                    <div class="text-center" style="color: #7f8c8d; padding: 40px;">
-                        <i class="fas fa-box-open fa-3x" style="margin-bottom: 15px; opacity: 0.5;"></i><br>
-                        ยังไม่มีล็อตสินค้า<br>
-                        <small>คลิกปุ่ม "เพิ่มล็อตสินค้า" เพื่อเริ่มต้น</small>
-                    </div>
-                `;
-                lotCounter = 0;
-                updateTotalLots();
-                document.getElementById('stock').value = '0';
                 generateProductId();
+                document.getElementById('stock').value = '0';
+                document.getElementById('minStock').value = '10';
+                document.getElementById('unit').value = 'ชิ้น';
             }
         }
 
@@ -834,115 +1204,155 @@
             }
         }
 
-        // ==================== LOT FUNCTIONS ====================
-        function updateTotalLots() {
-            const lotCount = document.querySelectorAll('.lot-section').length;
-            document.getElementById('totalLots').textContent = `${lotCount} ล็อต`;
+        // ==================== FORM DATA COLLECTION ====================
+        function collectFormData() {
+            return {
+                id: document.getElementById('productId').value.trim().toUpperCase(),
+                barcode: document.getElementById('barcode').value.trim() || null,
+                name: document.getElementById('productName').value.trim(),
+                description: document.getElementById('description').value.trim() || null,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                cost: parseFloat(document.getElementById('cost').value) || 0,
+                stock: parseInt(document.getElementById('stock').value) || 0,
+                min_stock: parseInt(document.getElementById('minStock').value) || 10,
+                max_stock: 100, // ค่าเริ่มต้น
+                unit: document.getElementById('unit').value,
+                category: document.getElementById('mainCategory').value,
+                subcategory: document.getElementById('subCategory').value.trim() || null,
+                status: getStatusFromStock(parseInt(document.getElementById('stock').value) || 0),
+                lots: [] // ไม่มีล็อต
+            };
         }
 
-        function calculateTotalStock() {
-            let total = 0;
-            document.querySelectorAll('.remaining-quantity').forEach(input => {
-                total += parseInt(input.value) || 0;
-            });
-            document.getElementById('stock').value = total;
-            updateProductStatus(total);
-        }
-
-        function updateProductStatus(totalStock) {
-            const statusRadios = document.getElementsByName('status');
+        function getStatusFromStock(stock) {
             const minStock = parseInt(document.getElementById('minStock').value) || 10;
             
-            if (totalStock === 0) {
-                statusRadios[2].checked = true; // สินค้าหมด
-            } else if (totalStock <= minStock) {
-                statusRadios[1].checked = true; // สินค้าจำกัด
-            } else {
-                statusRadios[0].checked = true; // มีสินค้า
-            }
+            if (stock === 0) return 'out';
+            if (stock <= minStock) return 'low';
+            return 'active';
         }
 
-        function addLot() {
-            const template = document.getElementById('lotTemplate');
-            const clone = template.content.cloneNode(true);
-            const lotElement = clone.querySelector('.lot-section');
+        // ==================== VALIDATION ====================
+        function validateFormData(data) {
+            if (!data.id.match(/^P\d{3,}$/i)) {
+                showAlert('รหัสสินค้าต้องขึ้นต้นด้วย P ตามด้วยตัวเลข 3 หลักขึ้นไป (เช่น P001)', 'danger');
+                return false;
+            }
             
-            lotCounter++;
-            lotElement.dataset.lotIndex = lotCounter;
-            lotElement.querySelector('.lot-number').innerHTML = `<i class="fas fa-cube"></i> ล็อต #${lotCounter}`;
+            if (allProducts.some(p => p.id === data.id)) {
+                showAlert('รหัสสินค้านี้มีอยู่แล้วในระบบ', 'danger');
+                return false;
+            }
             
-            const today = new Date();
-            const nextYear = new Date(today);
-            nextYear.setFullYear(today.getFullYear() + 1);
-            lotElement.querySelector('.expiry-date').value = nextYear.toISOString().split('T')[0];
-            lotElement.querySelector('.received-date').value = today.toISOString().split('T')[0];
+            if (data.barcode && allProducts.some(p => p.barcode === data.barcode)) {
+                showAlert('บาร์โค้ดนี้มีอยู่แล้วในระบบ', 'danger');
+                return false;
+            }
             
-            // Add event listeners
-            const quantityInput = lotElement.querySelector('.remaining-quantity');
-            quantityInput.addEventListener('input', calculateTotalStock);
-            quantityInput.addEventListener('change', function() {
-                if (this.value < 0) this.value = 0;
-            });
+            if (!data.name || data.name.length < 2) {
+                showAlert('กรุณากรอกชื่อสินค้าที่มีความยาวอย่างน้อย 2 ตัวอักษร', 'danger');
+                return false;
+            }
             
-            const supplierSelect = lotElement.querySelector('.supplier-code');
-            supplierSelect.addEventListener('change', function() {
-                if (this.value === 'new') {
-                    showAddSupplierModal(this);
+            if (data.price <= 0) {
+                showAlert('ราคาขายต้องมากกว่า 0', 'danger');
+                return false;
+            }
+            
+            if (data.cost <= 0) {
+                showAlert('ต้นทุนต้องมากกว่า 0', 'danger');
+                return false;
+            }
+            
+            if (data.cost > data.price) {
+                showAlert('ต้นทุนต้องไม่สูงกว่าราคาขาย', 'danger');
+                return false;
+            }
+            
+            if (!data.category) {
+                showAlert('กรุณากรอกหมวดหมู่หลัก', 'danger');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ==================== SAVE TO DATABASE ====================
+        async function saveProductToDatabase(productData) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            try {
+                if (window.electronAPI) {
+                    // Save product
+                    const result = await window.electronAPI.saveProduct(productData);
+                    
+                    if (!result || !result.success) {
+                        throw new Error(result?.message || 'ไม่สามารถบันทึกสินค้าได้');
+                    }
+                    
+                    return { success: true };
+                    
                 } else {
-                    loadSupplierInfo(this);
+                    // Demo mode
+                    console.log('Product saved (demo):', productData);
+                    
+                    const savedProducts = JSON.parse(localStorage.getItem('demo_products') || '[]');
+                    savedProducts.push(productData);
+                    localStorage.setItem('demo_products', JSON.stringify(savedProducts));
+                    
+                    return { success: true };
                 }
-            });
-            
-            const lotsContainer = document.getElementById('lotsContainer');
-            if (lotsContainer.querySelector('.text-center')) lotsContainer.innerHTML = '';
-            lotsContainer.appendChild(lotElement);
-            
-            updateTotalLots();
-            calculateTotalStock();
-        }
-
-        function removeLot(button) {
-            if (confirm('คุณแน่ใจว่าต้องการลบล็อตสินค้านี้?')) {
-                button.closest('.lot-section').remove();
-                updateTotalLots();
-                calculateTotalStock();
-                
-                const lotsContainer = document.getElementById('lotsContainer');
-                if (lotsContainer.children.length === 0) {
-                    lotsContainer.innerHTML = `
-                        <div class="text-center" style="color: #7f8c8d; padding: 40px;">
-                            <i class="fas fa-box-open fa-3x" style="margin-bottom: 15px; opacity: 0.5;"></i><br>
-                            ยังไม่มีล็อตสินค้า<br>
-                            <small>คลิกปุ่ม "เพิ่มล็อตสินค้า" เพื่อเริ่มต้น</small>
-                        </div>
-                    `;
-                }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                throw error;
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
 
-        // ==================== SUPPLIER FUNCTIONS ====================
-        function loadSupplierInfo(selectElement) {
-            const supplierCode = selectElement.value;
-            const lotSection = selectElement.closest('.lot-section');
-            const supplierInfo = lotSection.querySelector('.supplier-info');
+        // ==================== FORM SUBMIT ====================
+        async function handleFormSubmit(e) {
+            e.preventDefault();
             
-            if (!supplierCode || supplierCode === '') {
-                supplierInfo.style.display = 'none';
+            const data = collectFormData();
+            
+            if (!validateFormData(data)) {
                 return;
             }
             
-            const supplier = allSuppliers.find(s => s.code === supplierCode);
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            submitBtn.disabled = true;
             
-            if (supplier) {
-                lotSection.querySelector('.supplier-name').textContent = supplier.name;
-                lotSection.querySelector('.supplier-contact').textContent = supplier.contact_person || '-';
-                lotSection.querySelector('.supplier-address').textContent = supplier.address || '-';
-                supplierInfo.style.display = 'block';
-            } else {
-                supplierInfo.style.display = 'none';
+            try {
+                const result = await saveProductToDatabase(data);
+                
+                if (result && result.success) {
+                    // ส่ง event ไปยังหน้าอื่น
+                    window.dispatchEvent(new CustomEvent('stockUpdated', { 
+                        detail: { newProduct: data }
+                    }));
+                    
+                    showAlert('บันทึกสินค้าเรียบร้อยแล้ว!', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'stock.html';
+                    }, 1500);
+                } else {
+                    showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         }
 
+        // ==================== SUPPLIER FUNCTIONS (เผื่อใช้) ====================
         function showAddSupplierModal(selectElement) {
             currentSupplierSelect = selectElement;
             document.getElementById('addSupplierModal').style.display = 'flex';
@@ -985,18 +1395,8 @@
                     localStorage.setItem('demo_suppliers', JSON.stringify(allSuppliers));
                 }
                 
-                // Add option to select
-                if (currentSupplierSelect) {
-                    const option = document.createElement('option');
-                    option.value = supplierData.code;
-                    option.textContent = `${supplierData.code} (${supplierData.name})`;
-                    
-                    const newOption = currentSupplierSelect.querySelector('option[value="new"]');
-                    currentSupplierSelect.insertBefore(option, newOption);
-                    currentSupplierSelect.value = supplierData.code;
-                    
-                    loadSupplierInfo(currentSupplierSelect);
-                }
+                // ส่ง event ไปยังหน้าอื่น
+                window.dispatchEvent(new CustomEvent('supplierUpdated'));
                 
                 showAlert('เพิ่มซัพพลายเออร์เรียบร้อย', 'success');
                 closeSupplierModal();
@@ -1007,195 +1407,19 @@
             }
         }
 
-        // ==================== FORM DATA COLLECTION ====================
-        function collectFormData() {
-            const lots = [];
-            document.querySelectorAll('.lot-section').forEach((section, index) => {
-                const quantity = parseInt(section.querySelector('.remaining-quantity').value) || 0;
-                const lotNumber = section.querySelector('.product-number').value.trim();
-                const expiryDate = section.querySelector('.expiry-date').value;
-                
-                // Only include lots with valid data
-                if (lotNumber && expiryDate && quantity > 0) {
-                    lots.push({
-                        lot_number: lotNumber,
-                        expiry_date: expiryDate,
-                        quantity: quantity,
-                        supplier_code: section.querySelector('.supplier-code').value || null,
-                        received_date: section.querySelector('.received-date').value || new Date().toISOString().split('T')[0],
-                        warranty: section.querySelector('.warranty').value.trim() || null,
-                        cost: parseFloat(section.querySelector('.lot-cost').value) || null
-                    });
-                }
-            });
-            
-            return {
-                id: document.getElementById('productId').value.trim().toUpperCase(),
-                barcode: document.getElementById('barcode').value.trim() || null,
-                name: document.getElementById('productName').value.trim(),
-                description: document.getElementById('description').value.trim() || null,
-                price: parseFloat(document.getElementById('price').value) || 0,
-                cost: parseFloat(document.getElementById('cost').value) || 0,
-                stock: parseInt(document.getElementById('stock').value) || 0,
-                min_stock: parseInt(document.getElementById('minStock').value) || 10,
-                max_stock: parseInt(document.getElementById('maxStock').value) || 100,
-                unit: document.getElementById('unit').value,
-                category: document.getElementById('mainCategory').value,
-                subcategory: document.getElementById('subCategory').value.trim() || null,
-                status: getStatusFromValue(document.querySelector('input[name="status"]:checked')?.value || 'มีสินค้า'),
-                lots: lots
-            };
-        }
-
-        function getStatusFromValue(statusValue) {
-            switch(statusValue) {
-                case 'มีสินค้า': return 'active';
-                case 'สินค้าจำกัด': return 'low';
-                case 'สินค้าหมด': return 'out';
-                default: return 'active';
-            }
-        }
-
-        // ==================== VALIDATION ====================
-        function validateFormData(data) {
-            if (!data.id.match(/^P\d{3,}$/i)) {
-                showAlert('รหัสสินค้าต้องขึ้นต้นด้วย P ตามด้วยตัวเลข 3 หลักขึ้นไป (เช่น P001)', 'danger');
-                return false;
-            }
-            
-            if (allProducts.some(p => p.id === data.id)) {
-                showAlert('รหัสสินค้านี้มีอยู่แล้วในระบบ', 'danger');
-                return false;
-            }
-            
-            if (data.barcode && allProducts.some(p => p.barcode === data.barcode)) {
-                showAlert('บาร์โค้ดนี้มีอยู่แล้วในระบบ', 'danger');
-                return false;
-            }
-            
-            if (!data.name || data.name.length < 2) {
-                showAlert('กรุณากรอกชื่อสินค้าที่มีความยาวอย่างน้อย 2 ตัวอักษร', 'danger');
-                return false;
-            }
-            
-            if (data.price <= 0) {
-                showAlert('ราคาขายต้องมากกว่า 0', 'danger');
-                return false;
-            }
-            
-            if (data.cost <= 0) {
-                showAlert('ต้นทุนต้องมากกว่า 0', 'danger');
-                return false;
-            }
-            
-            if (data.cost > data.price) {
-                showAlert('ต้นทุนต้องไม่สูงกว่าราคาขาย', 'danger');
-                return false;
-            }
-            
-            if (!data.category) {
-                showAlert('กรุณาเลือกหมวดหมู่หลัก', 'danger');
-                return false;
-            }
-            
-            if (data.lots.length === 0) {
-                showAlert('กรุณาเพิ่มล็อตสินค้าอย่างน้อย 1 ล็อต', 'danger');
-                return false;
-            }
-            
-            return true;
-        }
-
-        // ==================== SAVE TO DATABASE ====================
-        async function saveProductToDatabase(productData) {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            
-            try {
-                if (window.electronAPI) {
-                    // Save product
-                    const result = await window.electronAPI.saveProduct(productData);
-                    
-                    if (!result || !result.success) {
-                        throw new Error(result?.message || 'ไม่สามารถบันทึกสินค้าได้');
-                    }
-                    
-                    // Save lots
-                    if (productData.lots && productData.lots.length > 0) {
-                        for (const lot of productData.lots) {
-                            const lotData = {
-                                product_id: productData.id,
-                                lot_number: lot.lot_number,
-                                expiry_date: lot.expiry_date,
-                                quantity: lot.quantity,
-                                supplier_code: lot.supplier_code,
-                                received_date: lot.received_date,
-                                warranty: lot.warranty,
-                                cost: lot.cost || productData.cost
-                            };
-                            
-                            const lotResult = await window.electronAPI.addProductLot(lotData);
-                            if (!lotResult || !lotResult.success) {
-                                console.warn('Warning: Failed to save lot', lot.lot_number);
-                            }
-                        }
-                    }
-                    
-                    return { success: true };
-                    
-                } else {
-                    // Demo mode
-                    console.log('Product saved (demo):', productData);
-                    
-                    const savedProducts = JSON.parse(localStorage.getItem('demo_products') || '[]');
-                    savedProducts.push(productData);
-                    localStorage.setItem('demo_products', JSON.stringify(savedProducts));
-                    
-                    return { success: true };
-                }
-            } catch (error) {
-                console.error('Error saving product:', error);
-                throw error;
-            } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
-            }
-        }
-
-        // ==================== FORM SUBMIT ====================
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            const data = collectFormData();
-            
-            if (!validateFormData(data)) {
-                return;
-            }
-            
-            const submitBtn = document.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
-            submitBtn.disabled = true;
-            
-            try {
-                const result = await saveProductToDatabase(data);
-                
-                if (result && result.success) {
-                    showAlert('บันทึกสินค้าเรียบร้อยแล้ว!', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'stock.html';
-                    }, 1500);
-                } else {
-                    showAlert('เกิดข้อผิดพลาดในการบันทึกสินค้า', 'danger');
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        }
+        // ทำให้ฟังก์ชันสามารถเรียกจาก HTML ได้
+        window.logout = logout;
+        window.closeModal = closeModal;
+        window.openSettingsModal = openSettingsModal;
+        window.openQRPaymentSettings = openQRPaymentSettings;
+        window.showAddBankForm = showAddBankForm;
+        window.cancelAddBank = cancelAddBank;
+        window.saveBankAccount = saveBankAccount;
+        window.selectBankAccount = selectBankAccount;
+        window.formatPhoneNumber = formatPhoneNumber;
+        window.showAddSupplierModal = showAddSupplierModal;
+        window.closeSupplierModal = closeSupplierModal;
+        window.saveNewSupplier = saveNewSupplier;
     </script>
 </body>
 </html>

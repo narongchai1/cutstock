@@ -7,14 +7,12 @@ const database = require('./src/js/database');
 
 // ============ CONFIGURATION ============
 
-// สร้างโฟลเดอร์ข้อมูล
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
+// IMPORTANT: ใช้ userData directory ของ Electron เท่านั้น
+const userDataPath = app.getPath('userData');
+console.log('📁 User data path:', userDataPath);
 
-// สร้างโฟลเดอร์ logs
-const logsDir = path.join(app.getPath('userData'), 'logs');
+// สร้างโฟลเดอร์ logs ใน userData
+const logsDir = path.join(userDataPath, 'logs');
 if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
 }
@@ -23,7 +21,7 @@ let mainWindow;
 let tray = null;
 let isQuitting = false;
 
-// โหลดการตั้งค่าจาก config.json
+// โหการตั้งค่าจาก config.json
 const configPath = path.join(__dirname, 'config.json');
 let appConfig = {};
 if (fs.existsSync(configPath)) {
@@ -226,16 +224,23 @@ function createWindow() {
 
 function createTray() {
     try {
-        const iconPath = path.join(__dirname, 'src/assets/icons/app-icon.png');
+        // สร้างโฟลเดอร์ assets ถ้ายังไม่มี
+        const assetsDir = path.join(__dirname, 'src', 'assets', 'icons');
+        if (!fs.existsSync(assetsDir)) {
+            fs.mkdirSync(assetsDir, { recursive: true });
+        }
+
+        const iconPath = path.join(assetsDir, 'app-icon.png');  
         
-        // ตรวจสอบว่าไฟล์ icon มีอยู่หรือไม่
+        // ถ้าไม่มี icon ให้สร้าง Tray โดยไม่มี icon (ใช้ default)
         if (!fs.existsSync(iconPath)) {
-            console.warn('⚠️ Icon file not found, using default icon');
-            tray = new Tray(iconPath); // จะใช้ default icon
+            console.warn('⚠️ Icon file not found at:', iconPath);
+            // สร้าง Tray โดยไม่ใช้ icon (fallback)
+            tray = new Tray(iconPath);
         } else {
             tray = new Tray(iconPath);
         }
-        
+
         const contextMenu = Menu.buildFromTemplate([
             {
                 label: 'เปิดโปรแกรม',
@@ -259,7 +264,7 @@ function createTray() {
         ]);
         
         tray.setContextMenu(contextMenu);
-        tray.setToolTip('ระบบจัดการสต็อกสินค้า\nดับเบิลคลิกเพื่อเปิดโปรแกรม');
+        tray.setToolTip('CutStock - ระบบจัดการสต็อกสินค้า\nดับเบิลคลิกเพื่อเปิดโปรแกรม');
         
         tray.on('double-click', () => {
             if (mainWindow) {
@@ -273,28 +278,54 @@ function createTray() {
         console.log('✅ System tray created');
         
     } catch (error) {
-        console.error('❌ Error creating system tray:', error);
+        console.warn('⚠️ System tray creation failed:', error.message);
+        // ไม่ต้อง throw error ออกไป
     }
 }
 
 // ============ APP LIFE CYCLE ============
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     console.log('🚀 Starting Stock Management System...');
     
-    // รอให้ database เริ่มต้น
-    database.initPromise
-        .then(() => {
-            console.log('✅ Database initialized successfully');
-        })
-        .catch(err => {
-            console.error('❌ Database initialization failed:', err);
-            dialog.showErrorBox('Database Error', 
-                'ไม่สามารถเริ่มต้นฐานข้อมูลได้ กรุณาตรวจสอบและลองใหม่อีกครั้ง');
-        });
+    try {
+        // ตรวจสอบว่า database มี initPromise หรือยัง
+        if (!database.initPromise) {
+            console.log('⚠️ Database initPromise not found, creating new one...');
+            database.initPromise = database.initDatabase();
+        }
+        
+        // รอให้ database initialize เสร็จ
+        console.log('⏳ Waiting for database initialization...');
+        await database.initPromise;
+        console.log('✅ Database initialized successfully');
+        
+        // ตรวจสอบว่าไฟล์ database ถูกสร้างหรือไม่
+        if (database.dbPath && fs.existsSync(database.dbPath)) {
+            const stats = fs.statSync(database.dbPath);
+            console.log(`✅ Database file created: ${database.dbPath} (${stats.size} bytes)`);
+        } else {
+            console.error('❌ Database file not found after initialization!');
+        }
+        
+    } catch (err) {
+        console.error('❌ Database initialization failed:', err);
+        dialog.showErrorBox('Database Error', 
+            'ไม่สามารถเริ่มต้นฐานข้อมูลได้ กรุณาตรวจสอบและลองใหม่อีกครั้ง\n' +
+            'รายละเอียด: ' + err.message
+        );
+        // ไม่ต้อง return เพื่อให้โปรแกรมยังทำงานต่อไปได้ แต่จะใช้ข้อมูลตัวอย่างแทน
+    }
     
+    // สร้างหน้าต่างหลังจาก database initialize แล้ว
     createWindow();
-    createTray();
+    
+    // สร้าง tray แบบปลอดภัย
+    try {
+        createTray();
+    } catch (error) {
+        console.warn('⚠️ Could not create system tray:', error.message);
+    }
     
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -315,7 +346,7 @@ app.on('window-all-closed', (event) => {
 });
 
 // จัดการเมื่อจะปิด app
-app.on('before-quit', (event) => {
+app.on('before-quit', async (event) => {
     if (!isQuitting) {
         event.preventDefault();
         return;
@@ -323,7 +354,12 @@ app.on('before-quit', (event) => {
     
     // ปิด database connection
     if (database) {
-        database.close();
+        try {
+            await database.close();
+            console.log('✅ Database connection closed');
+        } catch (error) {
+            console.error('Error closing database:', error);
+        }
     }
     
     if (tray) {
@@ -342,7 +378,12 @@ ipcMain.handle('check-online-status', async () => {
 ipcMain.handle('check-database', async () => {
     try {
         await database.initPromise;
-        return { ready: true, message: 'Database is ready' };
+        return { 
+            ready: true, 
+            message: 'Database is ready',
+            path: database.dbPath,
+            exists: fs.existsSync(database.dbPath)
+        };
     } catch (error) {
         return { ready: false, message: error.message };
     }
@@ -352,6 +393,11 @@ ipcMain.handle('check-database', async () => {
 ipcMain.handle('check-stock-page', async () => {
     const stockPagePath = path.join(__dirname, 'src/stock.html');
     return fs.existsSync(stockPagePath);
+});
+
+// App Version Handler
+ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
 });
 
 // Product Handlers
@@ -426,6 +472,26 @@ ipcMain.handle('get-product-lots', async (event, productId) => {
     }
 });
 
+ipcMain.handle('update-product-lot', async (event, lotId, lotData) => {
+    try {
+        await database.initPromise;
+        return await database.updateProductLot(lotId, lotData);
+    } catch (error) {
+        console.error('Error updating product lot:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('delete-product-lot', async (event, lotId) => {
+    try {
+        await database.initPromise;
+        return await database.deleteProductLot(lotId);
+    } catch (error) {
+        console.error('Error deleting product lot:', error);
+        return { success: false, error: error.message };
+    }
+});
+
 // Authentication Handlers
 ipcMain.handle('login', async (event, credentials) => {
     try {
@@ -484,6 +550,57 @@ ipcMain.handle('close-shift', async (event, shift_id, closingData) => {
         return await database.closeShift(shift_id, closingData);
     } catch (error) {
         console.error('Error closing shift:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Supplier Handlers
+ipcMain.handle('get-supplier', async (event, code) => {
+    try {
+        await database.initPromise;
+        return await database.getSupplier(code);
+    } catch (error) {
+        console.error('Error getting supplier:', error);
+        return null;
+    }
+});
+
+ipcMain.handle('get-all-suppliers', async () => {
+    try {
+        await database.initPromise;
+        return await database.getAllSuppliers();
+    } catch (error) {
+        console.error('Error getting suppliers:', error);
+        return [];
+    }
+});
+
+ipcMain.handle('create-supplier', async (event, supplierData) => {
+    try {
+        await database.initPromise;
+        return await database.createSupplier(supplierData);
+    } catch (error) {
+        console.error('Error creating supplier:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('update-supplier', async (event, code, supplierData) => {
+    try {
+        await database.initPromise;
+        return await database.updateSupplier(code, supplierData);
+    } catch (error) {
+        console.error('Error updating supplier:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('delete-supplier', async (event, code) => {
+    try {
+        await database.initPromise;
+        return await database.deleteSupplier(code);
+    } catch (error) {
+        console.error('Error deleting supplier:', error);
         return { success: false, error: error.message };
     }
 });
@@ -554,12 +671,146 @@ ipcMain.handle('get-sales-report', async (event, startDate, endDate, shift_id = 
     }
 });
 
-ipcMain.handle('get-top-products', async (event, limit = 10, startDate, endDate) => {
+// ============ REPORT HANDLERS ============
+
+/**
+ * ดึงข้อมูลกะที่ปิดแล้วในช่วงวันที่กำหนด
+ */
+ipcMain.handle('get-closed-shifts', async (event, startDate, endDate) => {
     try {
-        await database.initPromise;
-        return await database.getTopProducts(limit, startDate, endDate);
+        await database.ensureInitialized();
+        return await database.getClosedShifts(startDate, endDate);
     } catch (error) {
-        console.error('Error getting top products:', error);
+        console.error('❌ Error getting closed shifts:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงยอดขายแยกตามวันและช่องทางในช่วงวันที่กำหนด
+ */
+ipcMain.handle('get-sales-by-date-range', async (event, startDate, endDate) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getSalesByDateRange(startDate, endDate);
+    } catch (error) {
+        console.error('❌ Error getting sales by date range:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงรายการขายทั้งหมดในกะ พร้อมรายการสินค้า
+ */
+ipcMain.handle('get-shift-sales-with-items', async (event, shiftId) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getShiftSalesWithItems(shiftId);
+    } catch (error) {
+        console.error('❌ Error getting shift sales with items:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงสรุปยอดขายรายวัน
+ */
+ipcMain.handle('get-daily-sales-summary', async (event, startDate, endDate) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getDailySalesSummary(startDate, endDate);
+    } catch (error) {
+        console.error('❌ Error getting daily sales summary:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงสินค้าขายดีในช่วงวันที่กำหนด
+ */
+ipcMain.handle('get-top-products', async (event, startDate, endDate, limit = 10) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getTopProducts(startDate, endDate, limit);
+    } catch (error) {
+        console.error('❌ Error getting top products:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงสรุปยอดขายแยกตามพนักงาน
+ */
+ipcMain.handle('get-sales-by-cashier', async (event, startDate, endDate) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getSalesByCashier(startDate, endDate);
+    } catch (error) {
+        console.error('❌ Error getting sales by cashier:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงสรุปยอดขายรายเดือน
+ */
+ipcMain.handle('get-monthly-sales', async (event, year) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getMonthlySales(year);
+    } catch (error) {
+        console.error('❌ Error getting monthly sales:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงข้อมูลการปิดกะ (ส่วนต่าง, ค่าใช้จ่าย) ในช่วงวันที่กำหนด
+ */
+ipcMain.handle('get-shift-closing-details', async (event, startDate, endDate) => {
+    try {
+        await database.ensureInitialized();
+        return await database.getShiftClosingDetails(startDate, endDate);
+    } catch (error) {
+        console.error('❌ Error getting shift closing details:', error);
+        return [];
+    }
+});
+
+/**
+ * ดึงสถิติภาพรวมสำหรับ dashboard
+ */
+ipcMain.handle('get-dashboard-stats', async () => {
+    try {
+        await database.ensureInitialized();
+        return await database.getDashboardStats();
+    } catch (error) {
+        console.error('❌ Error getting dashboard stats:', error);
+        return {
+            today_sales: 0,
+            today_bills: 0,
+            month_sales: 0,
+            month_bills: 0,
+            open_shifts_today: 0,
+            closed_shifts_today: 0,
+            products_in_stock: 0,
+            out_of_stock: 0,
+            low_stock: 0,
+            stock_value: 0,
+            total_suppliers: 0
+        };
+    }
+});
+
+/**
+ * ดึงข้อมูลกราฟยอดขายรายชั่วโมงสำหรับวันนี้
+ */
+ipcMain.handle('get-hourly-sales-today', async () => {
+    try {
+        await database.ensureInitialized();
+        return await database.getHourlySalesToday();
+    } catch (error) {
+        console.error('❌ Error getting hourly sales:', error);
         return [];
     }
 });
@@ -582,7 +833,7 @@ ipcMain.handle('update-config', async (event, newConfig) => {
 // File Management Handlers
 ipcMain.handle('get-backup-files', async () => {
     try {
-        const backupDir = path.join(app.getPath('userData'), 'backups');
+        const backupDir = path.join(userDataPath, 'backups');
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
             return [];
@@ -612,12 +863,12 @@ ipcMain.handle('get-backup-files', async () => {
 
 ipcMain.handle('restore-backup', async (event, backupFile) => {
     try {
-        await database.initPromise;
+        await database.ensureInitialized();
         const sourceFile = backupFile;
         const targetFile = database.dbPath;
         
         // ทำ backup อัตโนมัติก่อน restore
-        const backupDir = path.join(app.getPath('userData'), 'backups');
+        const backupDir = path.join(userDataPath, 'backups');
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
         }
@@ -643,8 +894,8 @@ ipcMain.handle('restore-backup', async (event, backupFile) => {
 
 ipcMain.handle('create-backup', async () => {
     try {
-        await database.initPromise;
-        const backupDir = path.join(app.getPath('userData'), 'backups');
+        await database.ensureInitialized();
+        const backupDir = path.join(userDataPath, 'backups');
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
         }
@@ -704,8 +955,7 @@ process.on('unhandledRejection', (reason, promise) => {
     } catch (logError) {
         console.error('Failed to write error log:', logError);
     }
-});
+});     
 
 console.log('✅ Main process initialized');
-console.log(`📁 User data directory: ${app.getPath('userData')}`);
-console.log(`📁 Database path: ${database ? database.dbPath : 'Not initialized'}`);
+console.log(`📁 User data directory: ${userDataPath}`);

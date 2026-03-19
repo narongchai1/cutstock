@@ -8,20 +8,6 @@
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #6c757d;
-        }
-        .debug-info h4 {
-            color: #495057;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
         .role-badge {
             display: inline-block;
             padding: 2px 8px;
@@ -42,6 +28,9 @@
             margin-top: 15px;
             max-height: 200px;
             overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
         }
         .demo-user-item {
             display: flex;
@@ -50,13 +39,14 @@
             padding: 8px 12px;
             border-bottom: 1px solid #eee;
             font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
         .demo-user-item:last-child {
             border-bottom: none;
         }
         .demo-user-item:hover {
-            background: #f8f9fa;
-            cursor: pointer;
+            background: #f0f7ff;
         }
         .demo-username {
             font-weight: 600;
@@ -65,11 +55,9 @@
         .demo-password {
             color: #7f8c8d;
             font-family: monospace;
-        }
-        .demo-role {
-            font-size: 11px;
+            background: #f5f5f5;
             padding: 2px 6px;
-            border-radius: 10px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -90,12 +78,12 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username"><i class="fas fa-user"></i> ชื่อผู้ใช้</label>
-                    <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required value="admin">
+                    <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้" required autocomplete="off">
                 </div>
                 
                 <div class="form-group">
                     <label for="password"><i class="fas fa-lock"></i> รหัสผ่าน</label>
-                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required value="admin123">
+                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required autocomplete="off">
                 </div>
                 
                 <button type="submit" class="btn-login">
@@ -106,138 +94,142 @@
             <div class="demo-credentials">
                 <h4><i class="fas fa-key"></i> บัญชีผู้ใช้ทั้งหมด:</h4>
                 
-                <div class="demo-users">
-                    <div class="demo-user-item" onclick="fillCredentials('admin', 'admin123')">
-                        <div>
-                            <span class="demo-username">admin</span>
-                            <span class="role-badge role-admin">ผู้ดูแลระบบ</span>
-                        </div>
-                        <div>
-                            <span class="demo-password">admin123</span>
-                            <i class="fas fa-copy" style="margin-left: 8px; color: #3498db; cursor: pointer;" onclick="copyCredentials('admin', 'admin123', event)"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="demo-user-item" onclick="fillCredentials('manager', 'manager123')">
-                        <div>
-                            <span class="demo-username">manager</span>
-                            <span class="role-badge role-admin">ผู้จัดการ</span>
-                        </div>
-                        <div>
-                            <span class="demo-password">manager123</span>
-                            <i class="fas fa-copy" style="margin-left: 8px; color: #3498db; cursor: pointer;" onclick="copyCredentials('manager', 'manager123', event)"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="demo-user-item" onclick="fillCredentials('staff1', 'staff123')">
-                        <div>
-                            <span class="demo-username">staff1</span>
-                            <span class="role-badge role-staff">พนักงานขาย</span>
-                        </div>
-                        <div>
-                            <span class="demo-password">staff123</span>
-                            <i class="fas fa-copy" style="margin-left: 8px; color: #2ecc71; cursor: pointer;" onclick="copyCredentials('staff1', 'staff123', event)"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="demo-user-item" onclick="fillCredentials('staff2', 'staff456')">
-                        <div>
-                            <span class="demo-username">staff2</span>
-                            <span class="role-badge role-staff">พนักงานขาย</span>
-                        </div>
-                        <div>
-                            <span class="demo-password">staff456</span>
-                            <i class="fas fa-copy" style="margin-left: 8px; color: #2ecc71; cursor: pointer;" onclick="copyCredentials('staff2', 'staff456', event)"></i>
-                        </div>
-                    </div>
+                <div class="demo-users" id="userList">
+                    <div class="text-center">กำลังโหลด...</div>
                 </div>
                 
                 <p style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
-                    <i class="fas fa-info-circle"></i> พนักงานสามารถเข้าถึงได้เฉพาะหน้าขายสินค้าเท่านั้น
+                    <i class="fas fa-info-circle"></i> คลิกที่ชื่อผู้ใช้เพื่อเติมข้อมูลอัตโนมัติ
                 </p>
             </div>
             
-            <!-- Debug Section -->
-            <div class="debug-info">
-                <h4><i class="fas fa-bug"></i> ข้อมูล debug:</h4>
-                <p id="debugInfo">กำลังตรวจสอบระบบ...</p>
-                <button onclick="checkSystem()" class="btn btn-sm btn-info">
-                    <i class="fas fa-search"></i> ตรวจสอบระบบ
-                </button>
-            </div>
-            
             <div class="login-footer">
-                <p>© 2024 ระบบจัดการสต็อก | เวอร์ชัน 1.0</p>
+                <p>© 2024 ระบบจัดการสต็อก | เวอร์ชัน 2.0</p>
             </div>
         </div>
         
-        <div id="errorMessage" class="error-message" style="display: none;">
-            ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
-        </div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
     </div>
     
     <script src="js/auth.js"></script>
     <script>
-        // ฟังก์ชันเติมข้อมูล
-        function fillCredentials(username, password) {
-            document.getElementById('username').value = username;
-            document.getElementById('password').value = password;
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
             
-            // ไฮไลท์ input
-            document.getElementById('username').style.borderColor = '#3498db';
-            document.getElementById('password').style.borderColor = '#3498db';
+            // ตรวจสอบสถานะออนไลน์
+            checkOnlineStatus();
             
-            setTimeout(() => {
-                document.getElementById('username').style.borderColor = '';
-                document.getElementById('password').style.borderColor = '';
-            }, 1000);
-        }
-        
-        // ฟังก์ชันคัดลอก
-        function copyCredentials(username, password, event) {
-            event.stopPropagation();
+            // โหลดรายชื่อผู้ใช้
+            refreshUserList();
             
-            const text = `Username: ${username}\nPassword: ${password}`;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('คัดลอกข้อมูลเข้าสู่ระบบแล้ว');
-            }).catch(() => {
-                alert('ไม่สามารถคัดลอกได้');
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                
+                if (!username || !password) {
+                    showError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
+                    return;
+                }
+                
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังเข้าสู่ระบบ...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const staff = loadStaffUsers();
+                    const user = staff.find(u => 
+                        u.username.toLowerCase() === username.toLowerCase() && 
+                        u.password === password &&
+                        u.active !== false
+                    );
+                    
+                    if (user) {
+                        const userData = {
+                            id: user.id,
+                            username: user.username,
+                            name: user.name,
+                            role: user.role,
+                            email: user.email,
+                            phone: user.phone
+                        };
+                        
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        localStorage.setItem('token', 'token-' + Date.now());
+                        
+                        showError('เข้าสู่ระบบสำเร็จ กำลังนำคุณไปยังหน้า...');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'sales.html';
+                        }, 500);
+                    } else {
+                        showError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
             });
-        }
+        });
         
-        // Debug function
-        async function checkSystem() {
-            const debugInfo = document.getElementById('debugInfo');
-            debugInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
-            
-            try {
-                // ตรวจสอบ database
-                const dbResult = await window.electronAPI.checkDatabase();
-                console.log('Database check:', dbResult);
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
                 
-                // ตรวจสอบหน้า stock.html
-                const pageResult = await window.electronAPI.checkStockPage();
-                console.log('Stock page check:', pageResult);
-                
-                // ตรวจสอบ localStorage
-                const hasUser = localStorage.getItem('user');
-                
-                debugInfo.innerHTML = `
-                    <div>✅ Database: ${dbResult.ready ? 'พร้อม' : 'ไม่พร้อม'}</div>
-                    <div>✅ Stock page: ${pageResult ? 'พบ' : 'ไม่พบ'}</div>
-                    <div>✅ LocalStorage: ${hasUser ? 'มีข้อมูล' : 'ไม่มีข้อมูล'}</div>
-                    <div>✅ API ready: ${window.electronAPI ? 'ใช่' : 'ไม่'}</div>
-                `;
-            } catch (error) {
-                debugInfo.innerHTML = `❌ Error: ${error.message}`;
-                console.error('Debug error:', error);
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 3000);
             }
         }
         
-        // Auto-check system on load
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(checkSystem, 1000);
-        });
+        function fillCredentials(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+        }
+        
+        function refreshUserList() {
+            const userList = document.getElementById('userList');
+            if (!userList) return;
+            
+            const staff = loadStaffUsers();
+            const activeUsers = staff.filter(u => u.active !== false);
+            
+            if (activeUsers.length === 0) {
+                userList.innerHTML = '<div class="text-center">ไม่มีบัญชีผู้ใช้</div>';
+                return;
+            }
+            
+            let html = '';
+            activeUsers.forEach(user => {
+                const roleClass = user.role === 'admin' ? 'role-admin' : 'role-staff';
+                const roleText = user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+                
+                html += `
+                    <div class="demo-user-item" onclick="fillCredentials('${user.username}', '${user.password}')">
+                        <div>
+                            <span class="demo-username">${user.username}</span>
+                            <span class="role-badge ${roleClass}">${roleText}</span>
+                        </div>
+                        <div>
+                            <span class="demo-password">${user.password}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            userList.innerHTML = html;
+        }
+        
+        window.fillCredentials = fillCredentials;
+        window.refreshUserList = refreshUserList;
     </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+// preload.js - ฉบับแก้ไข
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -18,6 +19,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Product Lots API
     addProductLot: (lotData) => ipcRenderer.invoke('add-product-lot', lotData),
     getProductLots: (productId) => ipcRenderer.invoke('get-product-lots', productId),
+    updateProductLot: (lotId, lotData) => ipcRenderer.invoke('update-product-lot', lotId, lotData),
+    deleteProductLot: (lotId) => ipcRenderer.invoke('delete-product-lot', lotId),
+    
+    // Supplier API
+    getAllSuppliers: () => ipcRenderer.invoke('get-all-suppliers'),
+    getSupplier: (code) => ipcRenderer.invoke('get-supplier', code),
+    createSupplier: (supplierData) => ipcRenderer.invoke('create-supplier', supplierData),
+    updateSupplier: (code, supplierData) => ipcRenderer.invoke('update-supplier', code, supplierData),
+    deleteSupplier: (code) => ipcRenderer.invoke('delete-supplier', code),
     
     // Authentication API
     login: (credentials) => ipcRenderer.invoke('login', credentials),
@@ -38,8 +48,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Sales API
     saveSale: (saleData) => ipcRenderer.invoke('save-sale', saleData),
     getSalesHistory: (limit, shift_id) => ipcRenderer.invoke('get-sales-history', limit, shift_id),
-    getSalesReport: (startDate, endDate, shift_id) => ipcRenderer.invoke('get-sales-report', startDate, endDate, shift_id),
-    getTopProducts: (limit, startDate, endDate) => ipcRenderer.invoke('get-top-products', limit, startDate, endDate),
+    
+    // Report API
+    getClosedShifts: (startDate, endDate) => ipcRenderer.invoke('get-closed-shifts', startDate, endDate),
+    getSalesByDateRange: (startDate, endDate) => ipcRenderer.invoke('get-sales-by-date-range', startDate, endDate),
+    getShiftSalesWithItems: (shiftId) => ipcRenderer.invoke('get-shift-sales-with-items', shiftId),
+    getDailySalesSummary: (startDate, endDate) => ipcRenderer.invoke('get-daily-sales-summary', startDate, endDate),
+    getTopProducts: (startDate, endDate, limit = 10) => ipcRenderer.invoke('get-top-products', startDate, endDate, limit),
+    getSalesByCashier: (startDate, endDate) => ipcRenderer.invoke('get-sales-by-cashier', startDate, endDate),
+    getMonthlySales: (year) => ipcRenderer.invoke('get-monthly-sales', year),
+    getShiftClosingDetails: (startDate, endDate) => ipcRenderer.invoke('get-shift-closing-details', startDate, endDate),
+    getDashboardStats: () => ipcRenderer.invoke('get-dashboard-stats'),
+    getHourlySalesToday: () => ipcRenderer.invoke('get-hourly-sales-today'),
     
     // Config API
     getConfig: () => ipcRenderer.invoke('get-config'),
@@ -50,56 +70,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     restoreBackup: (backupFile) => ipcRenderer.invoke('restore-backup', backupFile),
     createBackup: () => ipcRenderer.invoke('create-backup'),
     
-    // Utility API
-    showDialog: (options) => ipcRenderer.invoke('show-dialog', options),
-    getAppPath: () => ipcRenderer.invoke('get-app-path'),
-    
-    // Event listeners
-    onOnlineStatusChange: (callback) => {
-        // ตรวจสอบสถานะทุกๆ 30 วินาที
-        const checkStatus = async () => {
-            try {
-                const status = await ipcRenderer.invoke('check-online-status');
-                callback(status);
-            } catch (error) {
-                console.error('Error checking online status:', error);
-                callback(false);
-            }
-        };
-        
-        // เรียกครั้งแรก
-        checkStatus();
-        
-        // ตั้งเวลาเรียกซ้ำ
-        const interval = setInterval(checkStatus, 30000);
-        
-        // ฟัง events จาก network
-        const onlineHandler = () => checkStatus();
-        const offlineHandler = () => callback(false);
-        
-        window.addEventListener('online', onlineHandler);
-        window.addEventListener('offline', offlineHandler);
-        
-        // คืนค่า function สำหรับยกเลิก
-        return () => {
-            clearInterval(interval);
-            window.removeEventListener('online', onlineHandler);
-            window.removeEventListener('offline', offlineHandler);
-        };
-    },
-    
     // Version info
-    getAppVersion: () => {
-        return process.env.npm_package_version || '1.0.0';
-    },
-    
-    // Platform info
-    getPlatform: () => {
-        return process.platform;
-    }
+    getAppVersion: () => ipcRenderer.invoke('get-app-version')
 });
 
-// เพิ่ม safe logging
 console.log('✅ Preload script loaded');
-console.log('📦 Electron version:', process.versions.electron);
-console.log('🖥️ Platform:', process.platform);

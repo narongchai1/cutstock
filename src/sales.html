@@ -6,8 +6,8 @@
     <title>ขายสินค้า - ระบบจัดการสต็อก</title>
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
-        /* CSS เดิมทั้งหมดคงไว้ */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -60,11 +60,6 @@
             flex-wrap: wrap;
         }
         
-        #currentUser {
-            font-weight: 600;
-            color: white;
-        }
-        
         .status-badge {
             padding: 4px 10px;
             border-radius: 20px;
@@ -85,6 +80,45 @@
             color: #721c24;
         }
         
+        .settings-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .badge-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .badge-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        /* Navigation */
         .nav {
             display: flex;
             gap: 10px;
@@ -120,179 +154,148 @@
             border-color: #3498db;
         }
         
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-            text-decoration: none;
-            font-size: 14px;
+        /* ซ่อนเมนูสำหรับพนักงาน */
+        .staff-hidden {
+            display: none !important;
         }
         
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 12px;
+        /* Settings Menu */
+        .settings-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .btn-lg {
-            padding: 12px 25px;
-            font-size: 16px;
-        }
-        
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #27ae60;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        .btn-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background-color: #e67e22;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-            transform: translateY(-2px);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .settings-menu-item {
             display: flex;
             align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .settings-menu-item:hover {
+            border-color: #3498db;
+            background: #ebf5fb;
+            transform: translateX(5px);
+        }
+        
+        .settings-menu-item i {
+            font-size: 24px;
+            color: #3498db;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .settings-menu-item .item-info {
+            flex: 1;
+        }
+        
+        .settings-menu-item .item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+        
+        .settings-menu-item .item-desc {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        /* ข้อมูลผู้ใช้ใน Settings */
+        .settings-menu-item.user-info-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .settings-menu-item.user-info-item i {
+            color: #3498db;
+        }
+        
+        .settings-menu-item.user-info-item .item-title {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .settings-menu-item.user-info-item .item-desc {
+            font-size: 13px;
+            color: #3498db;
+        }
+        
+        /* ออกจากระบบ */
+        .settings-menu-item.logout-item {
+            border-color: #e74c3c;
+            background: #fee;
+        }
+        
+        .settings-menu-item.logout-item i {
+            color: #e74c3c;
+        }
+        
+        .settings-menu-item.logout-item:hover {
+            background: #fdd;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
             justify-content: space-between;
-            animation: slideIn 0.3s ease;
-            font-size: 14px;
-            width: auto;
-            min-width: 300px;
-            max-width: 400px;
-            box-sizing: border-box;
-            z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
         }
         
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .modal-header h2 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .btn-close {
             background: none;
             border: none;
+            font-size: 24px;
             cursor: pointer;
-            color: inherit;
-            margin-left: 10px;
-            font-size: 14px;
-            padding: 0 5px;
+            color: #7f8c8d;
         }
         
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
+        .btn-close:hover {
+            color: #e74c3c;
         }
         
-        .badge-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .badge-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-        
-        .badge-danger {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .badge-primary {
-            background-color: #3498db;
-            color: white;
-        }
-        
+        /* Shift Section */
         .shift-section {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -385,14 +388,7 @@
             color: #2c3e50;
         }
         
-        .shift-summary-value.positive {
-            color: #2ecc71;
-        }
-        
-        .shift-summary-value.negative {
-            color: #e74c3c;
-        }
-        
+        /* Sales Container */
         .sales-container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -426,7 +422,6 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
-            transition: all 0.3s;
         }
         
         .quick-search input:focus {
@@ -759,129 +754,199 @@
             margin-top: 12px;
         }
         
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
             align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
+            gap: 5px;
+            transition: all 0.3s;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
         }
         
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease;
+        .btn-lg {
+            padding: 12px 25px;
+            font-size: 16px;
         }
         
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        .btn-success {
+            background: #2ecc71;
+            color: white;
         }
         
-        .modal-header {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
         }
         
-        .modal-header h2 {
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
         }
         
-        .payment-summary {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
         }
         
-        .payment-total-label {
-            color: #7f8c8d;
-            font-size: 14px;
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
             margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
         }
         
-        .payment-total-amount {
-            font-size: 36px;
-            font-weight: bold;
-            color: #e74c3c;
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
         }
         
-        .cash-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        
-        .cash-input-group input {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 18px;
-            text-align: right;
-        }
-        
-        .cash-input-group input:focus {
+        .form-control:focus {
             border-color: #3498db;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
         }
         
-        .quick-cash-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        .form-actions {
+            display: flex;
             gap: 10px;
-            margin: 15px 0;
+            margin-top: 20px;
         }
         
-        .change-display {
-            background: #e8f5e9;
-            border-radius: 8px;
-            padding: 20px;
+        /* QR Code */
+        .qr-code-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
             text-align: center;
             margin: 20px 0;
+            border: 2px dashed #3498db;
         }
         
-        .change-label {
-            color: #2e7d32;
-            font-size: 14px;
-            margin-bottom: 5px;
+        #qrCodeCanvas {
+            width: 250px;
+            height: 250px;
+            margin: 15px auto;
+            display: block;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
-        .change-amount {
-            font-size: 36px;
+        .qr-amount {
+            font-size: 28px;
             font-weight: bold;
-            color: #2e7d32;
+            color: #3498db;
+            margin: 15px 0 5px;
         }
         
+        .qr-bank-info {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+            text-align: left;
+            line-height: 1.8;
+        }
+        
+        /* Bank Account List */
+        .bank-accounts-list {
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .bank-account-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .bank-account-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+        
+        .bank-account-card.selected {
+            border-color: #2ecc71;
+            background: #f0fff4;
+        }
+        
+        .bank-account-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #2ecc71;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .add-bank-btn {
+            width: 100%;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            color: #3498db;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .add-bank-btn:hover {
+            background: #e8f4fd;
+            border-color: #2980b9;
+        }
+        
+        /* Receipt */
         .receipt-content {
             max-width: 400px;
         }
@@ -928,83 +993,27 @@
             margin: 10px 0;
         }
         
-        .shift-summary-table {
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
         }
         
-        .shift-summary-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        
-        .shift-summary-table td:first-child {
-            font-weight: 600;
-            background: #f8f9fa;
-            width: 40%;
-        }
-        
-        .shift-summary-table td:last-child {
-            text-align: right;
-        }
-        
-        .shift-total-row {
-            font-weight: bold;
-            font-size: 16px;
-            background: #e8f5e9;
-        }
-        
-        .text-success {
-            color: #2ecc71;
-        }
-        
-        .text-danger {
-            color: #e74c3c;
-        }
-        
-        .text-right {
-            text-align: right;
-        }
-        
-        .text-center {
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
         }
         
         @keyframes spin {
@@ -1012,12 +1021,26 @@
             100% { transform: rotate(360deg); }
         }
         
-        .summary-actions {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
+        .loading-text {
+            margin-top: 20px;
+            color: #3498db;
+            font-size: 16px;
+            font-weight: 500;
         }
         
+        /* Alert Animation */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Responsive */
         @media (max-width: 1200px) {
             .container {
                 padding: 20px;
@@ -1042,7 +1065,6 @@
             .header {
                 flex-direction: column;
                 text-align: center;
-                padding: 20px 15px;
             }
             
             .user-info {
@@ -1067,14 +1089,6 @@
                 grid-template-columns: 1fr;
             }
             
-            .payment-methods {
-                grid-template-columns: 1fr;
-            }
-            
-            .quick-cash-buttons {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
             .products-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -1093,21 +1107,22 @@
                 grid-template-columns: 1fr;
             }
             
-            .modal-content {
-                padding: 20px;
-            }
-            
-            .payment-total-amount {
-                font-size: 28px;
-            }
-            
-            .change-amount {
-                font-size: 28px;
+            #qrCodeCanvas {
+                width: 200px;
+                height: 200px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">กำลังดำเนินการ...</div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1118,8 +1133,8 @@
                 <span id="onlineStatus" class="status-badge online">
                     <i class="fas fa-wifi"></i> โหมดออนไลน์
                 </span>
-                <button class="btn btn-sm btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+                <button class="settings-btn" onclick="openSettingsModal()">
+                    <i class="fas fa-cog"></i>
                 </button>
             </div>
         </div>
@@ -1129,13 +1144,10 @@
             <button class="nav-btn active" onclick="window.location.href='sales.html'">
                 <i class="fas fa-cash-register"></i> ขายสินค้า
             </button>
-            <button class="nav-btn" onclick="goToStock()">
+            <button class="nav-btn admin-only" onclick="window.location.href='stock.html'">
                 <i class="fas fa-box"></i> สต็อกสินค้า
             </button>
-            <button class="nav-btn" onclick="window.location.href='add-product.html'">
-                <i class="fas fa-plus-circle"></i> เพิ่มสินค้า
-            </button>
-            <button class="nav-btn online-only" onclick="window.location.href='reports.html'" style="display: none;">
+            <button class="nav-btn admin-only" onclick="window.location.href='shift-reports.html'">
                 <i class="fas fa-chart-bar"></i> รายงาน
             </button>
         </div>
@@ -1209,20 +1221,20 @@
                 
                 <!-- VAT Section -->
                 <div class="vat-section">
-                    <h3><i class="fas fa-percent"></i> ภาษีมูลค่าเพิ่ม</h3>
+                    <h3><i class="fas fa-percent"></i> VAT</h3>
                     <div class="vat-options">
                         <label>
-                            <input type="radio" name="vatType" value="exclude" checked>
-                            ภาษีนอก
+                            <input type="radio" name="vatType" value="exclude" checked onchange="updateVATType()">
+                            VAT นอก
                         </label>
                         <label>
-                            <input type="radio" name="vatType" value="include">
-                            ภาษีใน
+                            <input type="radio" name="vatType" value="include" onchange="updateVATType()">
+                            VAT ใน
                         </label>
                     </div>
                     <div class="vat-rate-input">
-                        <span>อัตราภาษี:</span>
-                        <input type="number" id="vatRate" value="7" min="0" max="100" step="0.1">
+                        <span>VAT%:</span>
+                        <input type="number" id="vatRate" value="7" min="0" max="100" step="0.1" onchange="updateCartDisplay()">
                         <span>%</span>
                     </div>
                 </div>
@@ -1238,7 +1250,7 @@
                         <span id="subtotal">฿0.00</span>
                     </div>
                     <div class="summary-row">
-                        <span>ภาษี <span id="vatRateDisplay">7</span>%:</span>
+                        <span>VAT <span id="vatRateDisplay">7</span>%:</span>
                         <span id="tax">฿0.00</span>
                     </div>
                     <div class="summary-row summary-total">
@@ -1254,14 +1266,6 @@
                         <div class="payment-method selected" onclick="selectPaymentMethod('cash', event)">
                             <i class="fas fa-money-bill-wave"></i>
                             <div>เงินสด</div>
-                        </div>
-                        <div class="payment-method" onclick="selectPaymentMethod('transfer', event)">
-                            <i class="fas fa-university"></i>
-                            <div>โอนเงิน</div>
-                        </div>
-                        <div class="payment-method" onclick="selectPaymentMethod('card', event)">
-                            <i class="fas fa-credit-card"></i>
-                            <div>บัตรเครดิต</div>
                         </div>
                         <div class="payment-method" onclick="selectPaymentMethod('qr', event)">
                             <i class="fas fa-qrcode"></i>
@@ -1282,116 +1286,204 @@
         </div>
     </div>
     
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> ตั้งค่าระบบ</h2>
+                <button class="btn-close" onclick="closeModal('settingsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="settings-menu">
+                <!-- ข้อมูลผู้ใช้ที่เข้าระบบ - ทุกคนเห็น -->
+                <div class="settings-menu-item user-info-item" onclick="showUserInfo()">
+                    <i class="fas fa-user-circle"></i>
+                    <div class="item-info">
+                        <div class="item-title" id="settingsUserName">กำลังโหลด...</div>
+                        <div class="item-desc" id="settingsUserRole">กำลังโหลด...</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <!-- เมนูสำหรับผู้ดูแลระบบเท่านั้น -->
+                <div class="settings-menu-item admin-only" onclick="window.location.href='staff-management.html'">
+                    <i class="fas fa-users-cog"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการพนักงาน</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข/ลบ บัญชีพนักงาน</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="settings-menu-item admin-only" onclick="window.location.href='add-product.html'">
+                    <i class="fas fa-plus-circle"></i>
+                    <div class="item-info">
+                        <div class="item-title">เพิ่มสินค้า</div>
+                        <div class="item-desc">เพิ่มสินค้าใหม่เข้าสู่ระบบ</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="settings-menu-item admin-only" onclick="window.location.href='lots.html'">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการล็อต</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข ล็อตสินค้า</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="settings-menu-item admin-only" onclick="window.location.href='suppliers.html'">
+                    <i class="fas fa-truck"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการซัพพลายเออร์</div>
+                        <div class="item-desc">เพิ่ม/แก้ไข ข้อมูลซัพพลายเออร์</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <!-- จัดการบัญชีพร้อมเพย์ - ทุกคนเห็น (พนักงานใช้扫码จ่ายเงิน) -->
+                <div class="settings-menu-item" onclick="openQRPaymentSettings()">
+                    <i class="fas fa-qrcode"></i>
+                    <div class="item-info">
+                        <div class="item-title">จัดการบัญชีพร้อมเพย์</div>
+                        <div class="item-desc">เพิ่ม/แก้ไขบัญชีธนาคารสำหรับรับชำระผ่าน QR Code</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <!-- ออกจากระบบ - ทุกคนเห็น -->
+                <div class="settings-menu-item logout-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <div class="item-info">
+                        <div class="item-title">ออกจากระบบ</div>
+                        <div class="item-desc">ออกจากระบบและกลับไปหน้า Login</div>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Payment Settings Modal -->
+    <div class="modal" id="qrSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-qrcode"></i> จัดการบัญชีพร้อมเพย์</h2>
+                <button class="btn-close" onclick="closeModal('qrSettingsModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="bankAccountsList" class="bank-accounts-list"></div>
+            
+            <div class="add-bank-btn" onclick="showAddBankForm()">
+                <i class="fas fa-plus-circle"></i> เพิ่มบัญชีธนาคาร
+            </div>
+            
+            <div id="addBankForm" style="display: none; margin-top: 20px;">
+                <h3 style="margin-bottom: 15px;">เพิ่มบัญชีธนาคาร</h3>
+                
+                <div class="form-group">
+                    <label>เลือกธนาคาร</label>
+                    <select id="bankSelect" class="form-control">
+                        <option value="SCB">ธนาคารไทยพาณิชย์</option>
+                        <option value="KBANK">ธนาคารกสิกรไทย</option>
+                        <option value="BBL">ธนาคารกรุงเทพ</option>
+                        <option value="KTB">ธนาคารกรุงไทย</option>
+                        <option value="TTB">ธนาคารทหารไทยธนชาต</option>
+                        <option value="BAY">ธนาคารกรุงศรีอยุธยา</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>ประเภทพร้อมเพย์</label>
+                    <select id="promptpayType" class="form-control">
+                        <option value="mobile">เบอร์มือถือ</option>
+                        <option value="national_id">เลขบัตรประชาชน</option>
+                        <option value="account">เลขที่บัญชี</option>
+                        <option value="e-wallet">E-Wallet / พร้อมเพย์อื่นๆ</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>เลขที่บัญชี / เบอร์พร้อมเพย์</label>
+                    <input type="text" id="accountNumber" class="form-control" placeholder="0812345678" maxlength="13">
+                </div>
+                
+                <div class="form-group">
+                    <label>ชื่อบัญชี</label>
+                    <input type="text" id="accountName" class="form-control" placeholder="นาย สมชาย ใจดี">
+                </div>
+                
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="cancelAddBank()">ยกเลิก</button>
+                    <button class="btn btn-success" onclick="saveBankAccount()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Payment Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-credit-card"></i> ชำระเงิน</h2>
+                <button class="btn-close" onclick="closeModal('paymentModal')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <!-- Cash Payment Section -->
+            <!-- Cash Payment -->
             <div id="cashPaymentSection">
-                <div class="payment-summary">
-                    <div class="payment-total-label">ยอดชำระทั้งหมด</div>
-                    <div class="payment-total-amount" id="paymentTotal">฿0.00</div>
+                <div class="payment-summary" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                    <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">ยอดชำระทั้งหมด</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #e74c3c;" id="paymentTotal">฿0.00</div>
                 </div>
                 
-                <div class="cash-input-group">
-                    <input type="number" id="cashReceived" placeholder="รับเงินมา" min="0" step="0.01" oninput="calculateChange()">
-                    <span style="font-weight: 600;">บาท</span>
+                <div class="form-group">
+                    <label>รับเงินมา</label>
+                    <input type="number" id="cashReceived" class="form-control" placeholder="0.00" min="0" step="0.01" oninput="calculateChange()">
                 </div>
                 
-                <div class="quick-cash-buttons">
+                <div class="quick-cash-buttons" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0;">
                     <button class="btn btn-sm btn-primary" onclick="setCashAmount(100)">+100</button>
                     <button class="btn btn-sm btn-primary" onclick="setCashAmount(500)">+500</button>
                     <button class="btn btn-sm btn-primary" onclick="setCashAmount(1000)">+1000</button>
                     <button class="btn btn-sm btn-success" onclick="setCashAmount('exact')">พอดี</button>
-                    <button class="btn btn-sm btn-warning" onclick="setCashAmount('round')">ปัดเศษ</button>
                 </div>
                 
-                <div class="change-display">
-                    <div class="change-label">เงินทอน</div>
-                    <div class="change-amount" id="changeAmount">฿0.00</div>
+                <div class="change-display" style="background: #e8f5e9; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+                    <div style="color: #2e7d32; font-size: 14px; margin-bottom: 5px;">เงินทอน</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #2e7d32;" id="changeAmount">฿0.00</div>
                 </div>
             </div>
             
-            <!-- Transfer Payment Section -->
-            <div id="transferPaymentSection" style="display: none;">
-                <div class="payment-summary">
-                    <div class="payment-total-label">ยอดโอน</div>
-                    <div class="payment-total-amount" id="transferTotal">฿0.00</div>
-                </div>
-                
-                <div class="form-group">
-                    <label>ธนาคาร</label>
-                    <select class="form-control" id="transferBank">
-                        <option value="kbank">ธ.กสิกรไทย</option>
-                        <option value="scb">ธ.ไทยพาณิชย์</option>
-                        <option value="bbl">ธ.กรุงเทพ</option>
-                        <option value="ktb">ธ.กรุงไทย</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>เลขที่อ้างอิง</label>
-                    <input type="text" class="form-control" id="transferRef" placeholder="เลขที่อ้างอิง">
-                </div>
-                
-                <div class="form-group">
-                    <label>วันที่โอน</label>
-                    <input type="date" class="form-control" id="transferDate">
-                </div>
-            </div>
-            
-            <!-- Card Payment Section -->
-            <div id="cardPaymentSection" style="display: none;">
-                <div class="payment-summary">
-                    <div class="payment-total-label">ยอดชำระ</div>
-                    <div class="payment-total-amount" id="cardTotal">฿0.00</div>
-                </div>
-                
-                <div class="form-group">
-                    <label>ประเภทบัตร</label>
-                    <select class="form-control" id="cardType">
-                        <option value="visa">VISA</option>
-                        <option value="master">MasterCard</option>
-                        <option value="amex">American Express</option>
-                        <option value="jcb">JCB</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>เลขที่อนุมัติ</label>
-                    <input type="text" class="form-control" id="approvalCode" placeholder="เลขที่อนุมัติ">
-                </div>
-                
-                <div class="form-group">
-                    <label>เลขท้ายบัตร 4 ตัว</label>
-                    <input type="text" class="form-control" id="cardLast4" placeholder="xxxx" maxlength="4">
-                </div>
-            </div>
-            
-            <!-- QR Payment Section -->
+            <!-- QR Payment -->
             <div id="qrPaymentSection" style="display: none;">
-                <div class="payment-summary">
-                    <div class="payment-total-label">ยอดชำระ</div>
-                    <div class="payment-total-amount" id="qrTotal">฿0.00</div>
-                </div>
-                
-                <div style="text-align: center; margin: 20px 0;">
-                    <div style="width: 200px; height: 200px; margin: 0 auto; background: linear-gradient(45deg, #000 25%, #fff 25%, #fff 50%, #000 50%, #000 75%, #fff 75%, #fff 100%); background-size: 20px 20px; border: 2px solid #ddd; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                        <i class="fas fa-qrcode fa-4x" style="background: white; padding: 10px; border-radius: 5px;"></i>
-                    </div>
-                    <p style="margin-top: 10px; color: #7f8c8d;">สแกน QR Code เพื่อชำระเงิน</p>
+                <div class="payment-summary" style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                    <div style="color: #7f8c8d; font-size: 14px; margin-bottom: 5px;">ยอดชำระ</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #e74c3c;" id="qrTotal">฿0.00</div>
                 </div>
                 
                 <div class="form-group">
-                    <label>เลขที่อ้างอิง</label>
-                    <input type="text" class="form-control" id="qrRef" placeholder="เลขที่อ้างอิง">
+                    <label>เลือกบัญชีรับเงิน</label>
+                    <select id="qrBankSelect" class="form-control" onchange="changeSelectedBank()">
+                        <option value="">-- เลือกบัญชี --</option>
+                    </select>
+                </div>
+                
+                <div class="qr-code-container">
+                    <div class="qr-prompt">สแกน QR Code เพื่อชำระเงิน</div>
+                    <div class="qr-amount" id="qrAmount">฿0.00</div>
+                    <canvas id="qrCodeCanvas" width="250" height="250"></canvas>
+                    <div class="qr-bank-info" id="qrBankInfo"></div>
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <div class="form-actions">
                 <button class="btn btn-secondary" onclick="closeModal('paymentModal')" style="flex: 1;">ยกเลิก</button>
                 <button class="btn btn-success" onclick="processPayment()" style="flex: 1;" id="confirmPaymentBtn">ยืนยันการชำระเงิน</button>
             </div>
@@ -1403,7 +1495,7 @@
         <div class="modal-content receipt-content">
             <div class="receipt-header">
                 <h2>ร้านค้า</h2>
-                <p>ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ</p>
+                <p>ใบเสร็จรับเงิน/ใบกำกับVATอย่างย่อ</p>
                 <p id="receiptDate"></p>
                 <p>เลขที่: <span id="receiptNumber"></span></p>
             </div>
@@ -1416,7 +1508,7 @@
                     <span id="receiptSubtotal">฿0.00</span>
                 </div>
                 <div class="receipt-item">
-                    <span>ภาษี <span id="receiptVatRate">7</span>%:</span>
+                    <span>VAT <span id="receiptVatRate">7</span>%:</span>
                     <span id="receiptTax">฿0.00</span>
                 </div>
                 <div class="receipt-item receipt-total">
@@ -1441,7 +1533,7 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <div class="form-actions" style="margin-top: 20px;">
                 <button class="btn btn-secondary" onclick="closeModal('receiptModal')" style="flex: 1;">ปิด</button>
                 <button class="btn btn-primary" onclick="printReceipt()" style="flex: 1;">
                     <i class="fas fa-print"></i> พิมพ์
@@ -1455,9 +1547,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-play"></i> เปิดกะ</h2>
+                <button class="btn-close" onclick="closeModal('openShiftModal')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <form id="openShiftForm" onsubmit="return false;">
+            <form id="openShiftForm" onsubmit="event.preventDefault(); openShift()">
                 <div class="form-group">
                     <label>เงินต้นกะ (บาท)</label>
                     <input type="number" id="openingBalanceInput" class="form-control" min="0" step="0.01" value="0" required>
@@ -1468,9 +1563,9 @@
                     <textarea id="shiftNoteInput" class="form-control" rows="2" placeholder="บันทึกข้อมูลเพิ่มเติม"></textarea>
                 </div>
                 
-                <div style="display: flex; gap: 10px;">
+                <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('openShiftModal')" style="flex: 1;">ยกเลิก</button>
-                    <button type="button" class="btn btn-success" onclick="openShift()" style="flex: 1;">เปิดกะ</button>
+                    <button type="submit" class="btn btn-success" style="flex: 1;">เปิดกะ</button>
                 </div>
             </form>
         </div>
@@ -1481,6 +1576,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-stop"></i> ปิดกะ</h2>
+                <button class="btn-close" onclick="closeModal('closeShiftModal')">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
             <div class="form-group">
@@ -1503,88 +1601,1282 @@
                 <textarea id="closeNotes" class="form-control" rows="2" placeholder="บันทึกข้อมูลเพิ่มเติม"></textarea>
             </div>
             
-            <!-- Shift Summary -->
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
                 <h4 style="margin-bottom: 15px;">สรุปยอดกะ</h4>
                 
-                <table class="shift-summary-table">
-                    <tr>
-                        <td>วันที่เปิดกะ:</td>
-                        <td id="summaryOpenDate">-</td>
-                    </tr>
-                    <tr>
-                        <td>วันที่ปิดกะ:</td>
-                        <td id="summaryCloseDate">-</td>
-                    </tr>
-                    <tr>
-                        <td>เลขอ้างอิงกะ:</td>
-                        <td id="summaryShiftRef">-</td>
-                    </tr>
-                    <tr>
-                        <td>พนักงาน:</td>
-                        <td id="summaryCashier">-</td>
-                    </tr>
-                    <tr>
-                        <td>เงินต้นกะ:</td>
-                        <td id="summaryOpeningBal">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="background: #e9ecef; font-weight: bold;">ยอดขายแยกตามช่องทาง</td>
-                    </tr>
-                    <tr>
-                        <td>ยอดขายรวม:</td>
-                        <td id="summaryTotalSales">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>เงินสด:</td>
-                        <td id="summaryCashSales">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>โอนเงิน:</td>
-                        <td id="summaryTransferSales">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>บัตรเครดิต:</td>
-                        <td id="summaryCardSales">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>QR Code:</td>
-                        <td id="summaryQRSales">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="background: #e9ecef; font-weight: bold;">รายการเคลื่อนไหว</td>
-                    </tr>
-                    <tr>
-                        <td>ค่าใช้จ่ายอื่นๆ:</td>
-                        <td id="summaryExpenses" class="text-danger">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>นำเงินเข้าร้าน:</td>
-                        <td id="summaryCashDrop" class="text-success">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>รวมเงินในเคาน์เตอร์:</td>
-                        <td id="summaryTotalCash">฿0.00</td>
-                    </tr>
-                    <tr>
-                        <td>ยอดที่คาดหวัง:</td>
-                        <td id="summaryExpected">฿0.00</td>
-                    </tr>
-                    <tr class="shift-total-row">
-                        <td>ส่วนต่าง:</td>
-                        <td id="summaryDifference">฿0.00</td>
-                    </tr>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">วันที่เปิดกะ:</td><td id="summaryOpenDate" style="padding: 8px; border: 1px solid #ddd;">-</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">วันที่ปิดกะ:</td><td id="summaryCloseDate" style="padding: 8px; border: 1px solid #ddd;">-</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">เลขอ้างอิงกะ:</td><td id="summaryShiftRef" style="padding: 8px; border: 1px solid #ddd;">-</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">พนักงาน:</td><td id="summaryCashier" style="padding: 8px; border: 1px solid #ddd;">-</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">เงินต้นกะ:</td><td id="summaryOpeningBal" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
+                    <tr><td colspan="2" style="padding: 8px; background: #e9ecef; font-weight: bold;">ยอดขายแยกตามช่องทาง</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">ยอดขายรวม:</td><td id="summaryTotalSales" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">เงินสด:</td><td id="summaryCashSales" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">QR Code:</td><td id="summaryQRSales" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
+                    <tr><td colspan="2" style="padding: 8px; background: #e9ecef; font-weight: bold;">รายการเคลื่อนไหว</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">ค่าใช้จ่ายอื่นๆ:</td><td id="summaryExpenses" style="padding: 8px; border: 1px solid #ddd;" class="text-danger">฿0.00</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">นำเงินเข้าร้าน:</td><td id="summaryCashDrop" style="padding: 8px; border: 1px solid #ddd;" class="text-success">฿0.00</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">รวมเงินในเคาน์เตอร์:</td><td id="summaryTotalCash" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
+                    <tr><td style="padding: 8px; border: 1px solid #ddd;">เงินคงเหลือหลังหักนำเข้าร้าน:</td><td id="summaryRemainingCash" style="padding: 8px; border: 1px solid #ddd;">฿0.00</td></tr>
                 </table>
             </div>
             
-            <div style="display: flex; gap: 10px;">
+            <div class="form-actions">
                 <button class="btn btn-secondary" onclick="closeModal('closeShiftModal')" style="flex: 1;">ยกเลิก</button>
                 <button class="btn btn-danger" onclick="confirmCloseShift()" style="flex: 1;">ปิดกะ</button>
             </div>
         </div>
     </div>
     
-    <!-- Load JavaScript -->
-    <script src="js/sales.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // ==================== ตัวแปร global ====================
+        let currentShift = null;
+        let allProducts = [];
+        let filteredProducts = [];
+        let cart = [];
+        let shiftSales = [];
+        let selectedCategory = 'all';   
+        let selectedPaymentMethod = 'cash';
+        let vatType = 'exclude';
+        let categories = [];
+        let bankAccounts = [];
+        let selectedBankId = null;
+        let searchTimeout = null;
+
+        // ==================== ฟังก์ชันเริ่มต้น ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // โหลดข้อมูลผู้ใช้
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            // แสดงชื่อผู้ใช้
+            const userElement = document.getElementById('currentUser');
+            if (userElement) {
+                userElement.textContent = user.name || user.username || 'ผู้ใช้';
+            }
+            
+            // แสดง role
+            const roleElement = document.getElementById('currentRole');
+            if (roleElement) {
+                roleElement.textContent = user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+                roleElement.className = user.role === 'admin' ? 'badge badge-primary' : 'badge badge-success';
+            }
+            
+            // ซ่อนเมนูสำหรับพนักงาน
+            if (user.role === 'staff') {
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.classList.add('staff-hidden');
+                });
+            }
+            
+            // เริ่มต้นระบบ
+            initSystem();
+        });
+
+        async function initSystem() {
+            await checkOnlineStatus();
+            await loadBankAccounts();
+            await loadProducts();
+            await checkCurrentShift();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            window.addEventListener('online', () => updateOnlineStatus(true));
+            window.addEventListener('offline', () => updateOnlineStatus(false));
+            
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(searchProducts, 500);
+                });
+            }
+        }
+
+        // ==================== ฟังก์ชันปิด modal ====================
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // ==================== ฟังก์ชันแสดง loading ====================
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // ==================== ฟังก์ชัน Settings ====================
+        function setupSettingsMenu() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            const userNameEl = document.getElementById('settingsUserName');
+            const userRoleEl = document.getElementById('settingsUserRole');
+            
+            if (userNameEl) {
+                userNameEl.textContent = user.name || user.username || 'ผู้ใช้';
+            }
+            
+            if (userRoleEl) {
+                userRoleEl.textContent = user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+            }
+            
+            // ถ้าเป็นพนักงาน ให้ซ่อนเมนูสำหรับ admin
+            if (user.role === 'staff') {
+                document.querySelectorAll('.settings-menu-item.admin-only').forEach(el => {
+                    el.classList.add('staff-hidden');
+                });
+            } else {
+                document.querySelectorAll('.settings-menu-item.admin-only').forEach(el => {
+                    el.classList.remove('staff-hidden');
+                });
+            }
+        }
+
+        function openSettingsModal() {
+            setupSettingsMenu();
+            loadBankAccounts();
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function openQRPaymentSettings() {
+            closeModal('settingsModal');
+            loadBankAccounts();
+            document.getElementById('qrSettingsModal').style.display = 'flex';
+        }
+
+        // ==================== ฟังก์ชันแสดงข้อมูลผู้ใช้ ====================
+        function showUserInfo() {
+            const user = getCurrentUser();
+            if (!user) {
+                showAlert('ไม่พบข้อมูลผู้ใช้', 'warning');
+                return;
+            }
+            
+            const roleText = user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'พนักงานขาย';
+            const info = [
+                '👤 ข้อมูลผู้ใช้',
+                '─────────────────',
+                `ชื่อ: ${user.name || '-'}`,
+                `ชื่อผู้ใช้: ${user.username || '-'}`,
+                `สิทธิ์: ${roleText}`,
+                user.email ? `อีเมล: ${user.email}` : null,
+                user.phone ? `เบอร์โทร: ${user.phone}` : null
+            ].filter(line => line !== null).join('\n');
+            
+            alert(info);
+        }
+
+        // ==================== ฟังก์ชันจัดการบัญชีธนาคาร ====================
+        function loadBankAccounts() {
+            const saved = localStorage.getItem('bankAccounts');
+            if (saved) {
+                try {
+                    bankAccounts = JSON.parse(saved);
+                } catch (e) {
+                    bankAccounts = [];
+                }
+            }
+            
+            if (bankAccounts.length === 0) {
+                bankAccounts = [
+                    {
+                        id: '1',
+                        bank: 'SCB',
+                        bankName: 'ธนาคารไทยพาณิชย์',
+                        accountNumber: '0812345678',
+                        accountName: 'หจก. ร้านค้าสมใจ',
+                        promptpayType: 'mobile'
+                    }
+                ];
+                saveBankAccounts();
+            }
+            
+            updateBankSelect();
+            updateBankAccountsDisplay();
+        }
+
+        function saveBankAccounts() {
+            localStorage.setItem('bankAccounts', JSON.stringify(bankAccounts));
+        }
+
+        function updateBankAccountsDisplay() {
+            const container = document.getElementById('bankAccountsList');
+            if (!container) return;
+            
+            if (bankAccounts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">ยังไม่มีบัญชีธนาคาร</div>';
+                return;
+            }
+            
+            let html = '';
+            bankAccounts.forEach(account => {
+                const isSelected = account.id === selectedBankId;
+                const promptpayTypeText = getPromptPayTypeText(account.promptpayType || 'mobile');
+                
+                html += `
+                    <div class="bank-account-card ${isSelected ? 'selected' : ''}" onclick="selectBankAccount('${account.id}')">
+                        <div class="bank-account-header">
+                            <div class="bank-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="bank-name">${account.bankName}</div>
+                        </div>
+                        <div class="account-number">${formatPhoneNumber(account.accountNumber)}</div>
+                        <div class="account-name">${account.accountName}</div>
+                        <div style="font-size: 12px; margin-top: 5px; color: #7f8c8d;">
+                            <i class="fas fa-tag"></i> ${promptpayTypeText}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function getPromptPayTypeText(type) {
+            const types = {
+                'mobile': 'เบอร์มือถือ',
+                'national_id': 'บัตรประชาชน',
+                'account': 'เลขที่บัญชี',
+                'e-wallet': 'E-Wallet'
+            };
+            return types[type] || type;
+        }
+
+        function updateBankSelect() {
+            const select = document.getElementById('qrBankSelect');
+            if (!select) return;
+            
+            let options = '<option value="">-- เลือกบัญชี --</option>';
+            bankAccounts.forEach(account => {
+                const selected = account.id === selectedBankId ? 'selected' : '';
+                const promptpayTypeText = getPromptPayTypeText(account.promptpayType || 'mobile');
+                options += `<option value="${account.id}" ${selected}>${account.bankName} - ${formatPhoneNumber(account.accountNumber)} (${promptpayTypeText})</option>`;
+            });
+            select.innerHTML = options;
+        }
+
+        function selectBankAccount(id) {
+            selectedBankId = id;
+            saveBankAccounts();
+            updateBankAccountsDisplay();
+            updateBankSelect();
+        }
+
+        function showAddBankForm() {
+            document.getElementById('addBankForm').style.display = 'block';
+        }
+
+        function cancelAddBank() {
+            document.getElementById('addBankForm').style.display = 'none';
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('accountName').value = '';
+        }
+
+        function saveBankAccount() {
+            const bank = document.getElementById('bankSelect').value;
+            const accountNumber = document.getElementById('accountNumber').value.trim().replace(/\D/g, '');
+            const accountName = document.getElementById('accountName').value.trim();
+            const promptpayType = document.getElementById('promptpayType').value;
+            
+            if (!accountNumber) {
+                showAlert('กรุณากรอกเลขที่บัญชี / เบอร์พร้อมเพย์', 'warning');
+                return;
+            }
+            
+            if (promptpayType === 'mobile' && (accountNumber.length < 9 || accountNumber.length > 10)) {
+                showAlert('เบอร์มือถือต้องมีความยาว 9-10 หลัก', 'warning');
+                return;
+            }
+            
+            if (promptpayType === 'national_id' && accountNumber.length !== 13) {
+                showAlert('เลขบัตรประชาชนต้องมีความยาว 13 หลัก', 'warning');
+                return;
+            }
+            
+            if (!accountName) {
+                showAlert('กรุณากรอกชื่อบัญชี', 'warning');
+                return;
+            }
+            
+            const bankNames = {
+                'SCB': 'ธนาคารไทยพาณิชย์',
+                'KBANK': 'ธนาคารกสิกรไทย',
+                'BBL': 'ธนาคารกรุงเทพ',
+                'KTB': 'ธนาคารกรุงไทย',
+                'TTB': 'ธนาคารทหารไทยธนชาต',
+                'BAY': 'ธนาคารกรุงศรีอยุธยา'
+            };
+            
+            const newAccount = {
+                id: Date.now().toString(),
+                bank: bank,
+                bankName: bankNames[bank] || bank,
+                accountNumber: accountNumber,
+                accountName: accountName,
+                promptpayType: promptpayType
+            };
+            
+            bankAccounts.push(newAccount);
+            saveBankAccounts();
+            selectedBankId = newAccount.id;
+            
+            updateBankAccountsDisplay();
+            updateBankSelect();
+            cancelAddBank();
+            showAlert('เพิ่มบัญชีเรียบร้อย', 'success');
+        }
+
+        function formatPhoneNumber(number) {
+            const cleaned = ('' + number).replace(/\D/g, '');
+            
+            if (cleaned.length === 9) {
+                return cleaned.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+            } else if (cleaned.length === 10) {
+                return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+            } else if (cleaned.length === 13) {
+                return cleaned.replace(/(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/, '$1-$2-$3-$4-$5');
+            }
+            return number;
+        }
+
+        // ==================== ฟังก์ชันจัดการกะ ====================
+        async function checkCurrentShift() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            try {
+                if (window.electronAPI) {
+                    currentShift = await window.electronAPI.getCurrentShift(user.id);
+                    
+                    if (currentShift) {
+                        const sales = await window.electronAPI.getShiftSales(currentShift.id);
+                        shiftSales = sales || [];
+                        updateShiftUIOpen();
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking current shift:', error);
+            }
+        }
+
+        function showOpenShiftModal() {
+            document.getElementById('openingBalanceInput').value = '0';
+            document.getElementById('shiftNoteInput').value = '';
+            document.getElementById('openShiftModal').style.display = 'flex';
+        }
+
+        async function openShift() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            showLoading();
+            
+            const openingBalance = parseFloat(document.getElementById('openingBalanceInput').value) || 0;
+            const notes = document.getElementById('shiftNoteInput').value;
+            
+            const shiftData = {
+                cashier_id: user.id,
+                cashier_name: user.name || user.username,
+                opening_balance: openingBalance,
+                notes: notes
+            };
+            
+            try {
+                if (window.electronAPI) {
+                    const result = await window.electronAPI.openShift(shiftData);
+                    
+                    if (result && result.success) {
+                        currentShift = {
+                            id: result.shift_id,
+                            shift_number: result.shift_number,
+                            cashier_id: user.id,
+                            cashier_name: user.name || user.username,
+                            opened_at: result.opened_at,
+                            opening_balance: openingBalance,
+                            notes: notes,
+                            status: 'open'
+                        };
+                        
+                        shiftSales = [];
+                        updateShiftUIOpen();
+                        closeModal('openShiftModal');
+                        showAlert('เปิดกะเรียบร้อย', 'success');
+                    } else {
+                        showAlert('เกิดข้อผิดพลาดในการเปิดกะ', 'danger');
+                    }
+                } else {
+                    currentShift = {
+                        id: 'SHIFT-' + Date.now(),
+                        shift_number: 'SHIFT-' + Date.now(),
+                        cashier_id: user.id,
+                        cashier_name: user.name || user.username,
+                        opened_at: new Date().toISOString(),
+                        opening_balance: openingBalance,
+                        notes: notes,
+                        status: 'open'
+                    };
+                    
+                    shiftSales = [];
+                    updateShiftUIOpen();
+                    closeModal('openShiftModal');
+                    showAlert('เปิดกะเรียบร้อย (โหมดทดสอบ)', 'success');
+                }
+            } catch (error) {
+                console.error('Error opening shift:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function updateShiftUIOpen() {
+            document.getElementById('shiftSection').className = 'shift-section';
+            document.getElementById('shiftStatusText').textContent = 'เปิดกะแล้ว';
+            document.getElementById('shiftNumber').textContent = currentShift.shift_number;
+            document.getElementById('shiftTime').textContent = 'เวลาเปิด: ' + formatDate(currentShift.opened_at, true);
+            document.getElementById('openingBalance').textContent = formatNumber(currentShift.opening_balance);
+            document.getElementById('openShiftBtn').style.display = 'none';
+            document.getElementById('closeShiftBtn').style.display = 'block';
+            document.getElementById('shiftSummary').style.display = 'grid';
+            updateShiftSummary();
+        }
+
+        async function showCloseShiftModal() {
+            if (!currentShift) {
+                showAlert('ไม่พบข้อมูลกะ', 'warning');
+                return;
+            }
+            
+            try {
+                if (window.electronAPI) {
+                    const sales = await window.electronAPI.getShiftSales(currentShift.id);
+                    shiftSales = sales || [];
+                }
+                
+                const totalSales = shiftSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+                const cashSales = shiftSales.filter(s => s.payment_method === 'cash').reduce((sum, sale) => sum + (sale.total || 0), 0);
+                const qrSales = shiftSales.filter(s => s.payment_method === 'qr').reduce((sum, sale) => sum + (sale.total || 0), 0);
+                
+                const expectedBalance = (currentShift.opening_balance || 0) + totalSales;
+                
+                document.getElementById('closingBalance').value = expectedBalance.toFixed(2);
+                document.getElementById('expenses').value = '0';
+                document.getElementById('cashDrop').value = '0';
+                document.getElementById('closeNotes').value = '';
+                
+                document.getElementById('summaryOpenDate').textContent = formatDate(currentShift.opened_at, true);
+                document.getElementById('summaryCloseDate').textContent = formatDate(new Date(), true);
+                document.getElementById('summaryShiftRef').textContent = currentShift.shift_number;
+                document.getElementById('summaryCashier').textContent = currentShift.cashier_name;
+                document.getElementById('summaryOpeningBal').textContent = formatCurrency(currentShift.opening_balance || 0);
+                
+                document.getElementById('summaryTotalSales').textContent = formatCurrency(totalSales);
+                document.getElementById('summaryCashSales').textContent = formatCurrency(cashSales);
+                document.getElementById('summaryQRSales').textContent = formatCurrency(qrSales);
+                
+                calculateShiftDifference();
+                
+                document.getElementById('closeShiftModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error showing close shift modal:', error);
+                showAlert('เกิดข้อผิดพลาดในการโหลดข้อมูลกะ', 'danger');
+            }
+        }
+
+        function calculateShiftDifference() {
+            if (!currentShift) return;
+            
+            const totalSales = shiftSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+            const expected = (currentShift.opening_balance || 0) + totalSales;
+            const closing = parseFloat(document.getElementById('closingBalance').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const cashDrop = parseFloat(document.getElementById('cashDrop').value) || 0;
+            
+            document.getElementById('summaryExpenses').textContent = formatCurrency(expenses);
+            document.getElementById('summaryCashDrop').textContent = formatCurrency(cashDrop);
+            document.getElementById('summaryTotalCash').textContent = formatCurrency(closing);
+            document.getElementById('summaryRemainingCash').textContent = formatCurrency(closing - cashDrop);
+        }
+
+        async function confirmCloseShift() {
+            if (!currentShift) {
+                showAlert('ไม่พบข้อมูลกะ', 'warning');
+                return;
+            }
+            
+            const closingBalance = parseFloat(document.getElementById('closingBalance').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const cashDrop = parseFloat(document.getElementById('cashDrop').value) || 0;
+            const notes = document.getElementById('closeNotes').value;
+            
+            const totalSales = shiftSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+            const expectedBalance = (currentShift.opening_balance || 0) + totalSales;
+            
+            const closingData = {
+                shift_id: currentShift.id,
+                closing_balance: closingBalance,
+                expenses: expenses,
+                cash_drop: cashDrop,
+                notes: notes,
+                total_sales_count: shiftSales.length,
+                total_sales_amount: totalSales,
+                expected_balance: expectedBalance
+            };
+            
+            try {
+                if (window.electronAPI) {
+                    const result = await window.electronAPI.closeShift(currentShift.id, closingData);
+                    
+                    if (result && result.success) {
+                        showShiftSummaryReport({
+                            ...currentShift,
+                            ...closingData,
+                            closed_at: new Date().toISOString()
+                        });
+                        
+                        updateShiftUIClosed();
+                        currentShift = null;
+                        shiftSales = [];
+                        
+                        closeModal('closeShiftModal');
+                        showAlert('ปิดกะเรียบร้อย', 'success');
+                    } else {
+                        showAlert('เกิดข้อผิดพลาดในการปิดกะ', 'danger');
+                    }
+                } else {
+                    showShiftSummaryReport({
+                        ...currentShift,
+                        ...closingData,
+                        closed_at: new Date().toISOString()
+                    });
+                    
+                    updateShiftUIClosed();
+                    currentShift = null;
+                    shiftSales = [];
+                    closeModal('closeShiftModal');
+                    showAlert('ปิดกะเรียบร้อย (โหมดทดสอบ)', 'success');
+                }
+            } catch (error) {
+                console.error('Error closing shift:', error);
+                showAlert('เกิดข้อผิดพลาดในการปิดกะ: ' + error.message, 'danger');
+            }
+        }
+
+        function updateShiftUIClosed() {
+            document.getElementById('shiftSection').className = 'shift-section closed';
+            document.getElementById('shiftStatusText').textContent = 'ปิดกะแล้ว';
+            document.getElementById('openShiftBtn').style.display = 'block';
+            document.getElementById('closeShiftBtn').style.display = 'none';
+            document.getElementById('shiftSummary').style.display = 'none';
+        }
+
+        function updateShiftSummary() {
+            if (!currentShift) return;
+            const totalSales = shiftSales.reduce((sum, sale) => sum + sale.total, 0);
+            document.getElementById('shiftSalesCount').textContent = shiftSales.length;
+            document.getElementById('shiftTotalSales').textContent = formatCurrency(totalSales);
+        }
+
+        function showShiftSummaryReport(shiftData) {
+            const salesByMethod = {
+                cash: shiftSales.filter(s => s.payment_method === 'cash').reduce((sum, sale) => sum + (sale.total || 0), 0),
+                qr: shiftSales.filter(s => s.payment_method === 'qr').reduce((sum, sale) => sum + (sale.total || 0), 0)
+            };
+            
+            const remainingCash = (shiftData.closing_balance || 0) - (shiftData.cash_drop || 0);
+            
+            const summaryText = 
+                `📊 สรุปยอดกะ\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `กะที่: ${shiftData.shift_number}\n` +
+                `วันที่เปิด: ${formatDate(shiftData.opened_at, true)}\n` +
+                `วันที่ปิด: ${formatDate(shiftData.closed_at, true)}\n` +
+                `พนักงาน: ${shiftData.cashier_name}\n` +
+                `เงินต้นกะ: ${formatCurrency(shiftData.opening_balance)}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `📈 ยอดขายรวม: ${formatCurrency(shiftData.total_sales_amount)}\n` +
+                `💰 เงินสด: ${formatCurrency(salesByMethod.cash)}\n` +
+                `📱 QR Code: ${formatCurrency(salesByMethod.qr)}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `💰 รายการเคลื่อนไหว\n` +
+                `ค่าใช้จ่าย: ${formatCurrency(shiftData.expenses || 0)}\n` +
+                `นำเงินเข้าร้าน: ${formatCurrency(shiftData.cash_drop || 0)}\n` +
+                `เงินคงเหลือในเคาน์เตอร์: ${formatCurrency(shiftData.closing_balance)}\n` +
+                `เงินคงเหลือหลังหักนำเข้าร้าน: ${formatCurrency(remainingCash)}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `${shiftData.notes ? 'หมายเหตุ: ' + shiftData.notes + '\n' : ''}`;
+            
+            alert(summaryText);
+        }
+
+        // ==================== ฟังก์ชันโหลดสินค้า ====================
+        async function loadProducts() {
+            const productsGrid = document.getElementById('productsGrid');
+            if (!productsGrid) return;
+            
+            productsGrid.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="spinner"></div><p style="color: #7f8c8d; margin-top: 15px;">กำลังโหลดสินค้า...</p></div>';
+            
+            try {
+                if (window.electronAPI) {
+                    allProducts = await window.electronAPI.getProducts() || [];
+                } else {
+                    const storedProducts = localStorage.getItem('demo_products');
+                    allProducts = storedProducts ? JSON.parse(storedProducts) : [];
+                }
+                
+                if (allProducts.length === 0) {
+                    allProducts = [
+                        { id: 'P001', name: 'ข้าวสารหอมมะลิ 5กก.', price: 250, stock: 50, unit: 'ถุง', category: 'อาหาร', status: 'active', barcode: '8851234567890' },
+                        { id: 'P002', name: 'น้ำปลาตราปลาหมึก 750ml', price: 45, stock: 100, unit: 'ขวด', category: 'เครื่องปรุง', status: 'active', barcode: '8851234567891' },
+                        { id: 'P003', name: 'น้ำมันพืช 1ลิตร', price: 65, stock: 75, unit: 'ขวด', category: 'เครื่องปรุง', status: 'active', barcode: '8851234567892' },
+                        { id: 'P004', name: 'ไข่ไก่ เบอร์2 แผง 30ฟอง', price: 120, stock: 30, unit: 'แผง', category: 'อาหาร', status: 'active', barcode: '8851234567893' },
+                        { id: 'P005', name: 'นมสด ตรามะลิ 1ลิตร', price: 55, stock: 40, unit: 'กล่อง', category: 'เครื่องดื่ม', status: 'active', barcode: '8851234567894' },
+                    ];
+                }
+                
+                filteredProducts = allProducts.filter(p => p.status === 'active');
+                loadCategories();
+                displayProducts();
+                
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productsGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: #e74c3c;"><i class="fas fa-exclamation-circle fa-3x"></i><p style="margin-top: 15px;">ไม่สามารถโหลดสินค้าได้</p></div>';
+            }
+        }
+
+        function loadCategories() {
+            categories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            const categoriesHtml = document.getElementById('categories');
+            let html = '<button class="category-btn active" onclick="filterByCategory(\'all\')">ทั้งหมด</button>';
+            
+            categories.forEach(category => {
+                html += `<button class="category-btn" onclick="filterByCategory('${category}')">${category}</button>`;
+            });
+            
+            categoriesHtml.innerHTML = html;
+        }
+
+        function filterByCategory(category) {
+            selectedCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === (category === 'all' ? 'ทั้งหมด' : category)) {
+                    btn.classList.add('active');
+                }
+            });
+            applyFilters();
+        }
+
+        function searchProducts() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            filteredProducts = allProducts.filter(product => {
+                if (product.status !== 'active') return false;
+                if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
+                if (searchTerm) {
+                    const searchFields = [
+                        product.id,
+                        product.name,
+                        product.barcode
+                    ].filter(Boolean).map(f => f.toLowerCase());
+                    return searchFields.some(field => field.includes(searchTerm));
+                }
+                return true;
+            });
+            
+            displayProducts();
+        }
+
+        function displayProducts() {
+            const productsGrid = document.getElementById('productsGrid');
+            if (!productsGrid) return;
+            
+            if (filteredProducts.length === 0) {
+                productsGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: #7f8c8d;"><i class="fas fa-box-open fa-3x"></i><p style="margin-top: 15px;">ไม่พบสินค้า</p></div>';
+                return;
+            }
+            
+            productsGrid.innerHTML = filteredProducts.map(product => {
+                const cartItem = cart.find(i => i.id === product.id);
+                const quantity = cartItem ? cartItem.quantity : 0;
+                const stock = product.stock || 0;
+                
+                return `
+                    <div class="product-card ${stock === 0 ? 'out-of-stock' : ''} ${quantity > 0 ? 'selected' : ''}" data-id="${product.id}" onclick="addToCart('${product.id}')">
+                        ${quantity > 0 ? `<span class="cart-badge">${quantity}</span>` : ''}
+                        <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 5px;">${product.id}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">฿${formatNumber(product.price || 0)}</div>
+                        <div class="product-stock">คงเหลือ: ${stock} ${product.unit || 'ชิ้น'}</div>
+                        ${stock > 0 ? `
+                            <div class="quantity-controls" onclick="event.stopPropagation()">
+                                <button class="quantity-btn" onclick="updateQuantity('${product.id}', ${quantity - 1})" ${quantity <= 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="text" class="quantity-input" value="${quantity}" onchange="updateQuantity('${product.id}', this.value)" onclick="event.stopPropagation()">
+                                <button class="quantity-btn" onclick="updateQuantity('${product.id}', ${quantity + 1})" ${quantity >= stock ? 'disabled' : ''}>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        ` : '<div style="color: #e74c3c; margin-top: 10px;">สินค้าหมด</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== ฟังก์ชันตะกร้าสินค้า ====================
+        function addToCart(productId) {
+            if (!currentShift) {
+                showAlert('กรุณาเปิดกะก่อนขายสินค้า', 'warning');
+                return;
+            }
+            
+            const product = allProducts.find(p => p.id === productId);
+            if (!product || product.stock <= 0 || product.status !== 'active') return;
+            
+            const cartItem = cart.find(i => i.id === productId);
+            
+            if (cartItem) {
+                if (cartItem.quantity < product.stock) {
+                    cartItem.quantity++;
+                } else {
+                    showAlert('สินค้าไม่พอในสต็อก', 'warning');
+                    return;
+                }
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    stock: product.stock,
+                    unit: product.unit || 'ชิ้น'
+                });
+            }
+            
+            updateCartDisplay();
+            displayProducts();
+        }
+
+        function updateQuantity(productId, newQuantity) {
+            if (!currentShift) {
+                showAlert('กรุณาเปิดกะก่อนขายสินค้า', 'warning');
+                return;
+            }
+            
+            newQuantity = parseInt(newQuantity) || 0;
+            if (newQuantity < 0) newQuantity = 0;
+            
+            const product = allProducts.find(p => p.id === productId);
+            if (product && newQuantity > product.stock) {
+                showAlert('สินค้าไม่พอในสต็อก', 'warning');
+                newQuantity = product.stock;
+            }
+            
+            const cartItem = cart.find(i => i.id === productId);
+            
+            if (newQuantity === 0) {
+                cart = cart.filter(i => i.id !== productId);
+            } else if (cartItem) {
+                cartItem.quantity = newQuantity;
+            } else if (product) {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: newQuantity,
+                    stock: product.stock,
+                    unit: product.unit || 'ชิ้น'
+                });
+            }
+            
+            updateCartDisplay();
+            displayProducts();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.id !== productId);
+            updateCartDisplay();
+            displayProducts();
+        }
+
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (confirm('คุณแน่ใจว่าต้องการล้างตะกร้าสินค้าทั้งหมด?')) {
+                cart = [];
+                updateCartDisplay();
+                displayProducts();
+                showAlert('ล้างตะกร้าเรียบร้อย', 'success');
+            }
+        }
+
+        function calculateVAT(subtotal) {
+            const rate = parseFloat(document.getElementById('vatRate').value) || 0;
+            
+            if (vatType === 'exclude') {
+                const tax = subtotal * rate / 100;
+                return {
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: subtotal + tax
+                };
+            } else {
+                const subtotalExclude = subtotal / (1 + rate / 100);
+                const tax = subtotal - subtotalExclude;
+                return {
+                    subtotal: subtotalExclude,
+                    tax: tax,
+                    total: subtotal
+                };
+            }
+        }
+
+        function updateCartDisplay() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const vat = calculateVAT(subtotal);
+            
+            document.getElementById('cartCount').textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('subtotal').textContent = formatCurrency(vat.subtotal);
+            document.getElementById('tax').textContent = formatCurrency(vat.tax);
+            document.getElementById('total').textContent = formatCurrency(vat.total);
+            document.getElementById('vatRateDisplay').textContent = document.getElementById('vatRate').value;
+            
+            const cartItems = document.getElementById('cartItems');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-cart"></i><p>ยังไม่มีสินค้าในตะกร้า</p></div>';
+                return;
+            }
+            
+            cartItems.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <h4>${item.name}</h4>
+                        <div>฿${formatNumber(item.price)} x ${item.quantity} ${item.unit}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="cart-item-total">฿${formatNumber(item.price * item.quantity)}</span>
+                        <button class="btn btn-sm btn-danger" onclick="removeFromCart('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateVATType() {
+            vatType = document.querySelector('input[name="vatType"]:checked').value;
+            updateCartDisplay();
+        }
+
+        // ==================== ฟังก์ชันชำระเงิน ====================
+        function selectPaymentMethod(method, event) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(btn => btn.classList.remove('selected'));
+            if (event?.target) {
+                const methodElement = event.target.closest('.payment-method');
+                if (methodElement) methodElement.classList.add('selected');
+            }
+            if (document.getElementById('paymentModal').style.display === 'flex') {
+                updatePaymentSections();
+            }
+        }
+
+        function updatePaymentSections() {
+            const sections = ['cash', 'qr'];
+            sections.forEach(method => {
+                const section = document.getElementById(method + 'PaymentSection');
+                if (section) section.style.display = method === selectedPaymentMethod ? 'block' : 'none';
+            });
+            
+            const total = parseFloat(document.getElementById('total').textContent.replace(/[฿,]/g, ''));
+            document.getElementById('paymentTotal').textContent = formatCurrency(total);
+            document.getElementById('qrTotal').textContent = formatCurrency(total);
+            
+            updateBankSelect();
+            
+            if (selectedPaymentMethod === 'qr') {
+                if (bankAccounts.length > 0) {
+                    if (!selectedBankId) {
+                        selectedBankId = bankAccounts[0].id;
+                    }
+                    generateQRCode(total);
+                } else {
+                    document.getElementById('qrBankInfo').innerHTML = '<div style="color: #e74c3c;">⚠️ กรุณาเพิ่มบัญชีธนาคารในตั้งค่า</div>';
+                }
+            }
+        }
+
+        function calculateChange() {
+            const total = parseFloat(document.getElementById('paymentTotal').textContent.replace(/[฿,]/g, ''));
+            const received = parseFloat(document.getElementById('cashReceived').value) || 0;
+            const change = Math.max(0, received - total);
+            document.getElementById('changeAmount').textContent = formatCurrency(change);
+        }
+
+        function setCashAmount(amount) {
+            const total = parseFloat(document.getElementById('paymentTotal').textContent.replace(/[฿,]/g, ''));
+            
+            if (amount === 'exact') {
+                document.getElementById('cashReceived').value = total.toFixed(2);
+            } else {
+                const current = parseFloat(document.getElementById('cashReceived').value) || 0;
+                document.getElementById('cashReceived').value = (current + amount).toFixed(2);
+            }
+            
+            calculateChange();
+        }
+
+        function checkout() {
+            if (!currentShift) {
+                showAlert('กรุณาเปิดกะก่อนขายสินค้า', 'warning');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                showAlert('ไม่มีสินค้าในตะกร้า', 'warning');
+                return;
+            }
+            
+            const total = parseFloat(document.getElementById('total').textContent.replace(/[฿,]/g, ''));
+            if (total <= 0) {
+                showAlert('ยอดชำระไม่ถูกต้อง', 'danger');
+                return;
+            }
+            
+            updatePaymentSections();
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.getElementById('cashReceived').value = '';
+            document.getElementById('changeAmount').textContent = formatCurrency(0);
+        }
+
+        function generateQRCode(amount) {
+            const canvas = document.getElementById('qrCodeCanvas');
+            const bankInfo = document.getElementById('qrBankInfo');
+            if (!canvas) return;
+            
+            const selectedAccount = bankAccounts.find(a => a.id === selectedBankId) || bankAccounts[0];
+            if (!selectedAccount) return;
+            
+            const formattedNumber = formatPhoneNumber(selectedAccount.accountNumber);
+            const promptpayTypeText = getPromptPayTypeText(selectedAccount.promptpayType || 'mobile');
+            
+            bankInfo.innerHTML = `
+                <div><i class="fas fa-university"></i> <strong>${selectedAccount.bankName}</strong></div>
+                <div><i class="fas fa-mobile-alt"></i> พร้อมเพย์: <strong>${formattedNumber}</strong></div>
+                <div><i class="fas fa-tag"></i> ประเภท: ${promptpayTypeText}</div>
+                <div><i class="fas fa-user"></i> ${selectedAccount.accountName}</div>
+                <div><i class="fas fa-coins"></i> จำนวนเงิน: <strong>${formatCurrency(amount)}</strong></div>
+            `;
+            
+            const qrData = generatePromptPayQR(selectedAccount.accountNumber, amount);
+            
+            QRCode.toCanvas(canvas, qrData, {
+                width: 250,
+                margin: 2
+            }, function(error) {
+                if (error) {
+                    console.error('Error generating QR code:', error);
+                }
+            });
+            
+            document.getElementById('qrAmount').textContent = formatCurrency(amount);
+        }
+
+        function generatePromptPayQR(phoneNumber, amount) {
+            const cleanPhone = phoneNumber.replace(/[-\s]/g, '');
+            const merchantId = '0066' + (cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone);
+            
+            let payload = '000201';
+            payload += amount > 0 ? '010212' : '010211';
+            
+            const aid = '0016A000000677010111';
+            const merchantIdLength = merchantId.length.toString().padStart(2, '0');
+            const merchantAccountInfo = aid + '01' + merchantIdLength + merchantId;
+            const merchantAccountInfoLength = merchantAccountInfo.length.toString().padStart(2, '0');
+            payload += '29' + merchantAccountInfoLength + merchantAccountInfo;
+            
+            payload += '5303764';
+            
+            if (amount > 0) {
+                const amountStr = amount.toFixed(2);
+                const amountLength = amountStr.length.toString().padStart(2, '0');
+                payload += '54' + amountLength + amountStr;
+            }
+            
+            payload += '5802TH';
+            payload += '6304';
+            
+            const crc = calculateCRC16(payload);
+            const crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
+            
+            return payload + crcHex;
+        }
+
+        function calculateCRC16(data) {
+            let crc = 0xFFFF;
+            
+            for (let i = 0; i < data.length; i++) {
+                crc ^= data.charCodeAt(i) << 8;
+                
+                for (let j = 0; j < 8; j++) {
+                    if (crc & 0x8000) {
+                        crc = (crc << 1) ^ 0x1021;
+                    } else {
+                        crc <<= 1;
+                    }
+                    crc &= 0xFFFF;
+                }
+            }
+            
+            return crc;
+        }
+
+        function changeSelectedBank() {
+            const select = document.getElementById('qrBankSelect');
+            selectedBankId = select.value;
+            updateBankAccountsDisplay();
+            
+            if (selectedBankId) {
+                const total = parseFloat(document.getElementById('total').textContent.replace(/[฿,]/g, ''));
+                generateQRCode(total);
+            }
+        }
+
+        async function processPayment() {
+            showLoading();
+            
+            const total = parseFloat(document.getElementById('total').textContent.replace(/[฿,]/g, ''));
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace(/[฿,]/g, ''));
+            const tax = parseFloat(document.getElementById('tax').textContent.replace(/[฿,]/g, ''));
+            const vatRate = parseFloat(document.getElementById('vatRate').value) || 0;
+            
+            if (selectedPaymentMethod === 'cash') {
+                const received = parseFloat(document.getElementById('cashReceived').value) || 0;
+                if (received < total) {
+                    showAlert('จำนวนเงินไม่พอชำระ', 'danger');
+                    hideLoading();
+                    return;
+                }
+            } else if (selectedPaymentMethod === 'qr') {
+                if (!selectedBankId) {
+                    showAlert('กรุณาเลือกบัญชีธนาคาร', 'warning');
+                    hideLoading();
+                    return;
+                }
+            }
+            
+            const user = getCurrentUser();
+            if (!user) {
+                hideLoading();
+                return;
+            }
+            
+            const selectedAccount = bankAccounts.find(a => a.id === selectedBankId);
+            
+            const saleData = {
+                shift_id: currentShift ? currentShift.id : null,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: item.price * item.quantity
+                })),
+                subtotal: subtotal,
+                tax: tax,
+                total: total,
+                payment_method: selectedPaymentMethod,
+                vat_type: vatType,
+                vat_rate: vatRate,
+                cashier_id: user.id,
+                cashier_name: user.name || user.username,
+                payment_details: {}
+            };
+            
+            if (selectedPaymentMethod === 'cash') {
+                saleData.payment_details = {
+                    received: parseFloat(document.getElementById('cashReceived').value) || 0,
+                    change: parseFloat(document.getElementById('changeAmount').textContent.replace(/[฿,]/g, '')) || 0
+                };
+            } else if (selectedPaymentMethod === 'qr' && selectedAccount) {
+                saleData.payment_details = {
+                    bank: selectedAccount.bank,
+                    bankName: selectedAccount.bankName,
+                    accountNumber: selectedAccount.accountNumber,
+                    accountName: selectedAccount.accountName,
+                    promptpayType: selectedAccount.promptpayType
+                };
+            }
+            
+            try {
+                if (window.electronAPI) {
+                    const result = await window.electronAPI.saveSale(saleData);
+                    
+                    if (!result || !result.success) {
+                        throw new Error('ไม่สามารถบันทึกการขายได้');
+                    }
+                }
+                
+                for (const item of cart) {
+                    const product = allProducts.find(p => p.id === item.id);
+                    if (product) {
+                        product.stock -= item.quantity;
+                    }
+                }
+                
+                const saleId = 'SALE-' + Date.now();
+                const saleRecord = { ...saleData, id: saleId, created_at: new Date().toISOString() };
+                shiftSales.push(saleRecord);
+                
+                showReceipt(saleRecord, saleId);
+                updateShiftSummary();
+                
+                cart = [];
+                updateCartDisplay();
+                displayProducts();
+                
+                closeModal('paymentModal');
+                showAlert('บันทึกการขายเรียบร้อย', 'success');
+                
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // ==================== ฟังก์ชันใบเสร็จ ====================
+        function showReceipt(saleData, saleId) {
+            const now = new Date();
+            document.getElementById('receiptDate').textContent = formatDate(now, true);
+            document.getElementById('receiptNumber').textContent = saleId;
+            document.getElementById('receiptSubtotal').textContent = formatCurrency(saleData.subtotal);
+            document.getElementById('receiptTax').textContent = formatCurrency(saleData.tax);
+            document.getElementById('receiptTotal').textContent = formatCurrency(saleData.total);
+            document.getElementById('receiptVatRate').textContent = saleData.vat_rate || 7;
+            document.getElementById('receiptCashier').textContent = saleData.cashier_name;
+            
+            const paymentMethods = { cash: 'เงินสด', qr: 'QR Code' };
+            document.getElementById('receiptPaymentMethod').textContent = paymentMethods[saleData.payment_method] || saleData.payment_method;
+            
+            if (saleData.payment_method === 'cash') {
+                document.getElementById('receiptReceived').textContent = formatCurrency(saleData.payment_details.received || 0);
+                document.getElementById('receiptChange').textContent = formatCurrency(saleData.payment_details.change || 0);
+            } else {
+                document.getElementById('receiptReceived').textContent = formatCurrency(saleData.total);
+                document.getElementById('receiptChange').textContent = formatCurrency(0);
+            }
+            
+            const receiptItems = document.getElementById('receiptItems');
+            receiptItems.innerHTML = saleData.items.map(item => `
+                <div class="receipt-item">
+                    <div>${item.name} x${item.quantity}</div>
+                    <div>฿${formatNumber(item.total)}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+
+        function printReceipt() {
+            const receiptContent = document.querySelector('.receipt-content').cloneNode(true);
+            const buttons = receiptContent.querySelectorAll('.form-actions');
+            buttons.forEach(btn => btn.remove());
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>ใบเสร็จรับเงิน</title>
+                    <style>
+                        body { font-family: 'Sarabun', sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
+                        .receipt-header { text-align: center; border-bottom: 2px dashed #ddd; padding-bottom: 20px; margin-bottom: 20px; }
+                        .receipt-items { margin: 15px 0; }
+                        .receipt-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted #eee; }
+                        .receipt-footer { border-top: 2px dashed #ddd; padding-top: 20px; margin-top: 20px; }
+                        .receipt-total { font-size: 18px; font-weight: bold; color: #e74c3c; margin: 10px 0; }
+                    </style>
+                </head>
+                <body>${receiptContent.outerHTML}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // ==================== ฟังก์ชันช่วยเหลือ ====================
+        function formatNumber(num) {
+            return Number(num || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function formatCurrency(amount) {
+            return '฿' + formatNumber(amount || 0);
+        }
+
+        function formatDate(dateString, includeTime = false) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                if (includeTime) {
+                    return date.toLocaleString('th-TH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                return date.toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return '-';
+            }
+        }
+
+        // ==================== ทำให้ฟังก์ชัน global ====================
+        window.filterByCategory = filterByCategory;
+        window.searchProducts = searchProducts;
+        window.addToCart = addToCart;
+        window.updateQuantity = updateQuantity;
+        window.removeFromCart = removeFromCart;
+        window.clearCart = clearCart;
+        window.selectPaymentMethod = selectPaymentMethod;
+        window.calculateChange = calculateChange;
+        window.setCashAmount = setCashAmount;
+        window.checkout = checkout;
+        window.processPayment = processPayment;
+        window.printReceipt = printReceipt;
+        window.closeModal = closeModal;
+        window.showOpenShiftModal = showOpenShiftModal;
+        window.openShift = openShift;
+        window.showCloseShiftModal = showCloseShiftModal;
+        window.calculateShiftDifference = calculateShiftDifference;
+        window.confirmCloseShift = confirmCloseShift;
+        window.openSettingsModal = openSettingsModal;
+        window.openQRPaymentSettings = openQRPaymentSettings;
+        window.showAddBankForm = showAddBankForm;
+        window.cancelAddBank = cancelAddBank;
+        window.saveBankAccount = saveBankAccount;
+        window.selectBankAccount = selectBankAccount;
+        window.changeSelectedBank = changeSelectedBank;
+        window.updateVATType = updateVATType;
+        window.showUserInfo = showUserInfo;
+        window.logout = logout;
+    </script>
 </body>
 </html>

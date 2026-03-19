@@ -1,5 +1,4 @@
-// sales.js - จัดการหน้าขายสินค้า เชื่อมต่อกับ database จริง
-
+// sales.js - ปรับปรุง
 // ==================== GLOBAL VARIABLES ====================
 let currentUser = null;
 let currentShift = null;
@@ -36,6 +35,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // ตั้งค่า event listeners
     setupEventListeners();
+    
+    // ซ่อนเมนูสำหรับพนักงาน
+    if (currentUser && currentUser.role === 'staff') {
+        hideAdminMenus();
+    }
     
     console.log('✅ Sales page initialized');
 });
@@ -114,6 +118,28 @@ function checkAuth() {
         window.location.href = 'index.html';
         return false;
     }
+}
+
+// ซ่อนเมนูสำหรับพนักงาน
+function hideAdminMenus() {
+    // ซ่อนปุ่มจัดการสต็อกใน navigation
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        const onclickAttr = btn.getAttribute('onclick');
+        if (onclickAttr && (
+            onclickAttr.includes('stock.html') || 
+            onclickAttr.includes('add-product.html') || 
+            onclickAttr.includes('lots.html') || 
+            onclickAttr.includes('suppliers.html')
+        )) {
+            btn.style.display = 'none';
+        }
+    });
+    
+    // ซ่อนเมนูในระบบ
+    document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = 'none';
+    });
 }
 
 function logout() {
@@ -409,6 +435,13 @@ function updateShiftUIOpen() {
     document.getElementById('openingBalance').textContent = formatNumber(currentShift.opening_balance);
     document.getElementById('openShiftBtn').style.display = 'none';
     document.getElementById('closeShiftBtn').style.display = 'block';
+    
+    // แสดงปุ่มสรุปกะเมื่อเปิดกะแล้ว
+    const reportBtn = document.getElementById('reportShiftBtn');
+    if (reportBtn) {
+        reportBtn.style.display = 'block';
+    }
+    
     document.getElementById('shiftSummary').style.display = 'grid';
     
     // รีเซ็ตส่วนต่าง
@@ -424,6 +457,13 @@ function updateShiftUIClosed() {
     document.getElementById('openingBalance').textContent = '0.00';
     document.getElementById('openShiftBtn').style.display = 'block';
     document.getElementById('closeShiftBtn').style.display = 'none';
+    
+    // ซ่อนปุ่มสรุปกะเมื่อปิดกะแล้ว
+    const reportBtn = document.getElementById('reportShiftBtn');
+    if (reportBtn) {
+        reportBtn.style.display = 'none';
+    }
+    
     document.getElementById('shiftSummary').style.display = 'none';
 }
 
@@ -433,6 +473,24 @@ function updateShiftSummary() {
     const totalSales = shiftSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
     document.getElementById('shiftSalesCount').textContent = shiftSales.length;
     document.getElementById('shiftTotalSales').textContent = formatCurrency(totalSales);
+}
+
+// ฟังก์ชันเปิดหน้าสรุปกะ (สำหรับพนักงาน)
+function openShiftReport() {
+    if (!currentShift) {
+        showAlert('กรุณาเปิดกะก่อน', 'warning');
+        return;
+    }
+    
+    // บันทึกข้อมูลกะและยอดขายลง localStorage เพื่อให้หน้าสรุปเรียกใช้ได้
+    localStorage.setItem('currentShift', JSON.stringify(currentShift));
+    localStorage.setItem('shiftSales', JSON.stringify(shiftSales));
+    
+    // เปิดหน้าสรุปกะในหน้าต่างใหม่
+    const reportWindow = window.open('shift-report.html', '_blank');
+    if (!reportWindow) {
+        showAlert('กรุณาอนุญาตให้เปิด Pop-up', 'warning');
+    }
 }
 
 async function showCloseShiftModal() {
@@ -1360,3 +1418,4 @@ window.calculateShiftDifference = calculateShiftDifference;
 window.confirmCloseShift = confirmCloseShift;
 window.logout = logout;
 window.goToStock = goToStock;
+window.openShiftReport = openShiftReport;
